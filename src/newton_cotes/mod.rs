@@ -1,1 +1,1 @@
-pub mod rectangle_rule;
+pub mod rectangle;
