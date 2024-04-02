@@ -115,8 +115,4 @@ mod tests {
     }
 
     // TODO : add bench
-
-    fn test_integrand_typing() -> Result<(), String> {
-        Ok(())
-    }
 }
