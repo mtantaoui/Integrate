@@ -108,6 +108,7 @@ mod tests {
 
         let integral = rectangle_rule(f1, a, b, num_steps);
         let epsilon = 10e-10;
+
         assert!((integral - 1.0.div(3.0) as f64).abs() < epsilon);
 
         Ok(())
