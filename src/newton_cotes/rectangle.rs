@@ -128,7 +128,7 @@ mod tests {
         let a = 0.0;
         let b = 1.0;
 
-        let num_steps: usize = 1_000_000;
+        let num_steps: usize = 10_000_000;
 
         bencher.iter(|| {
             rectangle_rule(f1, a, b, num_steps);
