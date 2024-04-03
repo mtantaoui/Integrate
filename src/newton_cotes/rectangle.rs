@@ -59,6 +59,9 @@ use rayon::prelude::*;
 ///
 /// # Examples
 /// ```
+/// use integrator::newton_cotes::rectangle::rectangle_rule;
+///
+///
 /// fn square(x: f64) -> f64 {
 ///     x.powi(2)
 /// }
@@ -109,6 +112,8 @@ mod tests {
     use super::*;
     use test::Bencher;
 
+    const EPSILON: f64 = 10e-7;
+    const NUM_STEPS: usize = 1_000_000;
     // TODO: find a way to compare two approxiamte floats in rust (almost_equal in numpy equivalent)
 
     #[test]
@@ -120,29 +125,11 @@ mod tests {
         let a = 0.0;
         let b = 1.0;
 
-        let num_steps: usize = 1_000_000;
+        let integral = rectangle_rule(square, a, b, NUM_STEPS);
 
-        let integral = rectangle_rule(square, a, b, num_steps);
-        let epsilon = 10e-10;
+        let analytic_result: f64 = 1.0.div(3.0);
 
-        assert!((integral - 1.0.div(3.0) as f64).abs() < epsilon);
-    }
-    #[test]
-    fn test_f64_to_f64() {
-        // f64 to f64
-        fn square(x: f64) -> f64 {
-            x.powi(2)
-        }
-
-        let a = 0.0;
-        let b = 1.0;
-
-        let num_steps: usize = 1_000_000;
-
-        let integral = rectangle_rule(square, a, b, num_steps);
-        let epsilon = 10e-10;
-
-        assert!((integral - 1.0.div(3.0) as f64).abs() < epsilon);
+        assert!((integral - analytic_result).abs() < EPSILON);
     }
 
     #[test]
@@ -155,12 +142,11 @@ mod tests {
         let a = 0.0;
         let b = 1.0;
 
-        let num_steps: usize = 1_000_000;
+        let integral = rectangle_rule(square, a, b, NUM_STEPS);
 
-        let integral = rectangle_rule(square, a, b, num_steps);
-        let epsilon = 10e-10;
+        let analytic_result: f64 = 1.0.div(3.0);
 
-        assert!((integral - 1.0.div(3.0) as f64).abs() < epsilon);
+        assert!((integral - analytic_result).abs() < EPSILON);
     }
 
     #[test]
@@ -173,12 +159,11 @@ mod tests {
         let a = 0.0;
         let b = 1.0;
 
-        let num_steps: usize = 1_000_000;
+        let integral = rectangle_rule(square, a, b, NUM_STEPS);
 
-        let integral = rectangle_rule(square, a, b, num_steps);
-        let epsilon = 10e-10;
+        let analytic_result: f64 = 1.0.div(3.0);
 
-        assert!((integral - 1.0.div(3.0) as f64).abs() < epsilon);
+        assert!((integral - analytic_result).abs() < EPSILON);
     }
 
     #[test]
@@ -191,12 +176,11 @@ mod tests {
         let a = 0.0;
         let b = 1.0;
 
-        let num_steps: usize = 1_000_000;
+        let integral = rectangle_rule(square, a, b, NUM_STEPS);
 
-        let integral = rectangle_rule(square, a, b, num_steps);
-        let epsilon = 10e-10;
+        let analytic_result: f64 = 1.0.div(3.0);
 
-        assert!((integral - 1.0.div(3.0) as f64).abs() < epsilon);
+        assert!((integral - analytic_result).abs() < EPSILON);
     }
 
     #[bench]
@@ -208,10 +192,8 @@ mod tests {
         let a = 0.0;
         let b = 1.0;
 
-        let num_steps: usize = 1_000_000;
-
         bencher.iter(|| {
-            rectangle_rule(f1, a, b, num_steps);
+            rectangle_rule(f1, a, b, NUM_STEPS);
         })
     }
 }
