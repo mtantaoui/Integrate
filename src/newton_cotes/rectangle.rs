@@ -25,7 +25,7 @@
 //! in which the first $2p-3$ derivatives vanish at both endpoints of the interval of integration,
 //! it is not true that $R_h(f) = \int_{a}^{b} f(x) dx$, but rather what the theorem says is that
 //! $$ \lim_{h \to 0} \mid \frac{R_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \mid < M $$
-//! where $M>0$
+//! where $M>0$.
 //!
 //! If $f$ is at least twice differentiable on the interval $\[a,b\]$, then applying the mean-value
 //! theorem to
@@ -41,11 +41,11 @@
 //!
 //! The Euler-Maclaurin summation formula also shows that usually $n$ should be chosen large enough
 //! so that $h = (b - a) / n < 1$. For example, if h = 0.1 then
-//! $$ R_{0.1}(f) = \int_{a}^{b} f(x) dx  - 0.00042 (f'(b) - f'(a)) + 0.00000012 (f''(b) - f''(a)) + ...   $$
+//! $$ R_{0.1}(f) = \int_{a}^{b} f(x) dx  - 0.00042 \[f'(b) - f'(a)\] + 0.00000012 \[f^{3}(b) - f^3{}(a)\] + ...   $$
 //! and if $h = 0.01$ then
-//! $$ R_{0.01}(f) = \int_{a}^{b} f(x) dx  - 0.0000042 (f'(b) - f'(a)) + 0.000000000012 (f''(b) - f''(a)) + ...   $$
+//! $$ R_{0.01}(f) = \int_{a}^{b} f(x) dx  - 0.0000042 \[f'(b) - f'(a)\] + 0.000000000012 \[f^{3}(b) - f^{3}(a)\] + ...   $$
 //! while if $h=10$ then
-//! $$ R_{0.01}(f) = \int_{a}^{b} f(x) dx  - 4.1667 (f'(b) - f'(a)) + 12.15 (f''(b) - f''(a)) + ... $$
+//! $$ R_{10}(f) = \int_{a}^{b} f(x) dx  - 4.1667 \[f'(b) - f'(a)\] + 12.15 \[f^{3}(b) - f^{3}(a)\] + ... $$
 //! However, if the function $f(x)$ is linear, then $n$ may be chosen to be $1$.
 
 extern crate test;
@@ -76,11 +76,7 @@ use rayon::prelude::*;
 ///
 /// # Resources
 /// [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
-pub fn rectangle_rule<
-    R1: Real + Sync,
-    R2: Real + std::marker::Send,
-    U: Unsigned + ToPrimitive + Copy,
->(
+pub fn rectangle_rule<R1: Real + Sync, R2: Real + Send, U: Unsigned + ToPrimitive + Copy>(
     f: fn(R1) -> R2,
     a: R1,
     b: R1,
