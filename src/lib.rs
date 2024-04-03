@@ -37,18 +37,5 @@
 //! of the function. The interval of integration can also be split into subintervals
 //! in which each subinterval is half a wave length and the algorithm is applied
 //! to each subinterval.
-//!
-//! # Newton-Cotes Methods
-//!
-//! Newton-Cotes methods approximate the integral of a function by summing a weighted
-//! combination of the function evaluated at equally-spaced points, nodes. If the
-//! endpoints of the interval of integration are excluded from the sum, the method
-//! is called an open Newton-Cotes method and if the endpoints are included the
-//! method is called a closed Newton-Cotes method.
-//!
-//! - [x] Rectangle Rule.
-//! - [] Trapezoidal Rule.
-//! - [] Simpson's Rule.
-//! - [] Newton's 3/8 Rule.
 
 pub mod newton_cotes;

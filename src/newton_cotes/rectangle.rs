@@ -54,13 +54,13 @@ use num::{ToPrimitive, Unsigned};
 use num_traits::real::Real;
 use rayon::prelude::*;
 
-/// This function integrates $f(x)$ from $a$ to $a+n\star h$ using the rectangle
+/// This function integrates $f(x)$ from $a$ to $a+nh$ using the rectangle
 /// rule by summing from the left end of the interval to the right end.
 ///
 /// # Examples
 /// ```
 /// fn square(x: f64) -> f64 {
-/// x.powi(2)
+///     x.powi(2)
 /// }
 ///
 /// let a = 0.0;
@@ -82,17 +82,21 @@ pub fn rectangle_rule<
     a: R1,
     b: R1,
     n: U,
-) -> f64
-// TODO: complete function documentation with example and more details
-{
-    let h: R1 = (b - a) / R1::from(n).unwrap();
+) -> f64 {
+    // length of each subinterval
+    let h: R1 = (b - a) / R1::from(n).expect("failed to convert length of subinterval h");
 
     let integral: f64 = (0..(n.to_usize().unwrap()))
         .into_par_iter()
         .map(|i| {
-            let i = R1::from(i).unwrap();
-            let x = a + i * h + (h / R1::from(2).unwrap());
-            f(x).to_f64().unwrap()
+            // subinterval index (as real)
+            let i = R1::from(i).expect("failed to convert subinterval index i");
+
+            // subinterval midpoint
+            let x = a + i * h + (h / R1::from(2).expect("failed to compute subinterval midpoint"));
+
+            // converting f(x) to primitive type f64
+            f(x).to_f64().expect("failed to convert f(x) to f64")
         })
         .sum();
     integral * h.to_f64().unwrap()
@@ -108,8 +112,8 @@ mod tests {
     // TODO: find a way to compare two approxiamte floats in rust (almost_equal in numpy equivalent)
 
     #[test]
-    fn test_integral_value() -> Result<(), String> {
-        fn f1(x: f64) -> f64 {
+    fn test_integral_value() {
+        fn square(x: f64) -> f64 {
             x.powi(2)
         }
 
@@ -118,12 +122,81 @@ mod tests {
 
         let num_steps: usize = 1_000_000;
 
-        let integral = rectangle_rule(f1, a, b, num_steps);
+        let integral = rectangle_rule(square, a, b, num_steps);
         let epsilon = 10e-10;
 
         assert!((integral - 1.0.div(3.0) as f64).abs() < epsilon);
+    }
+    #[test]
+    fn test_f64_to_f64() {
+        // f64 to f64
+        fn square(x: f64) -> f64 {
+            x.powi(2)
+        }
 
-        Ok(())
+        let a = 0.0;
+        let b = 1.0;
+
+        let num_steps: usize = 1_000_000;
+
+        let integral = rectangle_rule(square, a, b, num_steps);
+        let epsilon = 10e-10;
+
+        assert!((integral - 1.0.div(3.0) as f64).abs() < epsilon);
+    }
+
+    #[test]
+    fn test_f32_to_f64() {
+        // f32 to f64
+        fn square(x: f32) -> f64 {
+            x.powi(2) as f64
+        }
+
+        let a = 0.0;
+        let b = 1.0;
+
+        let num_steps: usize = 1_000_000;
+
+        let integral = rectangle_rule(square, a, b, num_steps);
+        let epsilon = 10e-10;
+
+        assert!((integral - 1.0.div(3.0) as f64).abs() < epsilon);
+    }
+
+    #[test]
+    fn test_f64_to_f32() {
+        // f64 to f32
+        fn square(x: f64) -> f32 {
+            x.powi(2) as f32
+        }
+
+        let a = 0.0;
+        let b = 1.0;
+
+        let num_steps: usize = 1_000_000;
+
+        let integral = rectangle_rule(square, a, b, num_steps);
+        let epsilon = 10e-10;
+
+        assert!((integral - 1.0.div(3.0) as f64).abs() < epsilon);
+    }
+
+    #[test]
+    fn test_f32_to_f32() {
+        // f32 to f32
+        fn square(x: f32) -> f32 {
+            x.powi(2)
+        }
+
+        let a = 0.0;
+        let b = 1.0;
+
+        let num_steps: usize = 1_000_000;
+
+        let integral = rectangle_rule(square, a, b, num_steps);
+        let epsilon = 10e-10;
+
+        assert!((integral - 1.0.div(3.0) as f64).abs() < epsilon);
     }
 
     #[bench]
