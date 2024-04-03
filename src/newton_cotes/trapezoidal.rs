@@ -49,4 +49,3 @@
 //! while if $h=10$ then
 //! $$ T_{10}(f) = \int_{a}^{b} f(x) dx  - 8.3333 \[f'(b) - f'(a)\] + 13.89 \[f^{3}(b) - f^{3}(a)\] + ... $$
 //! However, if the function $f(x)$ is linear, then $n$ may be chosen to be $1$.
-//!
