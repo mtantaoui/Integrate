@@ -56,7 +56,7 @@ use num::{ToPrimitive, Unsigned};
 use num_traits::real::Real;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
-/// This function integrates $f(x)$ from $a$ to $a+nh$ using the rectangle
+/// This function integrates $f(x)$ from $a$ to $a+nh$ using the trapezoidal
 /// rule by summing from the left end of the interval to the right end.
 ///
 /// # Examples
