@@ -55,13 +55,20 @@ use num_traits::real::Real;
 use rayon::prelude::*;
 
 /// This function integrates $f(x)$ from $a$ to $a+n\star h$ using the rectangle
-///  rule by summing from the left end of the interval to the right end.
+/// rule by summing from the left end of the interval to the right end.
+///
 /// # Examples
-///
 /// ```
-/// println!("This is Rectangle rule example placeholder");
+/// fn square(x: f64) -> f64 {
+/// x.powi(2)
+/// }
 ///
+/// let a = 0.0;
+/// let b = 1.0;
 ///
+/// let num_steps: usize = 1_000_000;
+///
+/// let integral = rectangle_rule(square, a, b, num_steps);
 /// ```
 ///
 /// # Resources
