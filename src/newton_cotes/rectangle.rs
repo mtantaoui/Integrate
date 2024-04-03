@@ -134,6 +134,4 @@ mod tests {
             rectangle_rule(f1, a, b, num_steps);
         })
     }
-
-    // TODO : add bench
 }
