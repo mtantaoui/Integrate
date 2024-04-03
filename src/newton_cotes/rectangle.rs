@@ -48,6 +48,8 @@
 //! $$ R_{0.01}(f) = \int_{a}^{b} f(x) dx  - 4.1667 (f'(b) - f'(a)) + 12.15 (f''(b) - f''(a)) + ... $$
 //! However, if the function $f(x)$ is linear, then $n$ may be chosen to be $1$.
 
+extern crate test;
+
 use num::{ToPrimitive, Unsigned};
 use num_traits::real::Real;
 use rayon::prelude::*;
@@ -94,7 +96,10 @@ mod tests {
     use std::ops::Div;
 
     use super::*;
+    use test::Bencher;
+
     // TODO: find a way to compare two approxiamte floats in rust (almost_equal in numpy equivalent)
+
     #[test]
     fn test_integral_value() -> Result<(), String> {
         fn f1(x: f64) -> f64 {
@@ -112,6 +117,22 @@ mod tests {
         assert!((integral - 1.0.div(3.0) as f64).abs() < epsilon);
 
         Ok(())
+    }
+
+    #[bench]
+    fn bench_integral_value(bencher: &mut Bencher) {
+        fn f1(x: f64) -> f64 {
+            x.powi(2)
+        }
+
+        let a = 0.0;
+        let b = 1.0;
+
+        let num_steps: usize = 1_000_000;
+
+        bencher.iter(|| {
+            rectangle_rule(f1, a, b, num_steps);
+        })
     }
 
     // TODO : add bench
