@@ -10,4 +10,5 @@
 //! - [] Newton's 3/8 Rule.
 
 pub mod rectangle;
+pub mod simpson;
 pub mod trapezoidal;
