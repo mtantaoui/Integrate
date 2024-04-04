@@ -119,7 +119,6 @@ mod tests {
 
     const EPSILON: f64 = 10e-7;
     const NUM_STEPS: usize = 1_000_000;
-    // TODO: find a way to compare two approxiamte floats in rust (almost_equal in numpy equivalent)
 
     #[test]
     fn test_integral_value() {
