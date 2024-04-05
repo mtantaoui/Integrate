@@ -4,10 +4,10 @@
 //! is called an open Newton-Cotes method and if the endpoints are included the
 //! method is called a closed Newton-Cotes method.
 //!
-//! - [x] Rectangle Rule.
-//! - [] Trapezoidal Rule.
-//! - [] Simpson's Rule.
-//! - [] Newton's 3/8 Rule.
+//! - Rectangle Rule.
+//! - Trapezoidal Rule.
+//! - Simpson's Rule.
+//! - Newton's 3/8 Rule.
 
 use num::{Float, Unsigned};
 

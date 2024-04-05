@@ -39,3 +39,4 @@
 //! to each subinterval.
 
 pub mod newton_cotes;
+pub mod romberg;
