@@ -50,9 +50,10 @@
 
 extern crate test;
 
-use num::{ToPrimitive, Unsigned};
-use num_traits::real::Real;
+use num::{Float, ToPrimitive, Unsigned};
 use rayon::prelude::*;
+
+use super::check_integral_args;
 
 /// This function integrates $f(x)$ from $a$ to $a+nh$ using the rectangle
 /// rule by summing from the left end of the interval to the right end.
@@ -76,23 +77,26 @@ use rayon::prelude::*;
 ///
 /// # Resources
 /// [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
-pub fn rectangle_rule<R1: Real + Sync, R2: Real + Send, U: Unsigned + ToPrimitive + Copy>(
-    f: fn(R1) -> R2,
-    a: R1,
-    b: R1,
+pub fn rectangle_rule<F1: Float + Sync, F2: Float + Send, U: Unsigned + ToPrimitive + Copy>(
+    f: fn(F1) -> F2,
+    a: F1,
+    b: F1,
     n: U,
 ) -> f64 {
+    // checking arguments
+    check_integral_args(a, b, n);
+
     // length of each subinterval
-    let h: R1 = (b - a) / R1::from(n).expect("failed to convert length of subinterval h");
+    let h: F1 = (b - a) / F1::from(n).expect("failed to convert length of subinterval h");
 
     let integral: f64 = (0..(n.to_usize().unwrap()))
         .into_par_iter()
         .map(|i| {
             // subinterval index (as real)
-            let i = R1::from(i).expect("failed to convert subinterval index i");
+            let i = F1::from(i).expect("failed to convert subinterval index i");
 
             // subinterval midpoint
-            let x = a + i * h + (h / R1::from(2).expect("failed to compute subinterval midpoint"));
+            let x = a + i * h + (h / F1::from(2).expect("failed to compute subinterval midpoint"));
 
             // converting f(x) to primitive type f64
             f(x).to_f64().expect("failed to convert f(x) to f64")

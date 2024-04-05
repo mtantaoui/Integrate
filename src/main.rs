@@ -10,7 +10,7 @@ fn rectangle() {
     let a = 0.0;
     let b = 1.0;
 
-    let num_steps: usize = 1_000_000;
+    let num_steps: usize = 1_000_000_000;
 
     let integral = rectangle_rule(square, a, b, num_steps);
     println!("{}", integral)

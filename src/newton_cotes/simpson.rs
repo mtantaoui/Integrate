@@ -51,9 +51,11 @@ extern crate test;
 
 use std::ops::Div;
 
-use num::{ToPrimitive, Unsigned};
-use num_traits::real::Real;
+use num::{Float, ToPrimitive, Unsigned};
+
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
+
+use super::check_integral_args;
 
 /// This function integrates $f(x)$ from $a$ to $a+nh$ using the trapezoidal
 /// rule by summing from the left end of the interval to the right end.
@@ -77,17 +79,20 @@ use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterato
 ///
 /// # Resources
 /// [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
-pub fn simpson_rule<R1: Real + Sync, R2: Real + Send, U: Unsigned + ToPrimitive + Copy>(
-    f: fn(R1) -> R2,
-    a: R1,
-    b: R1,
+pub fn simpson_rule<F1: Float + Sync, F2: Float + Send, U: Unsigned + ToPrimitive + Copy>(
+    f: fn(F1) -> F2,
+    a: F1,
+    b: F1,
     n: U,
 ) -> f64 {
+    // checking arguments
+    check_integral_args(a, b, n);
+
     // length of each subinterval
-    let h: R1 = (b - a) / R1::from(n).expect("failed to convert length of subinterval h");
+    let h: F1 = (b - a) / F1::from(n).expect("failed to convert length of subinterval h");
 
     // half the length of each subinterval h/2
-    let h_over_2 = h / R1::from(2).unwrap();
+    let h_over_2 = h / F1::from(2).unwrap();
 
     // first term of the sum
     let i_0 = f(a).to_f64().unwrap() + 4.0 * f(a + h_over_2).to_f64().unwrap();
@@ -97,15 +102,15 @@ pub fn simpson_rule<R1: Real + Sync, R2: Real + Send, U: Unsigned + ToPrimitive 
         .step_by(2)
         .map(|i| {
             // subinterval index (as real)
-            let i_plus_1 = R1::from(i + 1).expect("failed to convert subinterval index (i+1)");
-            let i = R1::from(i).expect("failed to convert subinterval index i");
+            let i_plus_1 = F1::from(i + 1).expect("failed to convert subinterval index (i+1)");
+            let i = F1::from(i).expect("failed to convert subinterval index i");
 
             2.0 * f(a + i * h_over_2).to_f64().unwrap()
                 + 4.0 * f(a + i_plus_1 * h_over_2).to_f64().unwrap()
         })
         .sum();
 
-    let n = R1::from(n).expect("failed to convert n");
+    let n = F1::from(n).expect("failed to convert n");
     let i_n = f(a + n * h_over_2).to_f64().unwrap();
 
     (i_0 + integral + i_n) * h.to_f64().unwrap() * 1.0.div(6.0)
