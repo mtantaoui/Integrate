@@ -2,17 +2,25 @@ use integrator::newton_cotes::{
     rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
 };
 
+const A: f64 = 0.0;
+const B: f64 = 1.0;
+const NUM_STEPS: usize = 1_000_000_000;
+
 fn rectangle() {
     fn square(x: f64) -> f64 {
         x.powi(2)
     }
 
-    let a = 0.0;
-    let b = 1.0;
+    let integral = rectangle_rule(square, A, B, NUM_STEPS);
+    println!("{}", integral)
+}
 
-    let num_steps: usize = 1_000_000_000;
+fn newton() {
+    fn square(x: f64) -> f64 {
+        x.powi(2)
+    }
 
-    let integral = rectangle_rule(square, a, b, num_steps);
+    let integral = rectangle_rule(square, A, B, NUM_STEPS);
     println!("{}", integral)
 }
 
@@ -21,12 +29,7 @@ fn trapezoidal() {
         x.powi(2)
     }
 
-    let a = 0.0;
-    let b = 1.0;
-
-    let num_steps: usize = 1_000_000;
-
-    let integral = trapezoidal_rule(square, a, b, num_steps);
+    let integral = trapezoidal_rule(square, A, B, NUM_STEPS);
     println!("{}", integral)
 }
 
@@ -35,12 +38,7 @@ fn simpson() {
         x.powi(2)
     }
 
-    let a = 0.0;
-    let b = 1.0;
-
-    let num_steps: usize = 1_000_000_000;
-
-    let integral = simpson_rule(square, a, b, num_steps);
+    let integral = simpson_rule(square, A, B, NUM_STEPS);
     println!("{}", integral)
 }
 
@@ -48,4 +46,5 @@ fn main() {
     rectangle();
     trapezoidal();
     simpson();
+    newton()
 }

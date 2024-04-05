@@ -11,6 +11,7 @@
 
 use num::{Float, Unsigned};
 
+pub mod newton;
 pub mod rectangle;
 pub mod simpson;
 pub mod trapezoidal;
