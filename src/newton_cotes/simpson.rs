@@ -79,7 +79,7 @@ use super::check_integral_args;
 ///
 /// # Resources
 /// [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
-pub fn simpson_rule<F1: Float + Sync, F2: Float + Send, U: Unsigned + ToPrimitive + Copy>(
+pub fn simpson_rule<F1: Float + Sync, F2: Float, U: Unsigned + ToPrimitive + Copy>(
     f: fn(F1) -> F2,
     a: F1,
     b: F1,
