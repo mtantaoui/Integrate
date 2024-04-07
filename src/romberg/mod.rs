@@ -10,4 +10,4 @@
 //! The process terminates when the change of the estimate is within a
 //! preassigned tolerance within a preassigned number of successive estimates.
 
-pub mod romberg;
+pub mod method;

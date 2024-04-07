@@ -42,19 +42,21 @@
 //!
 //! The numbers which are used the divide the difference of two adjacent elements in the $i^{th}$ column is $4^i - 1$.
 
-use std::cmp::max;
-
 use num::{Float, ToPrimitive, Unsigned};
+
+use rayon::prelude::*;
+
+use crate::newton_cotes::trapezoidal::trapezoidal_rule;
 
 /// If $T_h(f)$ is the result of applying the trapezoidal rule to approximating
 /// the integral of $f(x)$ on $\[a, b\]$ using subintervals of length $h$,   
-/// then if $\int_{a}^{b} f(x) dx$ is the integral of $f(x)$ on $\[a,b\]$, then                 
-///                           \int_{a}^{b} f(x) dx = \lim_{h \to 0}  T_h(f)                       
+/// then if $\int_{a}^{b} f(x) dx$ is the integral of $f(x)$ on $\[a,b\]$, then
+///                           $$\int_{a}^{b} f(x) dx = \lim_{h \to 0}  T_h(f)$$
 /// where the limit is taken as h approaches 0.    
 ///                          
-/// The classical Romberg method applies Richardson Extrapolation to the    
-/// limit of the sequence T_h(f), T_{\frac{h}{2}}(f), T_{\frac{h}{2}}(f), ... ,     
-/// in which the limit is approached by successively deleting error terms   
+/// The classical Romberg method applies Richardson Extrapolation to the
+/// limit of the sequence $T_h(f), T_{\frac{h}{2}}(f), T_{\frac{h}{4}}(f), ... ,$
+/// in which the limit is approached by successively deleting error terms
 /// in the Euler-MacLaurin summation formula.  
 ///
 /// # Examples
@@ -75,24 +77,64 @@ use num::{Float, ToPrimitive, Unsigned};
 /// ```
 ///
 /// # Resources
-/// [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
+/// - [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
+/// - [Romberg's method](https://en.wikipedia.org/wiki/Romberg%27s_method)
 pub fn romberg_method<
-    F1: Float + Sync + Ord,
-    F2: Float + Send,
+    F1: Float + Sync,
+    F2: Float + Sync + Send,
     U: Unsigned + ToPrimitive + Copy,
 >(
     f: fn(F1) -> F2,
     a: F1,
     b: F1,
     n: U,
+    // accuracy: F2,
 ) -> f64 {
-    // first term of trapezoid rule estimation
-    let i_0 = (f(a) + f(b)).div(F2::from(2).unwrap()).to_f64().unwrap();
+    // first columm of romberg table
+    // calculated using trapezoid rule
+    let mut trapezoidals: Vec<F2> = Vec::with_capacity(n.to_usize().unwrap());
 
-    todo!();
+    // initializing first column using trapezoid rule
+    (0..n.to_usize().unwrap())
+        .into_par_iter()
+        .map(|i| {
+            let pow_2 = 2_usize.pow(i.try_into().unwrap()); // 2 ** i
+            let trapezoidal = trapezoidal_rule(f, a, b, pow_2);
+            F2::from(trapezoidal).unwrap()
+        })
+        .collect_into_vec(&mut trapezoidals);
 
-    // Initialize err and the first trapezoid estimates column, dt[0], to the numerical estimate
-    // of the integral using the trapezoidal rule with a step size of h.
+    let mut tmp_buffer = trapezoidals;
+    let mut romberg = Vec::new();
+    for _ in 1..n.to_usize().unwrap() {
+        tmp_buffer
+            .par_windows(2)
+            .enumerate()
+            .map(|(i, window)| {
+                let [coef0, coef1]: [F2; 2] = _romberg_coefficients(i + 1);
+                coef1 * window[1] - coef0 * window[0]
+            })
+            .collect_into_vec(&mut romberg);
 
-    Float::max(a, b).to_f64().unwrap()
+        tmp_buffer.clone_from(&romberg)
+    }
+
+    let integral = (*romberg.first().unwrap()).to_f64().unwrap();
+    integral
+}
+
+fn _romberg_coefficients<F: Float, U: Unsigned + ToPrimitive>(m: U) -> [F; 2] {
+    let m = m.to_i32().unwrap();
+
+    let one = F::from(1.0).unwrap(); // 1
+
+    let _4_m = F::from(4.0.powi(m)).unwrap(); // 4**m
+    let _4_m_minus_1 = F::from(4.0.powi(m) - 1.0).unwrap(); // 4**m - 1
+
+    let denominator = one.div(_4_m_minus_1); // 1 / (4**m - 1)
+
+    [
+        denominator,        // 1 / (4**m - 1)
+        _4_m * denominator, // 4**m / (4**m - 1)
+    ]
 }

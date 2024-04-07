@@ -1,48 +1,64 @@
-use integrator::newton_cotes::{
-    rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
+use integrator::{
+    newton_cotes::{
+        rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
+    },
+    romberg::method::romberg_method,
 };
 
-const A: f64 = 5.0;
-const B: f64 = 10.0;
-const NUM_STEPS: usize = 1;
+const A: f64 = 0.0;
+const B: f64 = 1.0;
+const NUM_STEPS: usize = 50;
+const POW: i32 = 2;
 
 fn rectangle() {
     fn square(x: f64) -> f64 {
-        x.powi(2)
+        x.powi(POW)
     }
 
     let integral = rectangle_rule(square, A, B, NUM_STEPS);
-    println!("{}", integral)
+    println!("rectangle: {}", integral)
 }
 
 fn newton() {
     fn square(x: f64) -> f64 {
-        x.powi(2)
+        x.powi(POW)
     }
 
     let integral = rectangle_rule(square, A, B, NUM_STEPS);
-    println!("{}", integral)
+    println!("newton: {}", integral)
 }
 
 fn trapezoidal() {
     fn square(x: f64) -> f64 {
-        x.powi(2)
+        x.powi(POW)
     }
 
     let integral = trapezoidal_rule(square, A, B, NUM_STEPS);
-    println!("trapezoidal : {}", integral)
+    println!("trapezoidal: {}", integral)
 }
 
 fn simpson() {
     fn square(x: f64) -> f64 {
-        x.powi(2)
+        x.powi(POW)
     }
 
     let integral = simpson_rule(square, A, B, NUM_STEPS);
-    println!("{}", integral)
+    println!("simpson: {}", integral)
+}
+
+fn romberg() {
+    fn square(x: f64) -> f64 {
+        // let pi: f64 = PI;
+        // (-x.powi(2)).exp().div(pi.sqrt())
+        x.powi(POW)
+    }
+
+    let integral = romberg_method(square, A, B, NUM_STEPS);
+    println!("romberg: {}", integral)
 }
 
 fn main() {
+    romberg();
     rectangle();
     trapezoidal();
     simpson();
