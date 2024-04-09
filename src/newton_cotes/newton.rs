@@ -107,7 +107,7 @@ pub fn newton_rule<F1: Float + Sync, F2: Float, U: Unsigned + ToPrimitive + Copy
     // half the length of each subinterval h/3
     let h_over_3 = h / F1::from(3).unwrap();
 
-    // half the length of each subinterval 2h/3
+    // half the length of each subinterval (h * 2)/3
     let h2_over_3 = F1::from(2).unwrap() * (h / F1::from(3).unwrap());
 
     // first term of the sum
