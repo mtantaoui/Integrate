@@ -2,12 +2,12 @@ use integrator::{
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
-    romberg::method::romberg_method,
+    romberg::romberg_method,
 };
 
 const A: f64 = 0.0;
 const B: f64 = 1.0;
-const NUM_STEPS: usize = 50;
+const NUM_STEPS: usize = 10;
 const POW: i32 = 2;
 
 fn rectangle() {
