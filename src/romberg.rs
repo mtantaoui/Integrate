@@ -42,11 +42,36 @@
 //!
 //! The numbers which are used the divide the difference of two adjacent elements in the $i^{th}$ column is $4^i - 1$.
 
-use num::{Float, ToPrimitive, Unsigned};
+use num::{Float, ToPrimitive, Unsigned, Zero};
 
 use rayon::prelude::*;
 
 use crate::newton_cotes::trapezoidal::trapezoidal_rule;
+
+fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Sync>(
+    n: U,
+    m: U,
+    trapezoids: &[F],
+) -> F {
+    // if n.is_zero()&& m.is_zero() {
+    //     let index = n.to_usize().unwrap();
+    //     return trapezoids[index];
+    // }
+    if m.is_zero() {
+        let index = n.to_usize().unwrap();
+        return trapezoids[index];
+    }
+
+    let _1: U = num::one();
+
+    let (r_n_m_minus_1, r_n_1_m_1) = rayon::join(
+        || romberg(n, m - _1, trapezoids),
+        || romberg(n - _1, m - _1, trapezoids),
+    );
+
+    let [coef0, coef1]: [F; 2] = _romberg_coefficients(m);
+    coef1 * r_n_m_minus_1 - coef0 * r_n_1_m_1
+}
 
 /// If $T_h(f)$ is the result of applying the trapezoidal rule to approximating
 /// the integral of $f(x)$ on $\[a, b\]$ using subintervals of length $h$,   
@@ -82,7 +107,7 @@ use crate::newton_cotes::trapezoidal::trapezoidal_rule;
 pub fn romberg_method<
     F1: Float + Sync,
     F2: Float + Sync + Send,
-    U: Unsigned + ToPrimitive + Copy,
+    U: Unsigned + ToPrimitive + Copy + Send + Sync,
 >(
     f: fn(F1) -> F2,
     a: F1,
@@ -104,23 +129,26 @@ pub fn romberg_method<
         })
         .collect_into_vec(&mut trapezoidals);
 
-    let mut tmp_buffer = trapezoidals;
-    let mut romberg = Vec::new();
-    for _ in 1..n.to_usize().unwrap() {
-        tmp_buffer
-            .par_windows(2)
-            .enumerate()
-            .map(|(i, window)| {
-                let [coef0, coef1]: [F2; 2] = _romberg_coefficients(i + 1);
-                coef1 * window[1] - coef0 * window[0]
-            })
-            .collect_into_vec(&mut romberg);
+    // let mut tmp_buffer = trapezoidals;
+    // let mut romberg = Vec::new();
+    // for _ in 1..n.to_usize().unwrap() {
+    //     tmp_buffer
+    //         .par_windows(2)
+    //         .enumerate()
+    //         .map(|(i, window)| {
+    //             let [coef0, coef1]: [F2; 2] = _romberg_coefficients(i + 1);
+    //             coef1 * window[1] - coef0 * window[0]
+    //         })
+    //         .collect_into_vec(&mut romberg);
 
-        tmp_buffer.clone_from(&romberg)
-    }
+    //     tmp_buffer.clone_from(&romberg)
+    // }
 
-    let integral = (*romberg.first().unwrap()).to_f64().unwrap();
-    integral
+    // let integral = (*romberg.first().unwrap()).to_f64().unwrap();
+    // integral
+
+    let integral = romberg(n - num::one(), n - num::one(), trapezoidals.as_slice());
+    integral.to_f64().unwrap()
 }
 
 fn _romberg_coefficients<F: Float, U: Unsigned + ToPrimitive>(m: U) -> [F; 2] {
