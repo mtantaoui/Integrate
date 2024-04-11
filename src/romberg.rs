@@ -129,24 +129,6 @@ pub fn romberg_method<
         })
         .collect_into_vec(&mut trapezoidals);
 
-    // let mut tmp_buffer = trapezoidals;
-    // let mut romberg = Vec::new();
-    // for _ in 1..n.to_usize().unwrap() {
-    //     tmp_buffer
-    //         .par_windows(2)
-    //         .enumerate()
-    //         .map(|(i, window)| {
-    //             let [coef0, coef1]: [F2; 2] = _romberg_coefficients(i + 1);
-    //             coef1 * window[1] - coef0 * window[0]
-    //         })
-    //         .collect_into_vec(&mut romberg);
-
-    //     tmp_buffer.clone_from(&romberg)
-    // }
-
-    // let integral = (*romberg.first().unwrap()).to_f64().unwrap();
-    // integral
-
     let integral = romberg(n - num::one(), n - num::one(), trapezoidals.as_slice());
     integral.to_f64().unwrap()
 }
