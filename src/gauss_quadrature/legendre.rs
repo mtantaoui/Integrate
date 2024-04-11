@@ -7,9 +7,12 @@
   - Accuracy: the error on the nodes and weights is within a few ulps.
 
 */
-
 // Tabulated nodes and weights
 // The required theta values for the Legendre nodes for l <= 100
+
+use std::f64::consts::PI;
+
+use num::{Float, ToPrimitive, Unsigned};
 
 const even_theta_zero_1: &[f64] = &[0.9553166181245092781638573E+00];
 
