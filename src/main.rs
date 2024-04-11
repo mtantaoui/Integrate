@@ -7,7 +7,7 @@ use integrator::{
 
 const A: f64 = 0.0;
 const B: f64 = 1.0;
-const NUM_STEPS: usize = 10;
+const NUM_STEPS: usize = 5;
 const POW: i32 = 2;
 
 fn rectangle() {

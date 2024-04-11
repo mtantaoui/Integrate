@@ -25,4 +25,8 @@ pub fn check_integral_args<F: Float, U: Unsigned>(a: F, b: F, n: U) {
     if a.is_infinite() | b.is_infinite() {
         panic!("Integral limits a and b can't be infinite");
     }
+
+    if a > b {
+        panic!("a must be strictly less than b");
+    }
 }

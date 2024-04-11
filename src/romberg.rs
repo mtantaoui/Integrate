@@ -53,7 +53,6 @@ fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Syn
     m: U,
     trapezoids: &[F],
 ) -> F {
-    println!("1");
     if m.is_zero() {
         let index = n.to_usize().unwrap();
         return trapezoids[index];
