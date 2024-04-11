@@ -42,7 +42,7 @@
 //!
 //! The numbers which are used the divide the difference of two adjacent elements in the $i^{th}$ column is $4^i - 1$.
 
-use num::{Float, ToPrimitive, Unsigned, Zero};
+use num::{Float, ToPrimitive, Unsigned};
 
 use rayon::prelude::*;
 
@@ -53,23 +53,22 @@ fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Syn
     m: U,
     trapezoids: &[F],
 ) -> F {
-    // if n.is_zero()&& m.is_zero() {
-    //     let index = n.to_usize().unwrap();
-    //     return trapezoids[index];
-    // }
+    println!("1");
     if m.is_zero() {
         let index = n.to_usize().unwrap();
         return trapezoids[index];
     }
 
-    let _1: U = num::one();
+    let one: U = num::one();
 
+    // r_n_m_minus_1: R(n, m-1)
+    // r_n_1_m_1: R(n-1, m-1)
     let (r_n_m_minus_1, r_n_1_m_1) = rayon::join(
-        || romberg(n, m - _1, trapezoids),
-        || romberg(n - _1, m - _1, trapezoids),
+        || romberg(n, m - one, trapezoids),
+        || romberg(n - one, m - one, trapezoids),
     );
 
-    let [coef0, coef1]: [F; 2] = _romberg_coefficients(m);
+    let [coef0, coef1]: [F; 2] = romberg_coefficients(m);
     coef1 * r_n_m_minus_1 - coef0 * r_n_1_m_1
 }
 
@@ -133,7 +132,7 @@ pub fn romberg_method<
     integral.to_f64().unwrap()
 }
 
-fn _romberg_coefficients<F: Float, U: Unsigned + ToPrimitive>(m: U) -> [F; 2] {
+fn romberg_coefficients<F: Float, U: Unsigned + ToPrimitive>(m: U) -> [F; 2] {
     let m = m.to_i32().unwrap();
 
     let one = F::from(1.0).unwrap(); // 1
