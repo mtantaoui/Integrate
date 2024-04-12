@@ -2,13 +2,13 @@ use std::f64::consts::PI;
 
 use num::{Float, ToPrimitive, Unsigned};
 
-/// computes the kth zero of the $J_0(x)$ Bessel function.
+/// Computes the kth zero of the $J_0(x)$ Bessel function.
 ///
 /// # Notes
 ///
 /// Note that the first 20 zeros are tabulated.  After that, they are computed
-fn besseljzero<F: Float, U: Unsigned + ToPrimitive>(k: U) -> F {
-    const jz: [f64; 20] = [
+fn bessel_j0<F: Float, U: Unsigned + ToPrimitive>(k: U) -> F {
+    const J_Z: [f64; 20] = [
         2.40482555769577276862163187933E+00,
         5.52007811028631064959660411281E+00,
         8.65372791291101221695419871266E+00,
@@ -37,7 +37,7 @@ fn besseljzero<F: Float, U: Unsigned + ToPrimitive>(k: U) -> F {
 
     let mut tmp: f64;
 
-    if jz.len() > 20 {
+    if J_Z.len() > 20 {
         z = PI * (k.to_f64().unwrap() - 0.25E+00);
         r = 1.0E+00 / z;
         r2 = r * r;
@@ -59,8 +59,73 @@ fn besseljzero<F: Float, U: Unsigned + ToPrimitive>(k: U) -> F {
         tmp *= r;
         z += tmp;
     } else {
-        z = jz[k.to_usize().unwrap() - 1];
+        z = J_Z[k.to_usize().unwrap() - 1];
     }
 
-    F::from(0.0).unwrap()
+    F::from(z).unwrap()
+}
+
+/// Computes the kth zero of the $J_0(x)$ Bessel function.
+///
+/// # Notes
+///
+/// Note that the first 20 zeros are tabulated.  After that, they are computed
+fn bessel_j1_squared<F: Float, U: Unsigned + ToPrimitive>(k: U) -> F {
+    const J_1: &[f64; 21] = &[
+        0.269514123941916926139021992911E+00,
+        0.115780138582203695807812836182E+00,
+        0.0736863511364082151406476811985E+00,
+        0.0540375731981162820417749182758E+00,
+        0.0426614290172430912655106063495E+00,
+        0.0352421034909961013587473033648E+00,
+        0.0300210701030546726750888157688E+00,
+        0.0261473914953080885904584675399E+00,
+        0.0231591218246913922652676382178E+00,
+        0.0207838291222678576039808057297E+00,
+        0.0188504506693176678161056800214E+00,
+        0.0172461575696650082995240053542E+00,
+        0.0158935181059235978027065594287E+00,
+        0.0147376260964721895895742982592E+00,
+        0.0137384651453871179182880484134E+00,
+        0.0128661817376151328791406637228E+00,
+        0.0120980515486267975471075438497E+00,
+        0.0114164712244916085168627222986E+00,
+        0.0108075927911802040115547286830E+00,
+        0.0102603729262807628110423992790E+00,
+        0.00976589713979105054059846736696E+00,
+    ];
+
+    let x: f64;
+    let x2: f64;
+    let x: f64;
+
+    let mut tmp: f64;
+
+    if J_Z.len() > 21 {
+        x = 1.0E+00 / (F::from(k).unwrap() - 0.25E+00);
+        x2 = x * x;
+
+        tmp = x2 * 0.185395398206345628711318848386E+00;
+        tmp += -0.266837393702323757700998557826E-01;
+        tmp *= x2;
+        tmp += 0.496101423268883102872271417616E-02;
+        tmp *= x2;
+        tmp += -0.123632349727175414724737657367E-02;
+        tmp *= x2;
+        tmp += 0.433710719130746277915572905025E-03;
+        tmp *= x2;
+        tmp += -0.228969902772111653038747229723E-03;
+        tmp *= x2;
+        tmp += 0.198924364245969295201137972743E-03;
+        tmp *= x2;
+        tmp += -0.303380429711290253026202643516E-03;
+        tmp *= x2;
+        tmp *= x2 * x2;
+        tmp += 0.202642367284675542887758926420E+00;
+        z *= x;
+    } else {
+        z = J_Z[k.to_usize().unwrap() - 1];
+    }
+
+    F::from(z).unwrap()
 }
