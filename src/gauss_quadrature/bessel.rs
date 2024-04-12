@@ -129,3 +129,11 @@ fn bessel_j1_squared<F: Float, U: Unsigned + ToPrimitive>(k: U) -> F {
 
     F::from(z).unwrap()
 }
+
+/// Computes the $K^{th}$ pair of an $N$-point Gauss-Legendre rule.
+///
+/// # Discussion
+///
+/// $\theta$ values of the zeros are in $\[0,pi\]$, and monotonically increasing.
+///
+fn glpair(n: U, k: U) {}

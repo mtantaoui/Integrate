@@ -5830,3 +5830,29 @@ const cl: [f64; 101] = [
     -0.7958923738717876149812705E+01,
     0.7958923738717876149812705E-01,
 ];
+
+/// Computes the $K^{th}$ pair of an $N$-point Gauss-Legendre rule.
+///
+/// # Discussion
+///
+/// $\theta$ values of the zeros are in $\[0,pi\]$, and monotonically increasing.
+///
+fn glpairs<U: Unsigned>(n: U, k: U) {
+    let kcopy: U;
+
+    let b: f64;
+    let bnuosin: f64;
+    let deno: f64;
+    let nu: f64;
+    let nuosin: f64;
+    let sf1t: f64;
+    let sf2t: f64;
+    let sf3t: f64;
+    let w: f64;
+    let winvsinc: f64;
+    let wis2: f64;
+    let wsf1t: f64;
+    let wsf2t: f64;
+    let wsf3t: f64;
+    let y: f64;
+}
