@@ -48,6 +48,8 @@ use rayon::prelude::*;
 
 use crate::newton_cotes::trapezoidal::trapezoidal_rule;
 
+/// Computes elements of Romberg's matrix recursively given
+/// row's and column's index
 fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Sync>(
     n: U,
     m: U,
@@ -94,9 +96,9 @@ fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Syn
 /// let a = 0.0;
 /// let b = 1.0;
 ///
-/// let num_steps: usize = 1_000_000;
+/// let num_steps: usize = 10;
 ///
-/// let integral = newton_rule(square, a, b, num_steps);
+/// let integral = romberg_method(square, a, b, num_steps);
 /// ```
 ///
 /// # Resources

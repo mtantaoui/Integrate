@@ -65,7 +65,7 @@ fn bessel_j0<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
     z
 }
 
-fn formula(x: f64, x1: f64) -> f64 {
+fn formula(x: f64, x2: f64) -> f64 {
     x * (0.202642367284675542887758926420E+00
         + x2 * x2
             * (-0.303380429711290253026202643516E-03
@@ -157,12 +157,12 @@ pub fn glpairs<U: Unsigned + ToPrimitive + PartialOrd + Copy>(n: U, k: U) {
 
     // get the bessel zero
     let w = 1.0 / (n.to_f64().unwrap() + 0.5);
-    let nu = bessel_j0::<f64, usize>(kcopy);
+    let nu = bessel_j0::<f64, U>(kcopy);
     let theta = w * nu;
     let y = theta * theta;
 
     // get the asymptotic BesselJ(1, nu) squared
-    let b = bessel_j1_squared(kcopy);
+    let b = bessel_j1_squared::<f64, U>(kcopy);
 
     // get chebyshev interpolants for nodes
 
