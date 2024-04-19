@@ -1,5 +1,5 @@
 use integrator::{
-    gauss_quadrature::bessel::glpairs,
+    gauss_quadrature::legendre::glpairs,
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },

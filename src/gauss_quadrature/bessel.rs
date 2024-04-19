@@ -7,7 +7,7 @@ use num::{one, Float, ToPrimitive, Unsigned};
 /// # Notes
 ///
 /// Note that the first 20 zeros are tabulated.  After that, they are computed
-fn bessel_j0<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
+pub fn bessel_j0<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
     const J_Z: [f64; 20] = [
         2.40482555769577276862163187933E+00,
         5.52007811028631064959660411281E+00,
@@ -65,6 +65,19 @@ fn bessel_j0<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
     z
 }
 
+fn mcmahon_expansion(z: f64, r: f64, r2: f64) -> f64 {
+    z + r
+        * (0.125E+00
+            + r2 * (-8.072_916_666_666_667E-2
+                + r2 * (2.460_286_458_333_333_4E-1
+                    + r2 * (-0.182443876720610119047619047619E+01
+                        + r2 * (0.253364147973439050099206349206E+02
+                            + r2 * (-0.567644412135183381139802038240E+03
+                                + r2 * (0.186904765282320653831636345064E+05
+                                    + r2 * (-0.849353580299148769921876983660E+06
+                                        + r2 * 0.509225462402226769498681286758E+08))))))))
+}
+
 fn formula(x: f64, x2: f64) -> f64 {
     x * (0.202642367284675542887758926420E+00
         + x2 * x2
@@ -82,8 +95,8 @@ fn formula(x: f64, x2: f64) -> f64 {
 ///
 /// # Notes
 ///
-/// Note that the first 20 zeros are tabulated.  After that, they are computed
-fn bessel_j1_squared<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
+pub fn bessel_j1_squared<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
+    /// Note that the first 20 zeros are tabulated.  After that, they are computed
     const J_1: &[f64; 21] = &[
         0.269514123941916926139021992911E+00,
         0.115780138582203695807812836182E+00,
@@ -123,59 +136,4 @@ fn bessel_j1_squared<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
         z = J_1[k.to_usize().unwrap() - 1];
     }
     z
-}
-
-/// Computes the $K^{th}$ pair of an $N$-point Gauss-Legendre rule.
-///
-/// # Discussion
-///
-/// $\theta$ values of the zeros are in $\[0,pi\]$, and monotonically increasing.
-///
-fn glpair<U: Unsigned>(n: U, k: U) {}
-
-/// Computes the $K^{th}$ pair of an $N$-point Gauss-Legendre rule.
-///
-/// # Discussion
-///
-/// $\theta$ values of the zeros are in $\[0,pi\]$, and monotonically increasing.
-///
-pub fn glpairs<U: Unsigned + ToPrimitive + PartialOrd + Copy>(n: U, k: U) {
-    if n < one::<U>() {
-        panic!("GLPAIRS - FATAL ERROR \n Illegal value of N");
-    }
-
-    if k < one::<U>() || n < k {
-        panic!("GLPAIRS - FATAL ERROR \n Illegal value of K");
-    }
-
-    let kcopy;
-    if n < k + k - one::<U>() {
-        kcopy = n - k + one();
-    } else {
-        kcopy = k;
-    }
-
-    // get the bessel zero
-    let w = 1.0 / (n.to_f64().unwrap() + 0.5);
-    let nu = bessel_j0::<f64, U>(kcopy);
-    let theta = w * nu;
-    let y = theta * theta;
-
-    // get the asymptotic BesselJ(1, nu) squared
-    let b = bessel_j1_squared::<f64, U>(kcopy);
-
-    // get chebyshev interpolants for nodes
-
-    let sf1t = (((((-1.29052996274280508473467968379E-12 * y
-        + 2.40724685864330121825976175184E-10)
-        * y
-        - 3.13148654635992041468855740012E-08)
-        * y
-        + 0.275573168962061235623801563453E-05)
-        * y
-        - 0.148809523713909147898955880165E-03)
-        * y
-        + 0.416666666665193394525296923981E-02)
-        * y
-        - 0.416666666666662959639712457549E-01;
 }

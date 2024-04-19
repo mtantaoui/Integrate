@@ -10,9 +10,9 @@
 // Tabulated nodes and weights
 // The required theta values for the Legendre nodes for l <= 100
 
-use std::f64::consts::PI;
+use num::{one, ToPrimitive, Unsigned};
 
-use num::{Float, ToPrimitive, Unsigned};
+use super::bessel::{bessel_j0, bessel_j1_squared};
 
 const EVEN_THETA_ZERO_1: &[f64] = &[0.9553166181245092781638573E+00];
 
@@ -5830,3 +5830,57 @@ const CL: [f64; 101] = [
     -0.7958923738717876149812705E+01,
     0.7958923738717876149812705E-01,
 ];
+
+/// Computes the $K^{th}$ pair of an $N$-point Gauss-Legendre rule.
+///
+/// # Discussion
+///
+/// $\theta$ values of the zeros are in $\[0,pi\]$, and monotonically increasing.
+///
+fn glpair<U: Unsigned>(n: U, k: U) {}
+
+/// Computes the $K^{th}$ pair of an $N$-point Gauss-Legendre rule.
+///
+/// # Discussion
+///
+/// $\theta$ values of the zeros are in $\[0,pi\]$, and monotonically increasing.
+///
+pub fn glpairs<U: Unsigned + ToPrimitive + PartialOrd + Copy>(n: U, k: U) {
+    if n < one::<U>() {
+        panic!("GLPAIRS - FATAL ERROR \n Illegal value of N");
+    }
+
+    if k < one::<U>() || n < k {
+        panic!("GLPAIRS - FATAL ERROR \n Illegal value of K");
+    }
+
+    let kcopy;
+    if n < k + k - one::<U>() {
+        kcopy = n - k + one();
+    } else {
+        kcopy = k;
+    }
+
+    // get the bessel zero
+    let w = 1.0 / (n.to_f64().unwrap() + 0.5);
+    let nu = bessel_j0::<f64, U>(kcopy);
+    let theta = w * nu;
+    let y = theta * theta;
+
+    // get the asymptotic BesselJ(1, nu) squared
+    let b = bessel_j1_squared::<f64, U>(kcopy);
+
+    // get chebyshev interpolants for nodes
+    let sf1t = (((((-1.29052996274280508473467968379E-12 * y
+        + 2.40724685864330121825976175184E-10)
+        * y
+        - 3.13148654635992041468855740012E-08)
+        * y
+        + 0.275573168962061235623801563453E-05)
+        * y
+        - 0.148809523713909147898955880165E-03)
+        * y
+        + 0.416666666665193394525296923981E-02)
+        * y
+        - 0.416666666666662959639712457549E-01;
+}
