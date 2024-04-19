@@ -41,23 +41,7 @@ pub fn bessel_j0<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
         z = PI * (k.to_f64().unwrap() - 0.25E+00);
         r = 1.0E+00 / z;
         r2 = r * r;
-
-        tmp = r2 * 5.092_254_624_022_268E7;
-        tmp += -8.493_535_802_991_488E5;
-        tmp *= r2;
-        tmp += 1.869_047_652_823_206_6E4;
-        tmp *= r2;
-        tmp += -5.676_444_121_351_834E2;
-        tmp *= r2;
-        tmp += 2.533_641_479_734_390_6E1;
-        tmp *= r2;
-        tmp += -1.824_438_767_206_101;
-        tmp *= r2;
-        tmp += 2.460_286_458_333_333_4E-1;
-        tmp *= r2;
-        tmp += 0.125E+00;
-        tmp *= r;
-        z += tmp;
+        z = mcmahon_expansion(z, r, r2);
     } else {
         z = J_Z[k.to_usize().unwrap() - 1];
     }
@@ -65,6 +49,7 @@ pub fn bessel_j0<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
     z
 }
 
+/// TODO: Document
 fn mcmahon_expansion(z: f64, r: f64, r2: f64) -> f64 {
     z + r
         * (0.125E+00
@@ -77,8 +62,8 @@ fn mcmahon_expansion(z: f64, r: f64, r2: f64) -> f64 {
                                     + r2 * (-8.493_535_802_991_488E5
                                         + r2 * 5.092_254_624_022_268E7))))))))
 }
-
-fn formula(x: f64, x2: f64) -> f64 {
+/// TODO: Document
+fn hankel_expansion(x: f64, x2: f64) -> f64 {
     x * (2.026_423_672_846_755_5E-1
         + x2 * x2
             * (-3.033_804_297_112_902_7E-4
@@ -125,13 +110,11 @@ pub fn bessel_j1_squared<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
     let x2: f64;
     let z: f64;
 
-    let mut tmp: f64;
-
     if J_1.len() < k.to_usize().unwrap() {
         x = 1.0 / (k.to_f64().unwrap() - 0.25);
         x2 = x * x;
 
-        z = formula(x, x2);
+        z = hankel_expansion(x, x2);
     } else {
         z = J_1[k.to_usize().unwrap() - 1];
     }
