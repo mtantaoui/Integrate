@@ -10,7 +10,7 @@
 // Tabulated nodes and weights
 // The required theta values for the Legendre nodes for l <= 100
 
-use std::f64::consts::PI;
+use std::{cmp::Ordering, f64::consts::PI};
 
 use num::{one, zero, ToPrimitive, Unsigned};
 
@@ -5855,12 +5855,11 @@ pub fn glpairs<U: Unsigned + ToPrimitive + PartialOrd + Copy>(n: U, k: U) -> (f6
         panic!("GLPAIRS - FATAL ERROR \n Illegal value of K");
     }
 
-    let kcopy;
-    if n < k + k - one::<U>() {
-        kcopy = n - k + one();
+    let kcopy = if n < k + k - one::<U>() {
+        n - k + one()
     } else {
-        kcopy = k;
-    }
+        k
+    };
 
     // get the bessel zero
     let w = 1.0 / (n.to_f64().unwrap() + 0.5);
@@ -5994,30 +5993,39 @@ pub fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(
     // odd legendre degree
     if l % 2 == 1 {
         let l2 = (l - 1) / 2;
-        if kcopy == l2 {
-            theta = PI / 2.0E+00;
-            weight = 2.0E+00 / (CL[l] * CL[l]);
-        } else if kcopy < l2 {
-            theta = ODD_THETA_ZEROS[l2 - 1][l2 - kcopy - 1];
-            weight = ODD_WEIGHTS[l2 - 1][l2 - kcopy - 1];
-        } else {
-            theta = PI - ODD_THETA_ZEROS[l2 - 1][kcopy - l2 - 1];
-            weight = ODD_WEIGHTS[l2 - 1][kcopy - l2 - 1];
+
+        match kcopy.cmp(&l2) {
+            Ordering::Equal => {
+                theta = PI / 2.0E+00;
+                weight = 2.0E+00 / (CL[l] * CL[l]);
+            }
+            Ordering::Greater => {
+                theta = PI - ODD_THETA_ZEROS[l2 - 1][kcopy - l2 - 1];
+                weight = ODD_WEIGHTS[l2 - 1][kcopy - l2 - 1];
+            }
+            Ordering::Less => {
+                theta = ODD_THETA_ZEROS[l2 - 1][l2 - kcopy - 1];
+                weight = ODD_WEIGHTS[l2 - 1][l2 - kcopy - 1];
+            }
         }
     }
     // even Legendre degree
     else {
         let l2 = l / 2;
-        if kcopy < l2 {
-            theta = EVEN_THETA_ZEROS[l2 - 1][l2 - kcopy - 1];
-            weight = EVEN_WEIGHTS[l2 - 1][l2 - kcopy - 1];
-        } else {
-            theta = PI - EVEN_THETA_ZEROS[l2 - 1][kcopy - l2];
-            weight = EVEN_WEIGHTS[l2 - 1][kcopy - l2];
+
+        match kcopy.cmp(&l2) {
+            Ordering::Less => {
+                theta = EVEN_THETA_ZEROS[l2 - 1][l2 - kcopy - 1];
+                weight = EVEN_WEIGHTS[l2 - 1][l2 - kcopy - 1];
+            }
+            _ => {
+                theta = PI - EVEN_THETA_ZEROS[l2 - 1][kcopy - l2];
+                weight = EVEN_WEIGHTS[l2 - 1][kcopy - l2];
+            }
         }
     }
 
     let x = theta.cos();
 
-    return (theta, weight, x);
+    (theta, weight, x)
 }

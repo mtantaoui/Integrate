@@ -35,8 +35,6 @@ pub fn bessel_j0<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
     let r2: f64;
     let mut z: f64;
 
-    let mut tmp: f64;
-
     if J_Z.len() > 20 {
         z = PI * (k.to_f64().unwrap() - 0.25E+00);
         r = 1.0E+00 / z;
