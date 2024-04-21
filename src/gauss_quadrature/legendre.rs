@@ -5971,6 +5971,7 @@ pub fn glpairs<U: Unsigned + ToPrimitive + PartialOrd + Copy>(n: U, k: U) -> (f6
     (theta, weight, x)
 }
 
+// TODO: Document and comment
 pub fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(
     l: U,
     k: U,
@@ -6028,4 +6029,239 @@ pub fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(
     let x = theta.cos();
 
     (theta, weight, x)
+}
+
+fn legendre_theta<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k: U) {
+    if l < one() || 100 < l.to_usize().unwrap() {
+        panic!("Legendre Theta - Fatal error!\nIllegal value of L.\n 1 <= L <= 100 is required.");
+    }
+
+    let two = one::<U>() + one::<U>();
+
+    let lhalf = (l + one()) / two;
+
+    let kcopy = if l % two == one() {
+        match lhalf.cmp(&k) {
+            Ordering::Less => k - lhalf,
+            Ordering::Equal => lhalf,
+            Ordering::Greater => lhalf - k,
+        }
+    } else {
+        match lhalf.cmp(&k) {
+            Ordering::Less => k - lhalf,
+            _ => lhalf + one() - k,
+        }
+    };
+
+    if kcopy < one() || lhalf < kcopy {
+        panic!(
+            "LEGENDRE_THETA - Fatal error!\nIllegal value of K.\n 1 <= K <= (L+1)/2 is required.\n"
+        );
+    }
+
+    let l = l.to_usize().unwrap();
+    let kcopy = kcopy.to_usize().unwrap();
+    let lhalf = lhalf.to_usize().unwrap();
+
+    let theta: f64 = if l % 2 == 1 && kcopy == lhalf {
+        PI / 2.0
+    } else if (l == 2) {
+        EVEN_THETA_ZERO_1[kcopy - 1]
+    } else if (l == 3) {
+        ODD_THETA_ZERO_1[kcopy - 1]
+    } else if (l == 4) {
+        EVEN_THETA_ZERO_2[kcopy - 1]
+    } else if (l == 5) {
+        ODD_THETA_ZERO_2[kcopy - 1]
+    } else if (l == 6) {
+        EVEN_THETA_ZERO_3[kcopy - 1]
+    } else if (l == 7) {
+        ODD_THETA_ZERO_3[kcopy - 1]
+    } else if (l == 8) {
+        EVEN_THETA_ZERO_4[kcopy - 1]
+    } else if (l == 9) {
+        ODD_THETA_ZERO_4[kcopy - 1]
+    } else if (l == 10) {
+        EVEN_THETA_ZERO_5[kcopy - 1]
+    } else if (l == 11) {
+        ODD_THETA_ZERO_5[kcopy - 1]
+    } else if (l == 12) {
+        EVEN_THETA_ZERO_6[kcopy - 1]
+    } else if (l == 13) {
+        ODD_THETA_ZERO_6[kcopy - 1]
+    } else if (l == 14) {
+        EVEN_THETA_ZERO_7[kcopy - 1]
+    } else if (l == 15) {
+        ODD_THETA_ZERO_7[kcopy - 1]
+    } else if (l == 16) {
+        EVEN_THETA_ZERO_8[kcopy - 1]
+    } else if (l == 17) {
+        ODD_THETA_ZERO_8[kcopy - 1]
+    } else if (l == 18) {
+        EVEN_THETA_ZERO_9[kcopy - 1]
+    } else if (l == 19) {
+        ODD_THETA_ZERO_9[kcopy - 1]
+    } else if (l == 20) {
+        EVEN_THETA_ZERO_10[kcopy - 1]
+    } else if (l == 21) {
+        ODD_THETA_ZERO_10[kcopy - 1]
+    } else if (l == 22) {
+        EVEN_THETA_ZERO_11[kcopy - 1]
+    } else if (l == 23) {
+        ODD_THETA_ZERO_11[kcopy - 1]
+    } else if (l == 24) {
+        EVEN_THETA_ZERO_12[kcopy - 1]
+    } else if (l == 25) {
+        ODD_THETA_ZERO_12[kcopy - 1]
+    } else if (l == 26) {
+        EVEN_THETA_ZERO_13[kcopy - 1]
+    } else if (l == 27) {
+        ODD_THETA_ZERO_13[kcopy - 1]
+    } else if (l == 28) {
+        EVEN_THETA_ZERO_14[kcopy - 1]
+    } else if (l == 29) {
+        ODD_THETA_ZERO_14[kcopy - 1]
+    } else if (l == 30) {
+        EVEN_THETA_ZERO_15[kcopy - 1]
+    } else if (l == 31) {
+        ODD_THETA_ZERO_15[kcopy - 1]
+    } else if (l == 32) {
+        EVEN_THETA_ZERO_16[kcopy - 1]
+    } else if (l == 33) {
+        ODD_THETA_ZERO_16[kcopy - 1]
+    } else if (l == 34) {
+        EVEN_THETA_ZERO_17[kcopy - 1]
+    } else if (l == 35) {
+        ODD_THETA_ZERO_17[kcopy - 1]
+    } else if (l == 36) {
+        EVEN_THETA_ZERO_18[kcopy - 1]
+    } else if (l == 37) {
+        ODD_THETA_ZERO_18[kcopy - 1]
+    } else if (l == 38) {
+        EVEN_THETA_ZERO_19[kcopy - 1]
+    } else if (l == 39) {
+        ODD_THETA_ZERO_19[kcopy - 1]
+    } else if (l == 40) {
+        EVEN_THETA_ZERO_20[kcopy - 1]
+    } else if (l == 41) {
+        ODD_THETA_ZERO_20[kcopy - 1]
+    } else if (l == 42) {
+        EVEN_THETA_ZERO_21[kcopy - 1]
+    } else if (l == 43) {
+        ODD_THETA_ZERO_21[kcopy - 1]
+    } else if (l == 44) {
+        EVEN_THETA_ZERO_22[kcopy - 1]
+    } else if (l == 45) {
+        ODD_THETA_ZERO_22[kcopy - 1]
+    } else if (l == 46) {
+        EVEN_THETA_ZERO_23[kcopy - 1]
+    } else if (l == 47) {
+        ODD_THETA_ZERO_23[kcopy - 1]
+    } else if (l == 48) {
+        EVEN_THETA_ZERO_24[kcopy - 1]
+    } else if (l == 49) {
+        ODD_THETA_ZERO_24[kcopy - 1]
+    } else if (l == 50) {
+        EVEN_THETA_ZERO_25[kcopy - 1]
+    } else if (l == 51) {
+        ODD_THETA_ZERO_25[kcopy - 1]
+    } else if (l == 52) {
+        EVEN_THETA_ZERO_26[kcopy - 1]
+    } else if (l == 53) {
+        ODD_THETA_ZERO_26[kcopy - 1]
+    } else if (l == 54) {
+        EVEN_THETA_ZERO_27[kcopy - 1]
+    } else if (l == 55) {
+        ODD_THETA_ZERO_27[kcopy - 1]
+    } else if (l == 56) {
+        EVEN_THETA_ZERO_28[kcopy - 1]
+    } else if (l == 57) {
+        ODD_THETA_ZERO_28[kcopy - 1]
+    } else if (l == 58) {
+        EVEN_THETA_ZERO_29[kcopy - 1]
+    } else if (l == 59) {
+        ODD_THETA_ZERO_29[kcopy - 1]
+    } else if (l == 60) {
+        EVEN_THETA_ZERO_30[kcopy - 1]
+    } else if (l == 61) {
+        ODD_THETA_ZERO_30[kcopy - 1]
+    } else if (l == 62) {
+        EVEN_THETA_ZERO_31[kcopy - 1]
+    } else if (l == 63) {
+        ODD_THETA_ZERO_31[kcopy - 1]
+    } else if (l == 64) {
+        EVEN_THETA_ZERO_32[kcopy - 1]
+    } else if (l == 65) {
+        ODD_THETA_ZERO_32[kcopy - 1]
+    } else if (l == 66) {
+        EVEN_THETA_ZERO_33[kcopy - 1]
+    } else if (l == 67) {
+        ODD_THETA_ZERO_33[kcopy - 1]
+    } else if (l == 68) {
+        EVEN_THETA_ZERO_34[kcopy - 1]
+    } else if (l == 69) {
+        ODD_THETA_ZERO_34[kcopy - 1]
+    } else if (l == 70) {
+        EVEN_THETA_ZERO_35[kcopy - 1]
+    } else if (l == 71) {
+        ODD_THETA_ZERO_35[kcopy - 1]
+    } else if (l == 72) {
+        EVEN_THETA_ZERO_36[kcopy - 1]
+    } else if (l == 73) {
+        ODD_THETA_ZERO_36[kcopy - 1]
+    } else if (l == 74) {
+        EVEN_THETA_ZERO_37[kcopy - 1]
+    } else if (l == 75) {
+        ODD_THETA_ZERO_37[kcopy - 1]
+    } else if (l == 76) {
+        EVEN_THETA_ZERO_38[kcopy - 1]
+    } else if (l == 77) {
+        ODD_THETA_ZERO_38[kcopy - 1]
+    } else if (l == 78) {
+        EVEN_THETA_ZERO_39[kcopy - 1]
+    } else if (l == 79) {
+        ODD_THETA_ZERO_39[kcopy - 1]
+    } else if (l == 80) {
+        EVEN_THETA_ZERO_40[kcopy - 1]
+    } else if (l == 81) {
+        ODD_THETA_ZERO_40[kcopy - 1]
+    } else if (l == 82) {
+        EVEN_THETA_ZERO_41[kcopy - 1]
+    } else if (l == 83) {
+        ODD_THETA_ZERO_41[kcopy - 1]
+    } else if (l == 84) {
+        EVEN_THETA_ZERO_42[kcopy - 1]
+    } else if (l == 85) {
+        ODD_THETA_ZERO_42[kcopy - 1]
+    } else if (l == 86) {
+        EVEN_THETA_ZERO_43[kcopy - 1]
+    } else if (l == 87) {
+        ODD_THETA_ZERO_43[kcopy - 1]
+    } else if (l == 88) {
+        EVEN_THETA_ZERO_44[kcopy - 1]
+    } else if (l == 89) {
+        ODD_THETA_ZERO_44[kcopy - 1]
+    } else if (l == 90) {
+        EVEN_THETA_ZERO_45[kcopy - 1]
+    } else if (l == 91) {
+        ODD_THETA_ZERO_45[kcopy - 1]
+    } else if (l == 92) {
+        EVEN_THETA_ZERO_46[kcopy - 1]
+    } else if (l == 93) {
+        ODD_THETA_ZERO_46[kcopy - 1]
+    } else if (l == 94) {
+        EVEN_THETA_ZERO_47[kcopy - 1]
+    } else if (l == 95) {
+        ODD_THETA_ZERO_47[kcopy - 1]
+    } else if (l == 96) {
+        EVEN_THETA_ZERO_48[kcopy - 1]
+    } else if (l == 97) {
+        ODD_THETA_ZERO_48[kcopy - 1]
+    } else if (l == 98) {
+        EVEN_THETA_ZERO_49[kcopy - 1]
+    } else if (l == 99) {
+        ODD_THETA_ZERO_49[kcopy - 1]
+    } else {
+        EVEN_THETA_ZERO_50[kcopy - 1]
+    };
 }
