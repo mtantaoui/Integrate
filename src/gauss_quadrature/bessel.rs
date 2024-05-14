@@ -2,12 +2,12 @@ use std::f64::consts::PI;
 
 use num::{Float, ToPrimitive, Unsigned};
 
-/// Computes the kth zero of the $J_0(x)$ Bessel function.
+/// Computes the $k^{th}$ zero of the $J_0(x)$ Bessel function.
 ///
 /// # Notes
 ///
 /// Note that the first 20 zeros are tabulated.  After that, they are computed
-pub fn bessel_j0<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
+pub fn bessel_j0_zeros<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
     const J_Z: [f64; 20] = [
         2.404_825_557_695_773,
         5.520_078_110_286_311,
@@ -35,7 +35,7 @@ pub fn bessel_j0<F: Float, U: Unsigned + ToPrimitive>(k: U) -> f64 {
     let r2: f64;
     let mut z: f64;
 
-    if J_Z.len() > 20 {
+    if J_Z.len() < k.to_usize().unwrap() {
         z = PI * (k.to_f64().unwrap() - 0.25E+00);
         r = 1.0E+00 / z;
         r2 = r * r;
@@ -60,6 +60,7 @@ fn mcmahon_expansion(z: f64, r: f64, r2: f64) -> f64 {
                                     + r2 * (-8.493_535_802_991_488E5
                                         + r2 * 5.092_254_624_022_268E7))))))))
 }
+
 /// TODO: Document
 fn hankel_expansion(x: f64, x2: f64) -> f64 {
     x * (2.026_423_672_846_755_5E-1
