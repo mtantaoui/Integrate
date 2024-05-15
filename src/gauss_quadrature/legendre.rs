@@ -1,15 +1,66 @@
-/*
-  Original C++ code implemented by Ignace Bogaert
-  The main features of this software are:
-  - Speed: due to the simple formulas and the O(1) complexity computation of
-    individual Gauss-Legendre quadrature nodes and weights. This makes it
-    compatible with parallel computing paradigms.
-  - Accuracy: the error on the nodes and weights is within a few ulps.
+//! Gauss-Legendre quadrature formulas are used to integrate functions $f(x)$ over a closed and bounded interval $\[a, b\]$.
+//!
+//! Let $\int_{a}^{b} f(x) dx$  denote the integral of $f(x)$ from $a$ to $b$. After making the change of variable $t = \frac{2(x-a)}{b-a} - 1$, then
+//!
+//! $$ \int_{a}^{b} f(x) dx = \frac{b-a}{2} \int_{-1}^{1} f( \frac{(b-a)t + (b+a)}{2} ) dt $$
+//!
+//! with respect to the inner product
+//! $$\langle f,g \rangle = \int_{-1}^{1} f(x) * g(x) * w(x) dx.$$
+//!
+//! The Legendre polynomials
+//! $$ P_n(x) = \frac{1}{2^n n! }    \frac{\partial^{n} (x^2 - 1)^n}{\partial x^n} \quad \text{for} \quad n>0  $$
+//!
+//! and $P_0(x) = 1$ form an orthogonal family of polynomials with weight function $w(x) = 1$ on the interval $\[-1,1\]$.
+//!
+//!
+//! The $n$-point Gauss-Legendre quadrature formula, $GL_n ( f )$, for approximating the integral of $f(x)$ over $\[-1,1\]$, is given by
+//!
+//! $$ GL_n ( f ) = A_1 f(x_1) + ··· + A_n f(x_n) $$
+//!
+//! where $x_i$ , $i = 1,...,n$, are the zeros of $P_n$ and
+//!
+//! $$ A_i = 2 * \frac{1 - x_i^2}{n^2 P_{n-1} (x_i)^2} \quad i = 1,...,n$$
+//!
+//! The truncation error is
+//!
+//! $$ \int_{-1}^{1} f(x) dx - GL_n(f) = K * \frac{ f^{(2n)}(c) }{2n!} $$
+//!
+//! where $K$ is a constant, and $c$ is some unknown number $-1 < c < 1$.
+//!
+//! The constant $K$ is easily determined from $K = \int_{-1}^{1}  x^{2n}  dx - GL_n (x^{2n} )$.
+//!
+//! Generalizing, in order to integrate $f(x)$ over $\[a,b\]$, the $n$-point Gauss-Legendre quadrature formula, $GL_n ( f(x), a, b )$, is given by
+//!
+//! $$ GL_n ( f(x), a, b ) = A_1^' f(x_1^') + ··· + A_n^' f(x_n^') \quad \text{where} \quad x_i^' = \frac{b-a}{2} * x_i + \frac{b+a}{2} $$
+//!
+//! $x_i$ $i = 1,...,n$, are the zeros of $P_n$ and
+//!
+//! $$ A_i^' = (b-a) \frac{1 - x_i^2}{n^2 P_{n-1}(x_i)^2} =  \frac{b-a}{2} * A_i, \quad i = 1,...,n$$
+//!
+//! The truncation error is
+//!
+//! $$ \int_{a}^{b} f(x) dx - GL_n(f) = K * \frac{ f^{(2n)}(c) }{2n!} $$
+//!
+//! where $K$ is a constant, and $c$ is some unknown number $a < c < b$.
+//!
+//! # Reference:
+//!
+//! Original C++ code implemented by Ignace Bogaert
+//! The main features of this software are:
+//! - Speed: due to the simple formulas and the O(1) complexity computation of
+//! individual Gauss-Legendre quadrature nodes and weights. This makes it
+//! compatible with parallel computing paradigms.
+//! - Accuracy: the error on the nodes and weights is within a few ulps.
+//!
+//! ```
+//!  Ignace Bogaert,
+//!  Iteration-free computation of Gauss-Legendre quadrature nodes and weights,
+//!  SIAM Journal on Scientific Computing,
+//!  Volume 36, Number 3, 2014, pages A1008-1026.
+//! ```
 
-*/
 // Tabulated nodes and weights
 // The required theta values for the Legendre nodes for l <= 100
-
 extern crate test;
 
 use std::{cmp::Ordering, f64::consts::PI};
@@ -5863,12 +5914,12 @@ pub fn glpairs<U: Unsigned + ToPrimitive + PartialOrd + Copy>(n: U, k: U) -> (f6
 
     // get the bessel zero
     let w = 1.0 / (n.to_f64().unwrap() + 0.5);
-    let nu = bessel_j0_zeros::<f64, U>(kcopy);
+    let nu = bessel_j0_zeros::<U>(kcopy);
     let mut theta = w * nu;
     let y = theta * theta;
 
     // get the asymptotic BesselJ(1, nu) squared
-    let b = bessel_j1_squared::<f64, U>(kcopy);
+    let b = bessel_j1_squared::<U>(kcopy);
 
     // get chebyshev interpolants for nodes
     let sf1t = (((((-1.290_529_962_742_805_1E-12 * y + 2.407_246_858_643_301_3E-10) * y
@@ -6551,7 +6602,7 @@ mod tests {
     fn test_bessel_j0() {
         for k in 1..100_usize {
             // computing root using method cited in Ignace Bogaert paper
-            let x: f64 = bessel_j0_zeros::<f64, usize>(k);
+            let x: f64 = bessel_j0_zeros::<usize>(k);
 
             // reference value
             let j0x: f64 = BESSEL_J0_FIRST_100_ZEROS[k - 1];
@@ -6573,7 +6624,7 @@ mod tests {
     fn test_bessel_j1_squared() {
         for k in 1..100_usize {
             // computing bessel J0 root using method cited in Ignace Bogaert paper
-            let x: f64 = bessel_j1_squared::<f64, usize>(k);
+            let x: f64 = bessel_j1_squared(k);
 
             // reference value
             let j1 = BESSEL_J1_FIRST_100[k - 1];
