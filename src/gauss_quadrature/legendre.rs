@@ -45,16 +45,28 @@
 //!
 //! ## References:
 //!
-//! Original C++ code implemented by Ignace Bogaert
+//! Original C++ code implemented by **Ignace Bogaert**.
+//!
 //! The main features of this software are:
 //! - Speed: due to the simple formulas and the O(1) complexity computation of
-//! individual Gauss-Legendre quadrature nodes and weights.
-//! This makes it compatible with parallel computing paradigms.
+//!   individual Gauss-Legendre quadrature nodes and weights.
+//!   This makes it compatible with parallel computing paradigms.
 //!
 //! - Accuracy: the error on the nodes and weights is within a few ulps.
 //!
-/// CACA
-#[doc = include_str!("../../references/legendre.md")] // Tabulated nodes and weights
+//! ### Ignace Bogaert's Paper:
+//! ```ignore
+//! Ignace Bogaert,
+//! Iteration-free computation of Gauss-Legendre quadrature nodes and weights,
+//! SIAM Journal on Scientific Computing,
+//! Volume 36,
+//! Number 3,
+//! 2014,
+//! pages A1008-1026.
+//! ```
+//!
+//! for more details, here is a [link](https://www.cfm.brown.edu/faculty/gk/APMA2560/Handouts/GL_quad_Bogaert_2014.pdf) to the article.
+
 // The required theta values for the Legendre nodes for l <= 100
 extern crate test;
 
