@@ -1,0 +1,1 @@
+[Ignace Bogaert, Iteration-free computation of Gauss-Legendre quadrature nodes and weights, SIAM Journal on Scientific Computing, Volume 36, Number 3, 2014, pages A1008-1026.]: (https://www.cfm.brown.edu/faculty/gk/APMA2560/Handouts/GL_quad_Bogaert_2014.pdf)

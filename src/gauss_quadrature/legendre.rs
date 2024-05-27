@@ -43,7 +43,7 @@
 //!
 //! where $K$ is a constant, and $c$ is some unknown number $a < c < b$.
 //!
-//! # Reference:
+//! ## References:
 //!
 //! Original C++ code implemented by Ignace Bogaert
 //! The main features of this software are:
@@ -52,14 +52,8 @@
 //! compatible with parallel computing paradigms.
 //! - Accuracy: the error on the nodes and weights is within a few ulps.
 //!
-//! ```
-//!  Ignace Bogaert,
-//!  Iteration-free computation of Gauss-Legendre quadrature nodes and weights,
-//!  SIAM Journal on Scientific Computing,
-//!  Volume 36, Number 3, 2014, pages A1008-1026.
-//! ```
-
-// Tabulated nodes and weights
+/// CACA
+#[doc = include_str!("../../references/legendre.md")] // Tabulated nodes and weights
 // The required theta values for the Legendre nodes for l <= 100
 extern crate test;
 
