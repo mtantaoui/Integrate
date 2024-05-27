@@ -48,8 +48,9 @@
 //! Original C++ code implemented by Ignace Bogaert
 //! The main features of this software are:
 //! - Speed: due to the simple formulas and the O(1) complexity computation of
-//! individual Gauss-Legendre quadrature nodes and weights. This makes it
-//! compatible with parallel computing paradigms.
+//! individual Gauss-Legendre quadrature nodes and weights.
+//! This makes it compatible with parallel computing paradigms.
+//!
 //! - Accuracy: the error on the nodes and weights is within a few ulps.
 //!
 /// CACA
