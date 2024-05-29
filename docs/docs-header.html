@@ -50,4 +50,20 @@
       ],
     });
   });
+  document.addEventListener("DOMContentLoaded", function () {
+    for (var e of document.getElementsByClassName("language-math")) {
+      katex.render(e.innerText, e, { displayMode: true });
+    }
+    for (var e of document.getElementsByTagName("code")) {
+      if (e.classList.contains("language-math")) continue;
+      var n = e.nextSibling;
+      var p = e.previousSibling;
+      if (n && p && /^\\$/.test(n.data) && /\\$$/.test(p.data)) {
+        katex.render(e.innerText, e);
+        n.splitText(1);
+        n.remove();
+        p.splitText(p.data.length - 1).remove();
+      }
+    }
+  });
 </script>

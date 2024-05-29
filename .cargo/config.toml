@@ -1,2 +1,2 @@
 [build]
-rustdocflags = [ "--html-in-header", "./src/docs-header.html" ]
+rustdocflags = [ "--html-in-header", "./docs/docs-header.html" ]
