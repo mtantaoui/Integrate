@@ -1,5 +1,4 @@
 use integrator::{
-    gauss_quadrature::legendre::glpairs,
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
@@ -59,8 +58,6 @@ fn romberg() {
 }
 
 fn main() {
-    glpairs(1_usize, 1_usize);
-
     romberg();
     rectangle();
     trapezoidal();

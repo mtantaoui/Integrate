@@ -5901,15 +5901,16 @@ const CL: [f64; 101] = [
 ];
 
 /// Computes the $k^{th}$ pair of an $N$-point Gauss-Legendre rule.
-/// * `l` - number of points in the given rule $l >= 1$.
-/// * `k` - index of the point to be returned $1<= k <= l$
+/// * `l` - number of points in the given rule $l \geq 1$.
+/// * `k` - index of the point to be returned $1 \leq k \leq l$.
+///
+/// Returns the $\theta$ coordinate, weight, and $x$ coordinate of the point.
 ///
 /// # Discussion
 ///
-/// $\theta$ values of the zeros are in $\[0,pi\]$, and monotonically increasing.
+/// $\theta$ values of the zeros are in $\[0,\pi\]$, and monotonically increasing.
 ///
-/// Returns the $\theta$ coordinate, weight, and $x$ coordinate of the point.
-pub fn glpair<U: Unsigned + PartialOrd + ToPrimitive + Copy>(n: U, k: U) -> (f64, f64, f64) {
+fn glpair<U: Unsigned + PartialOrd + ToPrimitive + Copy>(n: U, k: U) -> (f64, f64, f64) {
     assert!(k <= n);
     assert!(zero::<U>() < k);
 
@@ -5921,15 +5922,16 @@ pub fn glpair<U: Unsigned + PartialOrd + ToPrimitive + Copy>(n: U, k: U) -> (f64
 }
 
 /// Computes the $k^{th}$ pair of an $N$-point Gauss-Legendre rule.
-/// * `l` - number of points in the given rule $l >= 1$.
-/// * `k` - index of the point to be returned $1<= k <= l$
+/// * `l` - number of points in the given rule $l \geq 1$.
+/// * `k` - index of the point to be returned $1 \leq k \leq l$.
+///
+/// Returns the $\theta$ coordinate, weight, and $x$ coordinate of the point.
 ///
 /// # Discussion
 ///
-/// $\theta$ values of the zeros are in $\[0,pi\]$, and monotonically increasing.
+/// $\theta$ values of the zeros are in $\[0, \pi \]$, and monotonically increasing.
 ///
-/// Returns the $\theta$ coordinate, weight, and $x$ coordinate of the point.
-pub fn glpairs<U: Unsigned + ToPrimitive + PartialOrd + Copy>(n: U, k: U) -> (f64, f64, f64) {
+fn glpairs<U: Unsigned + ToPrimitive + PartialOrd + Copy>(n: U, k: U) -> (f64, f64, f64) {
     if n < one::<U>() {
         panic!("GLPAIRS - FATAL ERROR \n Illegal value of N");
     }
@@ -6055,18 +6057,16 @@ pub fn glpairs<U: Unsigned + ToPrimitive + PartialOrd + Copy>(n: U, k: U) -> (f6
 }
 
 /// Computes the $k^{th}$ pair of an $N$-point Guass-Legendre rule.
-/// * `l` - number of points in the given rule $l >= 1$.
-/// * `k` - index of the point to be returned $1<= k <= l$
+/// * `l` - number of points in the given rule $l \geq 1$.
+/// * `k` - index of the point to be returned $1 \leq k \leq l$.
+///
+/// Returns the $\theta$ coordinate, weight, and $x$ coordinate of the point.
 ///
 /// Discussion:
 ///
-/// The data has been tabulated, nad is only avalable for $N<=100$
+/// The data has been tabulated, and is only avalable for $N\leq 100$
 ///
-/// Returns the $\theta$ coordinate, weight, and $x$ coordinate of the point.
-pub fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(
-    l: U,
-    k: U,
-) -> (f64, f64, f64) {
+fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(l: U, k: U) -> (f64, f64, f64) {
     if l < one() || 100 < l.to_usize().unwrap() {
         panic!("GLPAIRTABULATED - Fatal error!\nIllegal value of L.");
     }
@@ -6129,7 +6129,7 @@ pub fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(
 ///
 /// # Note
 ///  The X coordinate is simply $\cos(\theta)$
-pub fn legendre_theta<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k: U) -> f64 {
+fn legendre_theta<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k: U) -> f64 {
     if l < one() || 100 < l.to_usize().unwrap() {
         panic!("Legendre Theta - Fatal error!\nIllegal value of L.\n 1 <= L <= 100 is required.");
     }
@@ -6280,7 +6280,7 @@ pub fn legendre_theta<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U,
 /// Returns the weights for the $k$-th weight in an $l$-point of Gauss-Legendre formula.
 /// * `l` - number of points in the given rule $l >= 1$.
 /// * `k` - index of the point to be returned $1<= k <= l$
-pub fn legendre_weights<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k: U) -> f64 {
+fn legendre_weights<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k: U) -> f64 {
     if l < one() || 100 < l.to_usize().unwrap() {
         panic!(
             "Legendre weights - Fatal error!\nIllegal value of L.\n 1 <= L <= 100 is required.\n"
@@ -6433,6 +6433,7 @@ mod tests {
     use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
     use super::*;
+    use test::{black_box, Bencher};
 
     const EPSILON: f64 = 10e-5;
 
@@ -6722,6 +6723,28 @@ mod tests {
 
             l *= 10;
         }
+    }
+
+    #[bench]
+    fn bench_glpair(bencher: &mut Bencher) {
+        // number of nodes used in Gauss-Legendre integral computation
+        let l: usize = 1_000;
+        let exact = -1.0;
+
+        println!("Integral Exact Value: {}", exact);
+
+        bencher.iter(|| {
+            black_box(
+                // Gauss-Legendre rule using glpair function
+                (1..=l)
+                    .into_par_iter()
+                    .map(|k| {
+                        let (_, weight, x) = glpair(l, k);
+                        0.5 * weight * (0.5 * (x + 1.0)).ln()
+                    })
+                    .sum::<f64>(),
+            );
+        })
     }
 
     // Test the numerical integration of cos(1000 x) over the range [-1,1]
