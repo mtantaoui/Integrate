@@ -2,44 +2,66 @@
 //!
 //! Let $\int_{a}^{b} f(x) dx$  denote the integral of $f(x)$ from $a$ to $b$. After making the change of variable $t = \frac{2(x-a)}{b-a} - 1$, then
 //!
-//! $$ \int_{a}^{b} f(x) dx = \frac{b-a}{2} \int_{-1}^{1} f( \frac{(b-a)t + (b+a)}{2} ) dt $$
+//! ```math
+//! \int_{a}^{b} f(x) dx = \frac{b-a}{2} \int_{-1}^{1} f( \frac{t(b-a) + (b+a)}{2} ) dt
+//! ```
 //!
 //! with respect to the inner product
-//! $$\langle f,g \rangle = \int_{-1}^{1} f(x) * g(x) * w(x) dx.$$
 //!
-//! The Legendre polynomials
-//! $$ P_n(x) = \frac{1}{2^n n! }    \frac{\partial^{n} (x^2 - 1)^n}{\partial x^n} \quad \text{for} \quad n>0  $$
+//! ```math
+//!  \langle f,g \rangle = \int_{-1}^{1} f(x) * g(x) * w(x) dx
+//! ```
+//!
+//!
+//! The Legendre polynomials are defined by
+//!
+//! ```math
+//! P_n(x) = \frac{1}{2^n n! }    \frac{\partial^{n} (x^2 - 1)^n}{\partial x^n} \quad \text{for} \quad n>0
+//! ```
 //!
 //! and $P_0(x) = 1$ form an orthogonal family of polynomials with weight function $w(x) = 1$ on the interval $\[-1,1\]$.
 //!
 //!
 //! The $n$-point Gauss-Legendre quadrature formula, $GL_n ( f )$, for approximating the integral of $f(x)$ over $\[-1,1\]$, is given by
 //!
-//! $$ GL_n ( f ) = A_1 f(x_1) + ··· + A_n f(x_n) $$
+//! ```math
+//! GL_n ( f ) = A_1 f(x_1) + ··· + A_n f(x_n)
+//! ```
 //!
 //! where $x_i$ , $i = 1,...,n$, are the zeros of $P_n$ and
 //!
-//! $$ A_i = 2 * \frac{1 - x_i^2}{n^2 P_{n-1} (x_i)^2} \quad i = 1,...,n$$
+//! ```math
+//! A_i = 2 * \frac{1 - x_i^2}{n^2 P_{n-1} (x_i)^2} \quad for \quad i = 1,...,n
+//! ```
 //!
 //! The truncation error is
 //!
-//! $$ \int_{-1}^{1} f(x) dx - GL_n(f) = K * \frac{ f^{(2n)}(c) }{2n!} $$
+//! ```math
+//! \int_{-1}^{1} f(x) dx - GL_n(f) = K * \frac{ f^{(2n)}(c) }{2n!}
+//! ```
 //!
-//! where $K$ is a constant, and $c$ is some unknown number $-1 < c < 1$.
-//!
-//! The constant $K$ is easily determined from $K = \int_{-1}^{1}  x^{2n}  dx - GL_n (x^{2n} )$.
+//! where $K$ is a constant, and $c$ is some unknown number $-1 < c < 1$. The constant $K$ is easily determined from
+//! ```math
+//! K = \int_{-1}^{1}  x^{2n}  dx - GL_n (x^{2n} )
+//! ```
 //!
 //! Generalizing, in order to integrate $f(x)$ over $\[a,b\]$, the $n$-point Gauss-Legendre quadrature formula, $GL_n ( f(x), a, b )$, is given by
 //!
-//! $$ GL_n ( f(x), a, b ) = A_1^' f(x_1^') + ··· + A_n^' f(x_n^') \quad \text{where} \quad x_i^' = \frac{b-a}{2} * x_i + \frac{b+a}{2} $$
+//! ```math
+//! GL_n ( f(x), a, b ) = A_1^\prime f(x_1^\prime) + ··· + A_n^\prime f(x_n^\prime) \quad \text{where} \quad x_i^\prime = \frac{b-a}{2} * x_i + \frac{b+a}{2}
+//! ```
 //!
-//! $x_i$ $i = 1,...,n$, are the zeros of $P_n$ and
+//! $x_i$, $i = 1,...,n$, are the zeros of $P_n$ and
 //!
-//! $$ A_i^' = (b-a) \frac{1 - x_i^2}{n^2 P_{n-1}(x_i)^2} =  \frac{b-a}{2} * A_i, \quad i = 1,...,n$$
+//! ```math
+//! A_i^\prime = (b-a) \frac{1 - x_i^2}{n^2 P_{n-1}(x_i)^2} =  \frac{b-a}{2} * A_i, \quad i = 1,...,n
+//! ```
 //!
 //! The truncation error is
 //!
-//! $$ \int_{a}^{b} f(x) dx - GL_n(f) = K * \frac{ f^{(2n)}(c) }{2n!} $$
+//! ```math
+//! \int_{a}^{b} f(x) dx - GL_n(f) = K * \frac{ f^{(2n)}(c) }{2n!}
+//! ```
 //!
 //! where $K$ is a constant, and $c$ is some unknown number $a < c < b$.
 //!
@@ -48,31 +70,28 @@
 //! Original C++ code implemented by **Ignace Bogaert**.
 //!
 //! The main features of this software are:
-//! - Speed: due to the simple formulas and the O(1) complexity computation of
+//! - Speed: due to the simple formulas and the $O(1)$ complexity computation of
 //!   individual Gauss-Legendre quadrature nodes and weights.
 //!   This makes it compatible with parallel computing paradigms.
 //!
 //! - Accuracy: the error on the nodes and weights is within a few ulps.
 //!
 //! ### Ignace Bogaert's Paper:
-//! ```ignore
-//! Ignace Bogaert,
-//! Iteration-free computation of Gauss-Legendre quadrature nodes and weights,
-//! SIAM Journal on Scientific Computing,
-//! Volume 36,
-//! Number 3,
-//! 2014,
-//! pages A1008-1026.
-//! ```
 //!
+//! ```math
+//! [1]: \text{Ignace Bogaert,}
+//! \textit{ Iteration-free computation of Gauss-Legendre quadrature nodes and weights,} \newline
+//! \text{ SIAM Journal on Scientific Computing, Volume 36, Number 3, 2014, pages A1008-1026.}
+//! ```
 //! for more details, here is a [link](https://www.cfm.brown.edu/faculty/gk/APMA2560/Handouts/GL_quad_Bogaert_2014.pdf) to the article.
+//!
 
 // The required theta values for the Legendre nodes for l <= 100
 extern crate test;
 
 use std::{cmp::Ordering, f64::consts::PI};
 
-use num::{one, zero, ToPrimitive, Unsigned};
+use num::{one, zero, Integer, ToPrimitive, Unsigned};
 
 use super::bessel::{bessel_j0_zeros, bessel_j1_squared};
 
@@ -5881,13 +5900,16 @@ const CL: [f64; 101] = [
     7.958_923_738_717_877E-2,
 ];
 
-/// Computes the $K^{th}$ pair of an $N$-point Gauss-Legendre rule.
+/// Computes the $k^{th}$ pair of an $N$-point Gauss-Legendre rule.
+/// * `l` - number of points in the given rule $l >= 1$.
+/// * `k` - index of the point to be returned $1<= k <= l$
 ///
 /// # Discussion
 ///
 /// $\theta$ values of the zeros are in $\[0,pi\]$, and monotonically increasing.
 ///
-fn glpair<U: Unsigned + PartialOrd + ToPrimitive + Copy>(n: U, k: U) -> (f64, f64, f64) {
+/// Returns the $\theta$ coordinate, weight, and $x$ coordinate of the point.
+pub fn glpair<U: Unsigned + PartialOrd + ToPrimitive + Copy>(n: U, k: U) -> (f64, f64, f64) {
     assert!(k <= n);
     assert!(zero::<U>() < k);
 
@@ -5898,12 +5920,15 @@ fn glpair<U: Unsigned + PartialOrd + ToPrimitive + Copy>(n: U, k: U) -> (f64, f6
     }
 }
 
-/// Computes the $K^{th}$ pair of an $N$-point Gauss-Legendre rule.
+/// Computes the $k^{th}$ pair of an $N$-point Gauss-Legendre rule.
+/// * `l` - number of points in the given rule $l >= 1$.
+/// * `k` - index of the point to be returned $1<= k <= l$
 ///
 /// # Discussion
 ///
 /// $\theta$ values of the zeros are in $\[0,pi\]$, and monotonically increasing.
 ///
+/// Returns the $\theta$ coordinate, weight, and $x$ coordinate of the point.
 pub fn glpairs<U: Unsigned + ToPrimitive + PartialOrd + Copy>(n: U, k: U) -> (f64, f64, f64) {
     if n < one::<U>() {
         panic!("GLPAIRS - FATAL ERROR \n Illegal value of N");
@@ -6029,7 +6054,15 @@ pub fn glpairs<U: Unsigned + ToPrimitive + PartialOrd + Copy>(n: U, k: U) -> (f6
     (theta, weight, x)
 }
 
-// TODO: Document and comment
+/// Computes the $k^{th}$ pair of an $N$-point Guass-Legendre rule.
+/// * `l` - number of points in the given rule $l >= 1$.
+/// * `k` - index of the point to be returned $1<= k <= l$
+///
+/// Discussion:
+///
+/// The data has been tabulated, nad is only avalable for $N<=100$
+///
+/// Returns the $\theta$ coordinate, weight, and $x$ coordinate of the point.
 pub fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(
     l: U,
     k: U,
@@ -6050,7 +6083,8 @@ pub fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(
     let l = l.to_usize().unwrap();
 
     // odd legendre degree
-    if l % 2 == 1 {
+
+    if l.is_odd() {
         let l2 = (l - 1) / 2;
 
         match kcopy.cmp(&l2) {
@@ -6089,8 +6123,13 @@ pub fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(
     (theta, weight, x)
 }
 
-/// TODO : document and comments
-fn legendre_theta<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k: U) -> f64 {
+/// Returns the $k$-th $\theta$ coordinate in an $l$-point rule.
+/// * `l` - number of points in the given rule $l >= 1$.
+/// * `k` - index of the point to be returned $1<= k <= l$
+///
+/// # Note
+///  The X coordinate is simply $\cos(\theta)$
+pub fn legendre_theta<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k: U) -> f64 {
     if l < one() || 100 < l.to_usize().unwrap() {
         panic!("Legendre Theta - Fatal error!\nIllegal value of L.\n 1 <= L <= 100 is required.");
     }
@@ -6238,8 +6277,10 @@ fn legendre_theta<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k: 
     theta
 }
 
-/// TODO : document and comments
-fn legendre_weights<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k: U) -> f64 {
+/// Returns the weights for the $k$-th weight in an $l$-point of Gauss-Legendre formula.
+/// * `l` - number of points in the given rule $l >= 1$.
+/// * `k` - index of the point to be returned $1<= k <= l$
+pub fn legendre_weights<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k: U) -> f64 {
     if l < one() || 100 < l.to_usize().unwrap() {
         panic!(
             "Legendre weights - Fatal error!\nIllegal value of L.\n 1 <= L <= 100 is required.\n"

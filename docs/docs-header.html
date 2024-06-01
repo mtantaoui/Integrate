@@ -1,43 +1,16 @@
-<!-- <link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css"
-  integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y"
-  crossorigin="anonymous"
-/>
-<script
-  src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js"
-  integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx"
-  crossorigin="anonymous"
-></script>
-<script
-  src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js"
-  integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe"
-  crossorigin="anonymous"
-></script> -->
-
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css"
-  integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww"
-  crossorigin="anonymous"
-/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css"
+  integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww" crossorigin="anonymous" />
 
 <!-- The loading of KaTeX is deferred to speed up page rendering -->
-<script
-  defer
-  src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"
-  integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd"
-  crossorigin="anonymous"
-></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"
+  integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd" crossorigin="anonymous"></script>
 
 <!-- To automatically render math in text elements, include the auto-render extension: -->
-<script
-  defer
-  src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
-  integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk"
-  crossorigin="anonymous"
-  onload="renderMathInElement(document.body);"
-></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
+  integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"
+  onload="renderMathInElement(document.body);"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bibtex-js/2.2.4/bibtex.js"></script>
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
@@ -50,6 +23,9 @@
       ],
     });
   });
+
+
+
   document.addEventListener("DOMContentLoaded", function () {
     for (var e of document.getElementsByClassName("language-math")) {
       katex.render(e.innerText, e, { displayMode: true });
@@ -58,7 +34,7 @@
       if (e.classList.contains("language-math")) continue;
       var n = e.nextSibling;
       var p = e.previousSibling;
-      if (n && p && /^\\$/.test(n.data) && /\\$$/.test(p.data)) {
+      if (n && p && /^$/.test(n.data) && /$$/.test(p.data)) {
         katex.render(e.innerText, e);
         n.splitText(1);
         n.remove();

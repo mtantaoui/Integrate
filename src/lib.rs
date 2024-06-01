@@ -8,12 +8,11 @@
 //! \end{equation}
 //! ```
 //! ```math
-//! \begin{matrix}
+//! \begin{pmatrix}
 //! 1 & 2 & 3\\
 //! a & b & c
-//! \end{matrix}
+//! \end{pmatrix}
 //! ```
-//!
 //!
 //! Numerical integration is concerned with developing algorithms to
 //! approximate the integral of a function $f(x)$. The most commonly used algorithms
