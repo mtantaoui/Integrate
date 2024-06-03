@@ -12,15 +12,13 @@
 //!  \langle f,g \rangle = \int_{-1}^{1} f(x) * g(x) * w(x) dx
 //! ```
 //!
-//!
 //! The Legendre polynomials are defined by
 //!
 //! ```math
 //! P_n(x) = \frac{1}{2^n n! }    \frac{\partial^{n} (x^2 - 1)^n}{\partial x^n} \quad \text{for} \quad n>0
 //! ```
 //!
-//! and $P_0(x) = 1$ form an orthogonal family of polynomials with weight function $w(x) = 1$ on the interval $\[-1,1\]$.
-//!
+//! and $P_0(x) = 1$, form an orthogonal family of polynomials with weight function $w(x) = 1$ on the interval $\[-1,1\]$.
 //!
 //! The $n$-point Gauss-Legendre quadrature formula, $GL_n ( f )$, for approximating the integral of $f(x)$ over $\[-1,1\]$, is given by
 //!
@@ -40,7 +38,8 @@
 //! \int_{-1}^{1} f(x) dx - GL_n(f) = K * \frac{ f^{(2n)}(c) }{2n!}
 //! ```
 //!
-//! where $K$ is a constant, and $c$ is some unknown number $-1 < c < 1$. The constant $K$ is easily determined from
+//! where $K$ is a constant, and $c$ is some unknown number that verifies $-1 < c < 1$. The constant $K$ is easily determined from
+//!
 //! ```math
 //! K = \int_{-1}^{1}  x^{2n}  dx - GL_n (x^{2n} )
 //! ```
@@ -60,10 +59,10 @@
 //! The truncation error is
 //!
 //! ```math
-//! \int_{a}^{b} f(x) dx - GL_n(f) = K * \frac{ f^{(2n)}(c) }{2n!}
+//! \int_{a}^{b} f(x) dx - GL_n(f, a, b) = K * \frac{ f^{(2n)}(c) }{2n!}
 //! ```
 //!
-//! where $K$ is a constant, and $c$ is some unknown number $a < c < b$.
+//! where $K$ is a constant, and $c$ is some unknown number that verifies $a < c < b$.
 //!
 //! ## References:
 //!
@@ -91,7 +90,7 @@ extern crate test;
 
 use std::{cmp::Ordering, f64::consts::PI};
 
-use num::{one, zero, Integer, ToPrimitive, Unsigned};
+use num::{one, zero, Float, Integer, ToPrimitive, Unsigned};
 
 use super::bessel::{bessel_j0_zeros, bessel_j1_squared};
 
@@ -6423,6 +6422,28 @@ fn legendre_weights<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k
     };
 
     weight
+}
+
+/// Approximate the integral of $f(x)$ from $a$ to $b$ using the n point Gauss-Legendre integral approximation formula.
+/// * `a` - lower limit of integration.
+/// * `b` - upper limit of integration.
+/// * `n` - number of points to use for Gauss-Legendre integral approxiamtion formula.
+///
+/// # Examples
+///
+/// Descriptive of the example here.
+///
+/// ```rust
+///
+/// ```
+pub fn legendre_rule<F1: Float + Sync, F2: Float, U: Unsigned + ToPrimitive + Copy + PartialOrd>(
+    f: fn(F1) -> F2,
+    a: F1,
+    b: F1,
+    n: U,
+) -> f64 {
+    glpair(n, n);
+    todo!()
 }
 
 #[cfg(test)]

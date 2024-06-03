@@ -9,40 +9,59 @@
 //! The Euler-Maclaurin summation formula relates the integral of a function $f(x)$ over
 //! a closed and bounded interval $\[a,b\]$ , $\int_{a}^{b} f(x) dx$, and the composite trapezoidal rule,
 //!
-//! $$ T_h(f) = h \[ f(a)/2 + f(a+h) + ··· + f(b-h) + f(b)/2 \]$$
+//! ```math
+//! T_h (f) = h  \left[ \frac{f(a)}{2} + f(a+h) + ··· + f(b-h) + \frac{f(b)}{2} \right]
+//! ```
 //!
 //! by
 //!
-//! $$ T_h(f) = \int_{a}^{b} f(x) dx + \frac{h^2}{12}\[f'(b) - f'(a)\] - (\frac{h^4}{720})[f^{(3)}(b) - f^{(3)}(a)]$$
-//! $$ + ... + K h^{2p-2} \[f^{(2p-3)}(b) - f^{(2p-3)(a)}\] + O(h^{2p})$$
+//! ```math
+//! \begin{split}
+//! T_h(f) &= \int_{a}^{b} f(x) dx + \left(\frac{h^2}{12}\right) \left[f^\prime(b) - f^\prime(a)\right] - \left(\frac{h^4}{720}\right) \left[f^{(3)}(b) - f^{(3)}(a) \right] \\
+//! &+ ... + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)(a)} \right] + O(h^{2p})
+//! \end{split}
+//! ```
 //!
-//! where $f'$, $f^{(3)}$, and $f^{(2p-3)}$ are the first, third and $(p-3)rd$ derivatives
+//!
+//! where $f^\prime$, $f^{(3)}$, and $f^{(2p-3)}$ are the first, third and $(p-3)rd$ derivatives
 //! of $f$ and $K$ is a constant.
 //!
 //! If the subinterval length is halved, then
 //!
-//! $$ T_{\frac{h}{2}}(f) = \int_{a}^{b} f(x) dx + \frac{h^2}{4·12}\[f'(b) - f'(a)\] - (\frac{h^4}{16·720})[f^{(3)}(b) - f^{(3)}(a)]$$
-//! $$ + ... + K (\frac{h}{2})^{2p-2} \[f^{(2p-3)}(b) - f^{(2p-3)(a)}\] + O(h^{2p})$$
+//! ```math
+//! \begin{split}
+//! T_{\frac{h}{2}}(f) &= \int_{a}^{b} f(x) dx + \frac{h^2}{4·12} \left[ f^\prime(b) - f^\prime(a) \right] - \left( \frac{h^4}{16·720} \right) \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\
+//! &+ ... + K \left( \frac{h}{2} \right)^{2p-2}  \left[ f^{(2p-3)}(b) - f^{(2p-3)(a)} \right] + O(h^{2p})
+//! \end{split}
+//! ```
 //!
 //! So that
 //!
-//! $$ \frac{4T_{\frac{h}{2}}(f) - T_{h}(f)}{3} = \int_{a}^{b} f(x) dx + \frac{h^4}{2880}\[f^{(3)}(b) - f^{(3)}(a)\] - (\frac{h^6}{96768})[f^{(5)}(b) - f^{(5)}(a)]$$
-//! $$ + ... + K h^{2p-2} \[f^{(2p-3)}(b) - f^{(2p-3)(a)}\] + O(h^{2p})$$
+//! ```math
+//! \begin{split}
+//! \frac{4 T_{\frac{h}{2}}(f) - T_{h}(f)}{3} &= \int_{a}^{b} f(x) dx + \left( \frac{h^4}{2880} \right) \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \left( \frac{h^6}{96768} \right) \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\
+//! &+ ... + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)(a)} \right] + O(h^{2p})
+//! \end{split}
+//! ```
+//!
 //!
 //! The $h^2$ term has vanished. This process can be continued, each halving of the subinterval
-//! length results in a new composite trapezoidal rule estimate of the integral which can be
-//! combined with previous estimates to yield an estimate in which the lowest order term
-//! involving $h$ vanishes. The easiest way to combine all the estimates from applications
+//! length results in a new composite trapezoidal rule estimate of the integral, which can be
+//! combined with previous estimates to yield an estimate, in which the lowest order term
+//! involving $h$ vanishes.
+//!
+//! The easiest way to combine all the estimates from applications
 //! of the trapezoidal rule by halving the length of the subintervals is to arrange the estimates
-//! in a column from the coarsest estimate to the finest estimate. To form the second,
+//! in a column, from the coarsest estimate to the finest estimate. To form the second,
 //! column take two adjacent values from the first column, subtract the finer estimate
 //! from the coarser estimate divide by 3 and add to the finer estimate.
 //!
 //! The second column is automatically arranged from the coarsest estimate to the finest
 //! with one less element. Continue, form the third column by taking two adjacent values
 //! from the second column, subtract the finer estimate from the coarser estimate,
-//! divide by 15 and add to the finer estimate. The third column is automatically
-//! arranged from the coarsest to the finest estimate with one fewer element than in the
+//! divide by 15 and add to the finer estimate.
+//!
+//! The third column is automatically arranged from the coarsest to the finest estimate with one fewer element than in the
 //! second column.
 //!
 //! This process is continued until there is only one element in the last column, this
@@ -73,8 +92,9 @@ fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Syn
 
     let one: U = num::one();
 
-    // r_n_m_minus_1: R(n, m-1)
-    // r_n_1_m_1: R(n-1, m-1)
+    // R[i,j]: element of Romberg's matrix
+    // r_n_m_minus_1: R[n, m-1]
+    // r_n_1_m_1: R[n-1, m-1]
     let (r_n_m_minus_1, r_n_1_m_1) = rayon::join(
         || romberg(n, m - one, trapezoids),
         || romberg(n - one, m - one, trapezoids),
