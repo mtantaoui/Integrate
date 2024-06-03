@@ -58,6 +58,9 @@ use crate::newton_cotes::trapezoidal::trapezoidal_rule;
 
 /// Computes elements of Romberg's matrix recursively given
 /// row's and column's index
+///
+/// * n: Romberg's matrix requested element row index.
+/// * m: Romberg's matrix requested element column index.
 fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Sync>(
     n: U,
     m: U,
@@ -110,8 +113,8 @@ fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Syn
 /// ```
 ///
 /// # Resources
-/// - [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
-/// - [Romberg's method](https://en.wikipedia.org/wiki/Romberg%27s_method)
+/// * [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
+/// * [Romberg's method](https://en.wikipedia.org/wiki/Romberg%27s_method)
 pub fn romberg_method<
     F1: Float + Sync,
     F2: Float + Sync + Send,
@@ -127,7 +130,7 @@ pub fn romberg_method<
     // calculated using trapezoid rule
     let mut trapezoidals: Vec<F2> = Vec::with_capacity(n.to_usize().unwrap());
 
-    // initializing first column using trapezoid rule
+    // initializing first column of the romberg's matrix using trapezoid rule
     (0..n.to_usize().unwrap())
         .into_par_iter()
         .map(|i| {
@@ -141,18 +144,21 @@ pub fn romberg_method<
     integral.to_f64().unwrap()
 }
 
+/// Returns coefficients to be used in the Richardson extrapolation for computing
+/// Romberg's matrix elements
+/// * `m` - order of convergence of Richardson extrapolation.
 fn romberg_coefficients<F: Float, U: Unsigned + ToPrimitive>(m: U) -> [F; 2] {
     let m = m.to_i32().unwrap();
 
     let one = F::from(1.0).unwrap(); // 1
 
-    let _4_m = F::from(4.0.powi(m)).unwrap(); // 4**m
-    let _4_m_minus_1 = F::from(4.0.powi(m) - 1.0).unwrap(); // 4**m - 1
+    let _4_m = F::from(4.0.powi(m)).unwrap(); // 4^m
+    let _4_m_minus_1 = F::from(4.0.powi(m) - 1.0).unwrap(); // 4^m - 1
 
-    let denominator = one.div(_4_m_minus_1); // 1 / (4**m - 1)
+    let denominator = one.div(_4_m_minus_1); // 1 / (4^m - 1)
 
     [
-        denominator,        // 1 / (4**m - 1)
-        _4_m * denominator, // 4**m / (4**m - 1)
+        denominator,        // 1 / (4^m - 1)
+        _4_m * denominator, // 4^m / (4^m - 1)
     ]
 }
