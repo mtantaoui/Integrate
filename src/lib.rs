@@ -1,19 +1,5 @@
 #![feature(test)]
 
-//! ```math
-//! \begin{equation}
-//! \begin{split}   a &=b+c\\
-//! &=e+f
-//! \end{split}
-//! \end{equation}
-//! ```
-//! ```math
-//! \begin{pmatrix}
-//! 1 & 2 & 3\\
-//! a & b & c
-//! \end{pmatrix}
-//! ```
-//!
 //! Numerical integration is concerned with developing algorithms to
 //! approximate the integral of a function $f(x)$. The most commonly used algorithms
 //! are Newton-Cotes formulas, Romberg's method, Gaussian quadrature, and to
