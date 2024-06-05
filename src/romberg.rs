@@ -104,10 +104,14 @@ fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Syn
     coef1 * r_n_m_minus_1 - coef0 * r_n_1_m_1
 }
 
+/// Approximates the integral of $f(x)$ on $\left[ a, b \right]$ using $T_h(f)$.
+///
 /// If $T_h(f)$ is the result of applying the trapezoidal rule to approximating
 /// the integral of $f(x)$ on $\[a, b\]$ using subintervals of length $h$,   
-/// then if $\int_{a}^{b} f(x) dx$ is the integral of $f(x)$ on $\[a,b\]$, then
-///                           $$\int_{a}^{b} f(x) dx = \lim_{h \to 0}  T_h(f)$$
+/// and if $\int_{a}^{b} f(x) dx$ is the integral of $f(x)$ on $\[a,b\]$, then
+/// ```math
+/// \int_{a}^{b} f(x) dx = \lim_{h \to 0}  T_h(f)
+/// ```
 /// where the limit is taken as h approaches 0.    
 ///                          
 /// The classical Romberg method applies Richardson Extrapolation to the
@@ -131,6 +135,13 @@ fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Syn
 ///
 /// let integral = romberg_method(square, a, b, num_steps);
 /// ```
+/// # Inputs
+/// * `f` - Integrand function of a single variables of type Float.
+/// * `a` - lower limit of the integration interval.
+/// * `b` - lower limit of the integration interval.
+/// * `n` - number of columns to be used in the Romberg method (columns of the Romberg Matrix).
+/// This corresponds to a minimum integration subintervals of of length $\dfrac{1}{2^n} * h$
+///
 ///
 /// # Resources
 /// * [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
@@ -144,7 +155,6 @@ pub fn romberg_method<
     a: F1,
     b: F1,
     n: U,
-    // accuracy: F2,
 ) -> f64 {
     // first columm of romberg table
     // calculated using trapezoid rule
