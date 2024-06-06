@@ -55,7 +55,7 @@ extern crate test;
 use num::{Float, ToPrimitive, Unsigned};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
-use super::check_integral_args;
+use super::utils::check_integral_args;
 
 /// This function integrates $f(x)$ from $a$ to $a+nh$ using the Simpson's
 /// rule by summing from the left end of the interval to the right end.

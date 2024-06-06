@@ -8,22 +8,41 @@
 //! language both the composite Simpson's rule and Simpson's rule sometimes are referred to simply as
 //! Simpson's rule. Let $\int_{a}^{b} f(x) dx$ be the integral of $f(x)$ over the closed and bounded interval
 //! $\[a,b\]$, and let $S_h(f)$ be the result of applying the Simpson's rule with $n$ subintervals of length h, i.e.
-//! $$ S_h(f)=\frac{h}{6} \[ f(a) + 4f(a+\frac{h}{2}) + 2f(a+h) + ··· + 2f(b-h) + 4f(b-\frac{h}{2}) + f(b) \] $$
+//!
+//! ```math
+//! \begin{split}
+//! S_h(f) &= \frac{h}{6} \left[ f(a) + 4f(a+\frac{h}{2}) + 2f(a+h) \right. \\
+//! &+ \left. ··· + 2f(b-h) + 4f(b-\frac{h}{2}) + f(b) \right]
+//! \end{split}
+//! ```
 //!
 //! An immediate consequence of the Euler-Maclaurin summation formula relates $\int_{a}^{b} f(x) dx$ and $S_h(f)$
-//! $$ S_h(f) = \int_{a}^{b} f(x) dx + \frac{h^4}{2880} \[ f^{(3)}(b) - f^{(3)}(a) \] - \frac{h^6}{96768} \[ f^{(5)}(b) - f^{(5)}(a) \]$$
-//! $$ + ··· + K h^{2p-2} \[f^{(2p-3)}(b) - f^{(2p-3)}(a) \] + O(h^{2p}) $$
-//! where $f^{(3)}$, $f^{(5)}$, and $f^{(2p-3)}$ are the third, fifth and $(p-3)rd$ derivatives of $f$ and $K$ is a constant.
+//! ```math
+//! \begin{split}
+//! S_h(f) &= \int_{a}^{b} f(x) dx + \frac{h^4}{2880} \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \frac{h^6}{96768} \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\
+//! &+ ··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+//! \end{split}
+//! ```
+//! where $f^{(3)}$, $f^{(5)}$, and $f^{(2p-3)}$ are the third, fifth and $(p-3)^{th}$ derivatives of $f$ and $K$ is a constant.
 //!
 //! The last term, $O(h^{2p})$ is important. Given an infinitely differentiable function in which the first
 //! $2p-3$ derivatives vanish at both endpoints of the interval of integration, it is not true that
-//! $S_h(f) = \int_{a}^{b}f( x ) dx$ but rather what the theorem says is that
-//! $$ \lim_{h \to 0} \mid \frac{S_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \mid < M $$
+//! ```math
+//! S_h(f) = \int_{a}^{b}f( x ) dx
+//! ```
+//! but rather what the theorem says is that
+//! ```math
+//! \lim_{h \to 0} \mid \frac{S_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \mid < M
+//! ```
 //! where M > 0.
 //!
 //! If $f$ is at least four times differentiable on the interval $\[a,b\]$, then applying the mean-value theorem to
-//! $$ S_h(f) - \int_{a}^{b}f( x ) dx = \frac{h^4}{2880} \[ f^{(3)}(b) - f^{(3)}(a) \] - \frac{h^6}{96768} \[ f^{(5)}(b) - f^{(5)}(a) \]$$
-//! $$ + ··· + K h^{(2p - 2)} [f^{(2p-3)}(b) - f^{(2p-3)}(a) ] + O(h^{2p}) $$
+//! ```math
+//! \begin{split}
+//! S_h(f) - \int_{a}^{b}f( x ) dx &= \frac{h^4}{2880} \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \frac{h^6}{96768} \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\
+//! &+ ··· + K h^{(2p - 2)} \left[f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+//! \end{split}
+//! ```
 //! yields the standard truncation error expression
 //! $$ S_h(f) - \int_{a}^{b} f( x ) dx dx = \frac{h^4}{2880} (b-a) f^{(4)}(c)$$
 //!  for some point $c$ where $a ≤ c ≤ b$.
@@ -35,15 +54,31 @@
 //!
 //! For example, if $h = 0.1$ then
 //!
-//! $$ S_{0.1}(f) = \int_{a}^{b} f(x) dx + 3.5 · 10^{-8} \[ f^{3}(b) - f^{3}(a) \] - 1.033 · 10^{-11} \[ f^{(5)}(b) - f^{(5)}(a) \] + ··· $$
+//! ```math
+//! \begin{split}
+//! S_{0.1}(f) &= \int_{a}^{b} f(x) dx + 3.5 · 10^{-8} \left[ f^{3}(b) - f^{3}(a) \right]\\
+//!  &- 1.033 · 10^{-11} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+//! \end{split}
+//! ```
+//!
 //!
 //! and if $h = 0.01$ then
 //!
-//! $$ S_{0.01}(f) = \int_{a}^{b} f(x) dx + 3.5 · 10^{-12} \[ f^{3}(b) - f^{3}(a) \] - 1.033 · 10^{-17} \[ f^{(5)}(b) - f^{(5)}(a) \] + ··· $$
+//! ```math
+//! \begin{split}
+//! S_{0.01}(f) &= \int_{a}^{b} f(x) dx + 3.5 · 10^{-12} \left[ f^{3}(b) - f^{3}(a) \right] \\
+//! &- 1.033 · 10^{-17} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+//! \end{split}
+//! ```
 //!
 //! while if $h = 10$ then
 //!
-//! $$ S_{0.01}(f) = \int_{a}^{b} f(x) dx + 3.47  \[ f^{3}(b) - f^{3}(a) \] - 10.33  \[ f^{(5)}(b) - f^{(5)}(a) \] + ··· $$
+//! ```math
+//! \begin{split}
+//! S_{0.01}(f) &= \int_{a}^{b} f(x) dx + 3.47  \left[ f^{3}(b) - f^{3}(a) \right] \\
+//! &- 10.33  \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+//! \end{split}
+//! ```
 //!
 //! However, if the function $f(x)$ is a cubic, then $n$ may be chosen to be $1$.
 
@@ -55,10 +90,15 @@ use num::{Float, ToPrimitive, Unsigned};
 
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
-use super::check_integral_args;
+use super::utils::check_integral_args;
 
 /// This function integrates $f(x)$ from $a$ to $a+nh$ using the trapezoidal
 /// rule by summing from the left end of the interval to the right end.
+///
+/// * `f` - Integrand function of a single variable.
+/// * `a` - lower limit of the integration interval.
+/// * `b` - lower limit of the integration interval.
+/// * `n` - number of subintervals.
 ///
 /// # Examples
 /// ```

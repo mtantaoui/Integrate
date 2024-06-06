@@ -13,27 +13,49 @@
 //!
 //! Let $\int_{a}^{b} f(x) dx$ be the integral of f(x) over the closed and bounded interval $\[a ,b \]$,
 //! and let $R_h(f)$ be the result of applying the rectangle rule with n subintervals of length h, i.e.
-//! $$ R_h(f)=h [ f(a+h/2) + f(a+3h/2) + ··· + f(b-h/2) ] $$
+//!
+//! ```math
+//! R_h(f)=h [ f(a+h/2) + f(a+3h/2) + ··· + f(b-h/2) ]
+//! ```
+//!
 //! An immediate consequence of the Euler-Maclaurin summation formula yields the following equation
 //! relating $\int_{a}^{b} f(x) dx$ and $R_h(f)$
-//! $$ R_h(f) = \int_{a}^{b} f(x) dx - \frac{h^2}{24} (f' (b) - f' (a) ) +  \frac{7h^4}{5760} ( f^{(3)}(b) - f^{(3)}(a) ) + $$
-//! $$ ··· + K h^{2p-2} (f^{(2p-3)}(b) - f^{(2p-3)}(a) ) + O(h^{2p})  $$
+//!
+//! ```math
+//! \begin{split}
+//! R_h(f) &= \int_{a}^{b} f(x) dx - \frac{h^2}{24} \left[ f^\prime (b) - f^\prime (a) \right] +  \frac{7h^4}{5760} \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \\
+//! &··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})  
+//! \end{split}
+//! ```
 //!
 //! where $f'$, $f^{(3)}$, and $f^{(2p-3)}$ are the first, third and $(2p-3)rd$ derivatives of $f$ and $K$ is a constant.
 //!
 //! The last term, $O(h^{2p})$ is important. Given an infinitely differentiable function
 //! in which the first $2p-3$ derivatives vanish at both endpoints of the interval of integration,
 //! it is not true that $R_h(f) = \int_{a}^{b} f(x) dx$, but rather what the theorem says is that
-//! $$ \lim_{h \to 0} \mid \frac{R_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \mid < M $$
+//!
+//! ```math
+//! \lim_{h \to 0} \left| \dfrac{R_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \right| < M
+//! ```
+//!
 //! where $M>0$.
 //!
 //! If $f$ is at least twice differentiable on the interval $\[a,b\]$, then applying the mean-value
 //! theorem to
-//! $$ R_h(f) - \int_{a}^{b} f(x) dx = -\frac{h^2}{24} (f' (b) - f' (a)) +  \frac{7h^4}{5760} \[ f^{(3)}(b) - f^{(3)}(a) \]+$$
-//! $$ ··· + K h^{2p-2} (f^{(2p-3)}(b) - f^{(2p-3)}(a)) + O(h^{2p}) $$
+//!
+//! ```math
+//! \begin{split}
+//! R_h(f) - \int_{a}^{b} f(x) dx &= -\frac{h^2}{24} \left[ f^\prime (b) - f^\prime (a) \right] +  \frac{7h^4}{5760} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\
+//! & + ··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+//! \end{split}
+//! ```
+//!
 //! yields the standard truncation error expression
 //!
-//! $$ R_h(f) - \int_{a}^{b} f(x) dx = -\frac{h^2}{24} (b - a) f''(c) $$
+//! ```math
+//! R_h(f) - \int_{a}^{b} f(x) dx = -\frac{h^2}{24} (b - a) f^{\prime\prime}(c)
+//! ```
+//!
 //! for some point $c$ where $a ≤ c ≤ b$.
 //!
 //! A corollary of which is that if $f''(x) = 0$ for all $x$ in $\[a,b\]$,
@@ -41,11 +63,29 @@
 //!
 //! The Euler-Maclaurin summation formula also shows that usually $n$ should be chosen large enough
 //! so that $h = (b - a) / n < 1$. For example, if h = 0.1 then
-//! $$ R_{0.1}(f) = \int_{a}^{b} f(x) dx  - 0.00042 \[f'(b) - f'(a)\] + 0.00000012 \[f^{3}(b) - f^3{}(a)\] + ...   $$
+//!
+//! ```math
+//! \begin{split}
+//! R_{0.1}(f) &= \int_{a}^{b} f(x) dx  - 0.00042 \left[f'(b) - f'(a)\right]  \\
+//! & + 0.00000012 \left[f^{(3)}(b) - f^{(3)}(a) \right] + ...
+//! \end{split}
+//! ```
 //! and if $h = 0.01$ then
-//! $$ R_{0.01}(f) = \int_{a}^{b} f(x) dx  - 0.0000042 \[f'(b) - f'(a)\] + 0.000000000012 \[f^{3}(b) - f^{3}(a)\] + ...   $$
+//!
+//! ```math
+//! \begin{split}
+//! R_{0.01}(f) &= \int_{a}^{b} f(x) dx  - 0.0000042 \left[ f^\prime(b) - f^\prime(a) \right] \\
+//! &+ 0.000000000012 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + ...   
+//! \end{split}
+//! ```
+//!
 //! while if $h=10$ then
-//! $$ R_{10}(f) = \int_{a}^{b} f(x) dx  - 4.1667 \[f'(b) - f'(a)\] + 12.15 \[f^{3}(b) - f^{3}(a)\] + ... $$
+//! ```math
+//! \begin{split}
+//! R_{10}(f) &= \int_{a}^{b} f(x) dx  - 4.1667 \left[ f^\prime(b) - f^\prime(a)\right] \\
+//! &+ 12.15 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + ...
+//! \end{split}
+//! ```
 //! However, if the function $f(x)$ is linear, then $n$ may be chosen to be $1$.
 
 extern crate test;
@@ -53,10 +93,15 @@ extern crate test;
 use num::{Float, ToPrimitive, Unsigned};
 use rayon::prelude::*;
 
-use super::check_integral_args;
+use super::utils::check_integral_args;
 
 /// This function integrates $f(x)$ from $a$ to $a+nh$ using the rectangle
 /// rule by summing from the left end of the interval to the right end.
+///
+/// * `f` - Integrand function of a single variable.
+/// * `a` - lower limit of the integration interval.
+/// * `b` - lower limit of the integration interval.
+/// * `n` - number of subintervals.
 ///
 /// # Examples
 /// ```

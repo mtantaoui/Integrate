@@ -9,24 +9,8 @@
 //! - Simpson's Rule.
 //! - Newton's 3/8 Rule.
 
-use num::{Float, Unsigned};
-
 pub mod newton;
 pub mod rectangle;
 pub mod simpson;
 pub mod trapezoidal;
-
-/// Checks integral arguments for Newton-Codes methods
-pub fn check_integral_args<F: Float, U: Unsigned>(a: F, b: F, n: U) {
-    if n.is_zero() {
-        panic!("number of steps can't be zero");
-    }
-
-    if a.is_infinite() | b.is_infinite() {
-        panic!("Integral limits a and b can't be infinite");
-    }
-
-    if a > b {
-        panic!("a must be strictly less than b");
-    }
-}
+mod utils;

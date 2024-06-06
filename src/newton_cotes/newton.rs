@@ -12,51 +12,92 @@
 //! integral of $f(x)$ over the closed and bounded interval $\[a, b\]$, and let $N_h(f)$
 //! be the result of applying the Newton's 3/8 rule with $n$ subintervals of length $h$, i.e.
 //!
-//! $$ N_h(f) = (\frac{h}{8}) \[ f(a) + 3f(a+ \frac{h}{3} ) + 3f(a+ \frac{2h}{3} ) + 2 f(a + h)$$
-//! $$ + ··· + 2f(b-h) + 3f(b-\frac{2h}{3}) + 3f(b- \frac{h}{3} ) + f(b) \]$$
+//! ```math
+//! \begin{split}
+//! N_h(f) &=  \frac{h}{8}  \left[ f(a) + 3 f\left(a+ \frac{h}{3} \right) + 3f\left(a+ \frac{2h}{3} \right) + 2 f(a + h) \right.\\
+//! & \left. + ··· + 2f(b-h) + 3f \left( b-\frac{2h}{3} \right) + 3f \left( b - \frac{h}{3} \right) + f(b) \right]
+//! \end{split}
+//! ```
 //!
 //! An immediate consequence of the Euler-Maclaurin summation formula relates $\int_{a}^{b} f(x)dx$ and $N_h(f)$
 //!
-//! $$ N_h(f) = \int_{a}^{b} f(x)dx + \frac{h^4}{6480} \[ f^{3}(b) - f^{3}(a) \] - \frac{h^6}{244944} \[ f^{(5)}(b) - f^{(5)}(a) \]$$
-//! $$ + ··· + K h^{2p-2} \[f^{(2p - 3)}(b) - f^{(2p - 3)}(a) \] + O(h^{2p})$$
+//! ```math
+//! \begin{split}
+//! N_h(f) &= \int_{a}^{b} f(x)dx + \frac{h^4}{6480} \left[ f^{3}(b) - f^{3}(a) \right] - \frac{h^6}{244944} \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\
+//! & + ··· + K h^{2p-2} \left[ f^{(2p - 3)}(b) - f^{(2p - 3)}(a) \right] + O(h^{2p})
+//! \end{split}
+//! ```
 //!
 //! where $f^{(3)}$, $f^{(5)}$, and $f^{(2p-3)}$ are the third, fifth and $(p-3)rd$ derivatives
 //! of $f$ and $K$ is a constant.
 //!
 //! The last term, $O(h^{2p})$ is important. Given an infinitely differentiable function in which the
 //! first $2p-3$ derivatives vanish at both endpoints of the interval of integration, it is not true that
-//!  
-//! $$N_h(f) = \int_{a}^{b} f(x)dx  $$
+//!
+//! ```math
+//! \begin{split}
+//! N_h(f) = \int_{a}^{b} f(x) dx
+//! \end{split}
+//! ```
 //!
 //! but rather what the theorem says is that
 //!
-//! $$  \lim_{h \to 0} \mid \frac{N_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \mid < M $$
+//! ```math
+//! \begin{split}
+//! \lim_{h \to 0} \mid \frac{N_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \mid < M
+//! \end{split}
+//! ```
 //!
 //! where $M > 0$.
 //!
 //! If $f$ is at least four times differentiable on the interval $\[a,b\]$, then applying the
 //! mean-value theorem to
 //!
-//! $$ N_h(f) - \int_{a}^{b} f(x)dx = \frac{h^4}{6480} [ f^{(3)}(b) - f^{(3)}(a) ] - \frac{h^6}{244944} [ f^{(5)}(b) - f^{(5)}(a) ]  $$
-//! $$ + ··· + K h^{2p - 2} [f^{(2p - 3)}(b) - f^{(2p - 3)}(a) ] + O(h^{2p}) $$
+//! ```math
+//! \begin{split}
+//! N_h(f) - \int_{a}^{b} f(x)dx &= \frac{h^4}{6480} \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \frac{h^6}{244944} \left[ f^{(5)}(b) - f^{(5)}(a) \right]  \\
+//! &  + ··· + K h^{2p - 2} \left[ f^{(2p - 3)}(b) - f^{(2p - 3)}(a) \right] + O(h^{2p})
+//! \end{split}
+//! ```
 //!
-//! yields the standard truncation error expression N_h(f) - \int_{a}^{b} f(x)dx = \frac{h^4}{6480}  (b-a) f^{(4)}(c), for some point $c$ where $a ≤ c ≤ b$.
+//! yields the standard truncation error expression
+//!
+//! ```math
+//! N_h(f) - \int_{a}^{b} f(x)dx = \frac{h^4}{6480}  (b-a) f^{(4)}(c)
+//! ```  
+//!
+//! for some point $c$ where $a ≤ c ≤ b$.
 //!
 //! A corollary of which is that if $f^{(4)}(x) = 0$ for all $x$ in $\[a,b\]$, i.e. if $f(x)$ is a cubic,
 //! then Newton's 3/8 rule is exact.
 //!
-//! The Euler-Maclaurin summation formula also shows that usually n should be chosen large enough so that $h = (b - a) / n < 1$.
+//! The Euler-Maclaurin summation formula also shows that usually $n$ should be chosen large enough so that $h = \dfrac{b-a}{n}< 1$.
 //!
 //! For example, if $h = 0.1$ then
 //!
-//! $$ N_{0.1}(f) = \int_{a}^{b} f(x)dx  + 1.5·10^{-8} [ f^{(3)}(b) - f^{(3)}(a) ] - 4.1 · 10^{-12} [ f^{(5)}(b) - f^{(5)}(a) ] + ··· $$
+//! ```math
+//! \begin{split}
+//! N_{0.1}(f) &= \int_{a}^{b} f(x)dx  + 1.5·10^{-8} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\
+//!  &- 4.1 · 10^{-12} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+//! \end{split}
+//! ```
 //!
 //! and if $h = 0.01$ then
 //!
-//! $$ N_{0.01}(f) = \int_{a}^{b} f(x)dx + 1.5·10^{-12} [ f^{3}(b) - f^{3}(a) ] - 4.1·10^{-18} [ f^{(5)}(b) - f^{(5)}(a) ] + ···$$
+//! ```math
+//! \begin{split}
+//! N_{0.01}(f) &= \int_{a}^{b} f(x)dx + 1.5·10^{-12} [ f^{3}(b) - f^{3}(a) ] \\
+//! &- 4.1·10^{-18} [ f^{(5)}(b) - f^{(5)}(a) ] + ···
+//! \end{split}
+//! ```
 //! while if $h = 10$ then
 //!
-//! $$ N_{10}(f) = \int_{a}^{b} f(x)dx  + 1.54 [ f^{(3)}(b) - f^{(3)}(a) ] - 4.08 [ f^{(5)}(b) - f^{(5)}(a) ] +··· $$
+//! ```math
+//! \begin{split}
+//! N_{10}(f) &= \int_{a}^{b} f(x)dx  + 1.54 \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\
+//! &- 4.08 \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+//! \end{split}
+//! ```
 //!
 //! However, if the function $f(x)$ is a cubic, then $n$ may be chosen to be 1.
 
@@ -66,12 +107,17 @@ use std::ops::Div;
 
 use num::{Float, ToPrimitive, Unsigned};
 
-use super::check_integral_args;
+use super::utils::check_integral_args;
 
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
 /// This function integrates $f(x)$ from $a$ to $a+nh$ using the Newton's 3/8
 /// rule by summing from the left end of the interval to the right end.
+///
+/// * `f` - Integrand function of a single variable.
+/// * `a` - lower limit of the integration interval.
+/// * `b` - lower limit of the integration interval.
+/// * `n` - number of subintervals.
 ///
 /// # Examples
 /// ```

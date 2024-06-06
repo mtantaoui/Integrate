@@ -136,7 +136,7 @@ fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Syn
 /// let integral = romberg_method(square, a, b, num_steps);
 /// ```
 /// # Inputs
-/// * `f` - Integrand function of a single variables of type Float.
+/// * `f` - Integrand function of a single variable.
 /// * `a` - lower limit of the integration interval.
 /// * `b` - lower limit of the integration interval.
 /// * `n` - number of columns to be used in the Romberg method (columns of the Romberg Matrix).
