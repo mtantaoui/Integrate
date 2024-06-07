@@ -6450,7 +6450,6 @@ pub fn legendre_rule<F1: Float + Sync, F2: Float, U: Unsigned + ToPrimitive + Co
 mod tests {
 
     use num::Float;
-    use num_traits::Pow;
     use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
     use super::*;

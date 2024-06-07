@@ -140,6 +140,7 @@ fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Syn
 /// * `a` - lower limit of the integration interval.
 /// * `b` - lower limit of the integration interval.
 /// * `n` - number of columns to be used in the Romberg method (columns of the Romberg Matrix).
+///
 /// This corresponds to a minimum integration subintervals of of length $\dfrac{1}{2^n} * h$
 ///
 ///
