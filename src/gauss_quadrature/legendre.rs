@@ -91,6 +91,7 @@ extern crate test;
 use std::{cmp::Ordering, f64::consts::PI};
 
 use num::{one, zero, Float, Integer, ToPrimitive, Unsigned};
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use super::bessel::{bessel_j0_zeros, bessel_j1_squared};
 
@@ -6122,332 +6123,65 @@ fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(l: U, k: U) -
     (theta, weight, x)
 }
 
-/// Returns the $k$-th $\theta$ coordinate in an $l$-point rule.
-/// * `l` - number of points in the given rule $l >= 1$.
-/// * `k` - index of the point to be returned $1<= k <= l$
-///
-/// # Note
-///  The X coordinate is simply $\cos(\theta)$
-fn legendre_theta<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k: U) -> f64 {
-    if l < one() || 100 < l.to_usize().unwrap() {
-        panic!("Legendre Theta - Fatal error!\nIllegal value of L.\n 1 <= L <= 100 is required.");
-    }
-
-    let two = one::<U>() + one::<U>();
-
-    let lhalf = (l + one()) / two;
-
-    let kcopy = if l % two == one() {
-        match lhalf.cmp(&k) {
-            Ordering::Less => k - lhalf,
-            Ordering::Equal => lhalf,
-            Ordering::Greater => lhalf - k,
-        }
-    } else {
-        match lhalf.cmp(&k) {
-            Ordering::Less => k - lhalf,
-            _ => lhalf + one() - k,
-        }
-    };
-
-    if kcopy < one() || lhalf < kcopy {
-        panic!(
-            "LEGENDRE_THETA - Fatal error!\nIllegal value of K.\n 1 <= K <= (L+1)/2 is required.\n"
-        );
-    }
-
-    let l = l.to_usize().unwrap();
-    let kcopy = kcopy.to_usize().unwrap();
-    let lhalf = lhalf.to_usize().unwrap();
-
-    let mut theta: f64 = if l % 2 == 1 && kcopy == lhalf {
-        PI / 2.0
-    } else {
-        match l {
-            2 => EVEN_THETA_ZERO_1[kcopy - 1],
-            3 => ODD_THETA_ZERO_1[kcopy - 1],
-            4 => EVEN_THETA_ZERO_2[kcopy - 1],
-            5 => ODD_THETA_ZERO_2[kcopy - 1],
-            6 => EVEN_THETA_ZERO_3[kcopy - 1],
-            7 => ODD_THETA_ZERO_3[kcopy - 1],
-            8 => EVEN_THETA_ZERO_4[kcopy - 1],
-            9 => ODD_THETA_ZERO_4[kcopy - 1],
-            10 => EVEN_THETA_ZERO_5[kcopy - 1],
-            11 => ODD_THETA_ZERO_5[kcopy - 1],
-            12 => EVEN_THETA_ZERO_6[kcopy - 1],
-            13 => ODD_THETA_ZERO_6[kcopy - 1],
-            14 => EVEN_THETA_ZERO_7[kcopy - 1],
-            15 => ODD_THETA_ZERO_7[kcopy - 1],
-            16 => EVEN_THETA_ZERO_8[kcopy - 1],
-            17 => ODD_THETA_ZERO_8[kcopy - 1],
-            18 => EVEN_THETA_ZERO_9[kcopy - 1],
-            19 => ODD_THETA_ZERO_9[kcopy - 1],
-            20 => EVEN_THETA_ZERO_10[kcopy - 1],
-            21 => ODD_THETA_ZERO_10[kcopy - 1],
-            22 => EVEN_THETA_ZERO_11[kcopy - 1],
-            23 => ODD_THETA_ZERO_11[kcopy - 1],
-            24 => EVEN_THETA_ZERO_12[kcopy - 1],
-            25 => ODD_THETA_ZERO_12[kcopy - 1],
-            26 => EVEN_THETA_ZERO_13[kcopy - 1],
-            27 => ODD_THETA_ZERO_13[kcopy - 1],
-            28 => EVEN_THETA_ZERO_14[kcopy - 1],
-            29 => ODD_THETA_ZERO_14[kcopy - 1],
-            30 => EVEN_THETA_ZERO_15[kcopy - 1],
-            31 => ODD_THETA_ZERO_15[kcopy - 1],
-            32 => EVEN_THETA_ZERO_16[kcopy - 1],
-            33 => ODD_THETA_ZERO_16[kcopy - 1],
-            34 => EVEN_THETA_ZERO_17[kcopy - 1],
-            35 => ODD_THETA_ZERO_17[kcopy - 1],
-            36 => EVEN_THETA_ZERO_18[kcopy - 1],
-            37 => ODD_THETA_ZERO_18[kcopy - 1],
-            38 => EVEN_THETA_ZERO_19[kcopy - 1],
-            39 => ODD_THETA_ZERO_19[kcopy - 1],
-            40 => EVEN_THETA_ZERO_20[kcopy - 1],
-            41 => ODD_THETA_ZERO_20[kcopy - 1],
-            42 => EVEN_THETA_ZERO_21[kcopy - 1],
-            43 => ODD_THETA_ZERO_21[kcopy - 1],
-            44 => EVEN_THETA_ZERO_22[kcopy - 1],
-            45 => ODD_THETA_ZERO_22[kcopy - 1],
-            46 => EVEN_THETA_ZERO_23[kcopy - 1],
-            47 => ODD_THETA_ZERO_23[kcopy - 1],
-            48 => EVEN_THETA_ZERO_24[kcopy - 1],
-            49 => ODD_THETA_ZERO_24[kcopy - 1],
-            50 => EVEN_THETA_ZERO_25[kcopy - 1],
-            51 => ODD_THETA_ZERO_25[kcopy - 1],
-            52 => EVEN_THETA_ZERO_26[kcopy - 1],
-            53 => ODD_THETA_ZERO_26[kcopy - 1],
-            54 => EVEN_THETA_ZERO_27[kcopy - 1],
-            55 => ODD_THETA_ZERO_27[kcopy - 1],
-            56 => EVEN_THETA_ZERO_28[kcopy - 1],
-            57 => ODD_THETA_ZERO_28[kcopy - 1],
-            58 => EVEN_THETA_ZERO_29[kcopy - 1],
-            59 => ODD_THETA_ZERO_29[kcopy - 1],
-            60 => EVEN_THETA_ZERO_30[kcopy - 1],
-            61 => ODD_THETA_ZERO_30[kcopy - 1],
-            62 => EVEN_THETA_ZERO_31[kcopy - 1],
-            63 => ODD_THETA_ZERO_31[kcopy - 1],
-            64 => EVEN_THETA_ZERO_32[kcopy - 1],
-            65 => ODD_THETA_ZERO_32[kcopy - 1],
-            66 => EVEN_THETA_ZERO_33[kcopy - 1],
-            67 => ODD_THETA_ZERO_33[kcopy - 1],
-            68 => EVEN_THETA_ZERO_34[kcopy - 1],
-            69 => ODD_THETA_ZERO_34[kcopy - 1],
-            70 => EVEN_THETA_ZERO_35[kcopy - 1],
-            71 => ODD_THETA_ZERO_35[kcopy - 1],
-            72 => EVEN_THETA_ZERO_36[kcopy - 1],
-            73 => ODD_THETA_ZERO_36[kcopy - 1],
-            74 => EVEN_THETA_ZERO_37[kcopy - 1],
-            75 => ODD_THETA_ZERO_37[kcopy - 1],
-            76 => EVEN_THETA_ZERO_38[kcopy - 1],
-            77 => ODD_THETA_ZERO_38[kcopy - 1],
-            78 => EVEN_THETA_ZERO_39[kcopy - 1],
-            79 => ODD_THETA_ZERO_39[kcopy - 1],
-            80 => EVEN_THETA_ZERO_40[kcopy - 1],
-            81 => ODD_THETA_ZERO_40[kcopy - 1],
-            82 => EVEN_THETA_ZERO_41[kcopy - 1],
-            83 => ODD_THETA_ZERO_41[kcopy - 1],
-            84 => EVEN_THETA_ZERO_42[kcopy - 1],
-            85 => ODD_THETA_ZERO_42[kcopy - 1],
-            86 => EVEN_THETA_ZERO_43[kcopy - 1],
-            87 => ODD_THETA_ZERO_43[kcopy - 1],
-            88 => EVEN_THETA_ZERO_44[kcopy - 1],
-            89 => ODD_THETA_ZERO_44[kcopy - 1],
-            90 => EVEN_THETA_ZERO_45[kcopy - 1],
-            91 => ODD_THETA_ZERO_45[kcopy - 1],
-            92 => EVEN_THETA_ZERO_46[kcopy - 1],
-            93 => ODD_THETA_ZERO_46[kcopy - 1],
-            94 => EVEN_THETA_ZERO_47[kcopy - 1],
-            95 => ODD_THETA_ZERO_47[kcopy - 1],
-            96 => EVEN_THETA_ZERO_48[kcopy - 1],
-            97 => ODD_THETA_ZERO_48[kcopy - 1],
-            98 => EVEN_THETA_ZERO_49[kcopy - 1],
-            99 => ODD_THETA_ZERO_49[kcopy - 1],
-            100 => EVEN_THETA_ZERO_50[kcopy - 1],
-            _ => panic!("Unsupported option"),
-        }
-    };
-
-    let k = k.to_usize().unwrap();
-
-    if (2 * k - 1) <= l {
-        theta = PI - theta;
-    }
-
-    theta
-}
-
-/// Returns the weights for the $k$-th weight in an $l$-point of Gauss-Legendre formula.
-/// * `l` - number of points in the given rule $l >= 1$.
-/// * `k` - index of the point to be returned $1<= k <= l$
-fn legendre_weights<U: Unsigned + ToPrimitive + PartialOrd + Ord + Copy>(l: U, k: U) -> f64 {
-    if l < one() || 100 < l.to_usize().unwrap() {
-        panic!(
-            "Legendre weights - Fatal error!\nIllegal value of L.\n 1 <= L <= 100 is required.\n"
-        );
-    }
-
-    let two = one::<U>() + one::<U>();
-
-    let lhalf = (l + one()) / two;
-
-    let kcopy = if l % two == one() {
-        match lhalf.cmp(&k) {
-            Ordering::Less => k - lhalf,
-            Ordering::Equal => lhalf,
-            Ordering::Greater => lhalf - k,
-        }
-    } else {
-        match lhalf.cmp(&k) {
-            Ordering::Less => k - lhalf,
-            _ => lhalf + one() - k,
-        }
-    };
-
-    if kcopy < one() || lhalf < kcopy {
-        panic!(
-            "legendre_weights - Fatal error!\nIllegal value of K.\n 1 <= K <= (L+1)/2 is required.\n"
-        );
-    }
-
-    let l = l.to_usize().unwrap();
-    let kcopy = kcopy.to_usize().unwrap();
-    let lhalf = lhalf.to_usize().unwrap();
-
-    // if L is odd, and K = ( L - 1 ) / 2, then it's easy.
-    let weight: f64 = if l % 2 == 1 && kcopy == lhalf {
-        PI / 2.0
-    } else {
-        match l {
-            2 => EVEN_W_1[kcopy - 1],
-            3 => ODD_W_1[kcopy - 1],
-            4 => EVEN_W_2[kcopy - 1],
-            5 => ODD_W_2[kcopy - 1],
-            6 => EVEN_W_3[kcopy - 1],
-            7 => ODD_W_3[kcopy - 1],
-            8 => EVEN_W_4[kcopy - 1],
-            9 => ODD_W_4[kcopy - 1],
-            10 => EVEN_W_5[kcopy - 1],
-            11 => ODD_W_5[kcopy - 1],
-            12 => EVEN_W_6[kcopy - 1],
-            13 => ODD_W_6[kcopy - 1],
-            14 => EVEN_W_7[kcopy - 1],
-            15 => ODD_W_7[kcopy - 1],
-            16 => EVEN_W_8[kcopy - 1],
-            17 => ODD_W_8[kcopy - 1],
-            18 => EVEN_W_9[kcopy - 1],
-            19 => ODD_W_9[kcopy - 1],
-            20 => EVEN_W_10[kcopy - 1],
-            21 => ODD_W_10[kcopy - 1],
-            22 => EVEN_W_11[kcopy - 1],
-            23 => ODD_W_11[kcopy - 1],
-            24 => EVEN_W_12[kcopy - 1],
-            25 => ODD_W_12[kcopy - 1],
-            26 => EVEN_W_13[kcopy - 1],
-            27 => ODD_W_13[kcopy - 1],
-            28 => EVEN_W_14[kcopy - 1],
-            29 => ODD_W_14[kcopy - 1],
-            30 => EVEN_W_15[kcopy - 1],
-            31 => ODD_W_15[kcopy - 1],
-            32 => EVEN_W_16[kcopy - 1],
-            33 => ODD_W_16[kcopy - 1],
-            34 => EVEN_W_17[kcopy - 1],
-            35 => ODD_W_17[kcopy - 1],
-            36 => EVEN_W_18[kcopy - 1],
-            37 => ODD_W_18[kcopy - 1],
-            38 => EVEN_W_19[kcopy - 1],
-            39 => ODD_W_19[kcopy - 1],
-            40 => EVEN_W_20[kcopy - 1],
-            41 => ODD_W_20[kcopy - 1],
-            42 => EVEN_W_21[kcopy - 1],
-            43 => ODD_W_21[kcopy - 1],
-            44 => EVEN_W_22[kcopy - 1],
-            45 => ODD_W_22[kcopy - 1],
-            46 => EVEN_W_23[kcopy - 1],
-            47 => ODD_W_23[kcopy - 1],
-            48 => EVEN_W_24[kcopy - 1],
-            49 => ODD_W_24[kcopy - 1],
-            50 => EVEN_W_25[kcopy - 1],
-            51 => ODD_W_25[kcopy - 1],
-            52 => EVEN_W_26[kcopy - 1],
-            53 => ODD_W_26[kcopy - 1],
-            54 => EVEN_W_27[kcopy - 1],
-            55 => ODD_W_27[kcopy - 1],
-            56 => EVEN_W_28[kcopy - 1],
-            57 => ODD_W_28[kcopy - 1],
-            58 => EVEN_W_29[kcopy - 1],
-            59 => ODD_W_29[kcopy - 1],
-            60 => EVEN_W_30[kcopy - 1],
-            61 => ODD_W_30[kcopy - 1],
-            62 => EVEN_W_31[kcopy - 1],
-            63 => ODD_W_31[kcopy - 1],
-            64 => EVEN_W_32[kcopy - 1],
-            65 => ODD_W_32[kcopy - 1],
-            66 => EVEN_W_33[kcopy - 1],
-            67 => ODD_W_33[kcopy - 1],
-            68 => EVEN_W_34[kcopy - 1],
-            69 => ODD_W_34[kcopy - 1],
-            70 => EVEN_W_35[kcopy - 1],
-            71 => ODD_W_35[kcopy - 1],
-            72 => EVEN_W_36[kcopy - 1],
-            73 => ODD_W_36[kcopy - 1],
-            74 => EVEN_W_37[kcopy - 1],
-            75 => ODD_W_37[kcopy - 1],
-            76 => EVEN_W_38[kcopy - 1],
-            77 => ODD_W_38[kcopy - 1],
-            78 => EVEN_W_39[kcopy - 1],
-            79 => ODD_W_39[kcopy - 1],
-            80 => EVEN_W_40[kcopy - 1],
-            81 => ODD_W_40[kcopy - 1],
-            82 => EVEN_W_41[kcopy - 1],
-            83 => ODD_W_41[kcopy - 1],
-            84 => EVEN_W_42[kcopy - 1],
-            85 => ODD_W_42[kcopy - 1],
-            86 => EVEN_W_43[kcopy - 1],
-            87 => ODD_W_43[kcopy - 1],
-            88 => EVEN_W_44[kcopy - 1],
-            89 => ODD_W_44[kcopy - 1],
-            90 => EVEN_W_45[kcopy - 1],
-            91 => ODD_W_45[kcopy - 1],
-            92 => EVEN_W_46[kcopy - 1],
-            93 => ODD_W_46[kcopy - 1],
-            94 => EVEN_W_47[kcopy - 1],
-            95 => ODD_W_47[kcopy - 1],
-            96 => EVEN_W_48[kcopy - 1],
-            97 => ODD_W_48[kcopy - 1],
-            98 => EVEN_W_49[kcopy - 1],
-            99 => ODD_W_49[kcopy - 1],
-            100 => EVEN_W_50[kcopy - 1],
-            _ => panic!("Unsupported option"),
-        }
-    };
-
-    weight
-}
-
 /// Approximate the integral of $f(x)$ from $a$ to $b$ using the n point Gauss-Legendre integral approximation formula.
 /// * `a` - lower limit of integration.
 /// * `b` - upper limit of integration.
-/// * `n` - number of points to use for Gauss-Legendre integral approxiamtion formula.
+/// * `n` - number of points to use for Gauss-Legendre integral approximation formula.
 ///
 /// # Examples
 ///
 /// Descriptive of the example here.
 ///
-/// ```rust
-///
 /// ```
-pub fn legendre_rule<F1: Float + Sync, F2: Float, U: Unsigned + ToPrimitive + Copy + PartialOrd>(
+/// use integrator::gauss_quadrature::legendre::legendre_rule;
+///
+///
+/// fn square(x: f64) -> f64 {
+///     x.powi(2)
+/// }
+///
+/// let a = 0.0;
+/// let b = 1.0;
+///
+/// let num_steps: usize = 1_000_000;
+///
+/// let integral = legendre_rule(square, a, b, num_steps);
+/// ```
+pub fn legendre_rule<
+    F1: Float + Sync,
+    F2: Float,
+    U: Unsigned + ToPrimitive + Copy + PartialOrd + Sync,
+>(
     f: fn(F1) -> F2,
     a: F1,
     b: F1,
     n: U,
 ) -> f64 {
-    glpair(n, n);
-    todo!()
+    let c = (b - a) / F1::from(2).unwrap();
+    let d = (b + a) / F1::from(2).unwrap();
+
+    let n = n.to_usize().unwrap();
+
+    let integral: f64 = (1..=n)
+        .into_par_iter()
+        .map(|k| {
+            // getting gauss-legendre weights and nodes
+            let (_, weight, x) = glpair(n, k);
+
+            // converting node to F1
+            let x = F1::from(x).unwrap();
+
+            // interval change formula
+            weight * f(c * x + d).to_f64().unwrap() * c.to_f64().unwrap()
+        })
+        .sum();
+    integral
 }
 
 #[cfg(test)]
 mod tests {
+
+    use std::ops::Div;
 
     use num::Float;
     use rayon::iter::{IntoParallelIterator, ParallelIterator};
@@ -6456,6 +6190,41 @@ mod tests {
     use test::{black_box, Bencher};
 
     const EPSILON: f64 = 10e-5;
+    const NUM_STEPS: usize = 1_000_000;
+
+    /// Test the numerical integration of ln(x) over the range ]0,1],
+    /// exact value of the numerical integration is -1.
+    /// Normally, one would not use Gauss-Legendre quadrature for this,
+    /// but for the sake of having an example with l > 100, this is included.
+    #[test]
+    fn test_legendre_rule() {
+        fn square(x: f64) -> f64 {
+            x.powi(2)
+        }
+
+        let a = 0.0;
+        let b = 1.0;
+
+        let integral = legendre_rule(square, a, b, NUM_STEPS);
+
+        let analytic_result: f64 = 1.0.div(3.0);
+
+        assert!((integral - analytic_result).abs() < EPSILON);
+    }
+
+    #[bench]
+    fn bench_integral_value(bencher: &mut Bencher) {
+        fn f1(x: f64) -> f64 {
+            x.powi(2)
+        }
+
+        let a = 0.0;
+        let b = 1.0;
+
+        bencher.iter(|| {
+            legendre_rule(f1, a, b, NUM_STEPS);
+        })
+    }
 
     /// Test the numerical integration of ln(x) over the range ]0,1],
     /// exact value of the numerical integration is -1.
@@ -6566,30 +6335,6 @@ mod tests {
             );
 
             assert!(integral - exact < EPSILON);
-        }
-    }
-
-    #[test]
-    fn test_legendre_theta() {
-        for l in 1..=10_usize {
-            println!("Gauss-Legendre rule of order {}", l);
-            println!("k \t theta \t cos(theta)");
-            for k in 1..=l {
-                let theta = legendre_theta(l, k);
-                println!("{} \t {} \t {}", k, theta, theta.cos());
-            }
-        }
-    }
-
-    #[test]
-    fn test_legendre_weight() {
-        for l in 1..=10_usize {
-            println!("Gauss-Legendre rule of order {}", l);
-            println!("k \t weight");
-            for k in 1..=l {
-                let weight = legendre_weights(l, k);
-                println!("{} \t {}", k, weight);
-            }
         }
     }
 }
