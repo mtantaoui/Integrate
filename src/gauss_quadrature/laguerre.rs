@@ -21,3 +21,48 @@
 //! ```
 //! for $i = 1,...,n$.
 //!
+
+use std::marker::{Send, Sync};
+use std::ops::AddAssign;
+
+use num::Float;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
+
+pub fn sturm_sequence<F: Float + Send + Sync + AddAssign>(
+    d: Vec<F>,
+    off: Vec<F>,
+    x: F,
+    n: usize,
+) -> usize {
+    let epsilon = F::from(f64::EPSILON).unwrap();
+
+    let (_, sign_changes_count) = (0..n)
+        .into_par_iter()
+        .map_init(
+            || (F::one(), 0),
+            |(mut q, mut k), i| {
+                q = if q.is_zero() {
+                    d[i] - x - off[i].abs() / epsilon
+                } else {
+                    d[i] - x - off[i] * off[i] / q
+                };
+                if q < F::zero() {
+                    k += 1;
+                }
+
+                (q, k)
+            },
+        )
+        .reduce(|| (F::one(), 0), |(_, k1), (_, k2)| (F::one(), k1 + k2));
+
+    sign_changes_count
+}
+
+fn givens_bisection<F: Float>(
+    diagonal: Vec<F>,
+    off_diagonal: Vec<F>,
+    relative_tolerance: F,
+    n: usize,
+) {
+    todo!()
+}
