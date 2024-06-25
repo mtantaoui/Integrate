@@ -1,6 +1,7 @@
 # Integrator
+
 a small, lightweight numerical integration written in Rust.
 
+# TODO:
 
-# TODO: 
- - Gauss Legendre: glpair must be used for the gauss legendre integral.
+- implement https://www.netlib.org/lapack/lawnspdf/lawn132.pdf
