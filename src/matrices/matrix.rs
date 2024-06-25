@@ -53,6 +53,7 @@ impl<F: Float + Sized + Send + Debug> FloatMatrix<F> {
         FloatMatrix { nrows, ncols, data }
     }
 
+    // works for row major column order only !!!
     pub fn transpose(&mut self) {
         let mut data_transposed = Vec::new();
 
