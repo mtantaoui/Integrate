@@ -74,7 +74,7 @@ fn givens_test() {
 
 fn create_matrix() {
     let nrows = 10;
-    let ncols = 3;
+    let ncols = 6;
     let data: Vec<f64> = (1..=nrows * ncols).map(|e| e as f64).collect();
 
     let mut float_matrix = FloatMatrix::new(data, nrows, ncols);

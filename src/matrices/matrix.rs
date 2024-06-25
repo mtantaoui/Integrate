@@ -1,5 +1,5 @@
 use core::fmt;
-use std::cmp::min;
+use std::cmp::{max, min};
 use std::ops::Add;
 use std::{fmt::Debug, marker::Send};
 
@@ -54,18 +54,33 @@ impl<F: Float + Sized + Send + Debug> FloatMatrix<F> {
     }
 
     pub fn transpose(&mut self) {
-        let (nrows, ncols) = (self.nrows, self.ncols);
-        (self.nrows, self.ncols) = (ncols, nrows);
+        let mut data_transposed = Vec::new();
 
-        for i in 0..self.nrows {
-            for j in 0..min(i, self.ncols) {
-                let previous_index = i * self.ncols + j;
-                let new_index = j * self.nrows + i;
-
-                self.data.swap(previous_index, new_index);
+        for j in 0..self.ncols {
+            for i in 0..self.nrows {
+                data_transposed.push(self.get_element(i, j));
             }
         }
+        self.data = data_transposed;
+
+        let (nrows, ncols) = (self.nrows, self.ncols);
+        (self.nrows, self.ncols) = (ncols, nrows);
     }
+
+    // // works only for square matrices
+    // pub fn transpose(&mut self) {
+    //     let (nrows, ncols) = (self.nrows, self.ncols);
+    //     (self.nrows, self.ncols) = (ncols, nrows);
+
+    //     for i in 0..self.nrows {
+    //         for j in 0..min(i, self.ncols) {
+    //             let previous_index = i * self.ncols + j;
+    //             let new_index = j * self.nrows + i;
+
+    //             self.data.swap(previous_index, new_index);
+    //         }
+    //     }
+    // }
 }
 
 impl<F: Float + Sized + Send + Sync + Debug> Zero for FloatMatrix<F> {
