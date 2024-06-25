@@ -1,10 +1,10 @@
 use core::fmt;
-use std::cmp::{max, min};
+use itertools::concat;
+use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 use std::ops::Add;
 use std::{fmt::Debug, marker::Send};
 
 use num::{Float, Zero};
-use rayon::prelude::*;
 
 #[derive(Clone)]
 pub struct FloatMatrix<F: Float> {
@@ -13,7 +13,7 @@ pub struct FloatMatrix<F: Float> {
     ncols: usize, // number of columns
 }
 
-impl<F: Float + Sized + Send + Debug> FloatMatrix<F> {
+impl<F: Float + Sized + Send + Debug + Sync> FloatMatrix<F> {
     pub fn new(data: Vec<F>, nrows: usize, ncols: usize) -> FloatMatrix<F> {
         if data.len() != nrows * ncols {
             panic!("creation failed");
@@ -55,14 +55,7 @@ impl<F: Float + Sized + Send + Debug> FloatMatrix<F> {
 
     // works for row major column order only !!!
     pub fn transpose(&mut self) {
-        let mut data_transposed = Vec::new();
-
-        for j in 0..self.ncols {
-            for i in 0..self.nrows {
-                data_transposed.push(self.get_element(i, j));
-            }
-        }
-        self.data = data_transposed;
+        self.data = transpose(self.data.as_ref(), self.nrows, self.ncols);
 
         let (nrows, ncols) = (self.nrows, self.ncols);
         (self.nrows, self.ncols) = (ncols, nrows);
@@ -119,7 +112,7 @@ impl<F: Float + Sized + Sync + Send> Add for FloatMatrix<F> {
     }
 }
 
-impl<F: Float + fmt::Debug + Send> fmt::Display for FloatMatrix<F> {
+impl<F: Float + fmt::Debug + Send + Sync> fmt::Display for FloatMatrix<F> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut output = "".to_owned();
         for i in 0..self.nrows {
@@ -154,4 +147,18 @@ fn is_zero<F: Float + Send + Sync>(data: &[F]) -> bool {
         .into_par_iter()
         .zip(data)
         .all(|(_, &element)| element.is_zero())
+}
+
+fn transpose<F: Float + Send + Sync>(data: &[F], nrows: usize, ncols: usize) -> Vec<F> {
+    (0..ncols)
+        .into_par_iter()
+        .map(|j| {
+            let mut row = Vec::new();
+            for i in 0..nrows {
+                let element = data[i * ncols + j];
+                row.push(element);
+            }
+            row
+        })
+        .reduce(|| Vec::new(), |acc, row| concat(vec![acc, row]))
 }
