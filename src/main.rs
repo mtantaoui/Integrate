@@ -1,12 +1,10 @@
 use integrator::{
     gauss_quadrature::laguerre::{givens_bisection, laguerre_polynomial_zeros},
-    matrices::matrix::FloatMatrix,
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
     romberg::romberg_method,
 };
-use num::Zero;
 
 const A: f64 = 0.0;
 const B: f64 = 1.0;
@@ -72,38 +70,7 @@ fn givens_test() {
     println!("Zeros : {:?}", zeros);
 }
 
-fn create_matrix() {
-    let nrows = 10;
-    let ncols = 6;
-    let data: Vec<f64> = (1..=nrows * ncols).map(|e| e as f64).collect();
-
-    let mut float_matrix = FloatMatrix::new(data, nrows, ncols);
-    let mut fm_copy = float_matrix.clone();
-
-    println!("before setting to zero: \n{}", float_matrix);
-
-    float_matrix.set_zero();
-    println!("after setting to zero: \n{}", float_matrix);
-
-    float_matrix.set_element(0, 0, 100.0);
-    println!("after setting to first element: \n{}", float_matrix);
-
-    float_matrix.set_element(2, 0, 100.0);
-    println!("after setting to last element: \n{}", float_matrix);
-
-    println!("add: \n{}", float_matrix + fm_copy.clone());
-
-    println!();
-    fm_copy.transpose();
-    println!("transposed \n{}", fm_copy);
-
-    let z: FloatMatrix<f64> = FloatMatrix::zero(4, 4);
-    println!("{}", z);
-}
-
 fn main() {
-    create_matrix();
-
     givens_test();
 
     romberg();

@@ -24,9 +24,11 @@
 
 use std::marker::{Send, Sync};
 use std::ops::{AddAssign, MulAssign};
+use std::sync::{Arc, Mutex};
 
 use num::{zero, Float};
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+// use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use rayon::prelude::*;
 
 pub fn sturm_sequence<F: Float + Send + Sync + AddAssign>(
     d: &[F],
@@ -35,21 +37,43 @@ pub fn sturm_sequence<F: Float + Send + Sync + AddAssign>(
     n: usize,
 ) -> usize {
     let epsilon = F::from(f64::EPSILON).unwrap();
+    let zero = F::zero();
 
-    let mut q = F::one();
-    let mut k: usize = 0;
+    let q = Arc::new(Mutex::new(F::one()));
 
-    for i in 0..n {
-        if q.is_zero() {
-            q = d[i] - x - off[i].abs() / epsilon;
-        } else {
-            q = d[i] - x - off[i] * off[i] / q;
-        }
-        if q < zero() {
-            k += 1;
-        }
-    }
-    k
+    (0..n)
+        .into_par_iter()
+        .map(|i| {
+            let q = Arc::clone(&q);
+            let mut k = 0;
+
+            let mut sturm = q.lock().unwrap();
+
+            if sturm.is_zero() {
+                *sturm = d[i] - x - off[i].abs() / epsilon;
+            } else {
+                *sturm = d[i] - x - off[i] * off[i] / *sturm;
+            }
+            if sturm.lt(&zero) {
+                k += 1;
+            }
+            k
+        })
+        .sum()
+
+    // let mut q = F::one();
+    // let mut k: usize = 0;
+    // for i in 0..n {
+    //     if q.is_zero() {
+    //         q = d[i] - x - off[i].abs() / epsilon;
+    //     } else {
+    //         q = d[i] - x - off[i] * off[i] / q;
+    //     }
+    //     if q < zero() {
+    //         k += 1;
+    //     }
+    // }
+    // k
 }
 
 pub fn givens_bisection<F: Float + Sync + Send + MulAssign + AddAssign>(
@@ -80,6 +104,9 @@ pub fn givens_bisection<F: Float + Sync + Send + MulAssign + AddAssign>(
             lower_bound
         }
     }
+
+    println!("sequential upper {}", upper_bound.to_f64().unwrap());
+    println!("sequential lower {}", lower_bound.to_f64().unwrap());
 
     // Calculate tolerances
     let mut epsilon = if upper_bound + lower_bound > zero() {
@@ -153,6 +180,48 @@ pub fn givens_bisection<F: Float + Sync + Send + MulAssign + AddAssign>(
     }
     eigenvalues
 }
+pub fn parallel_givens_bisection<F: Float + Sync + Send + MulAssign + AddAssign>(
+    diagonal: &[F],
+    off_diagonal: &mut [F],
+    mut relative_tolerance: F,
+    n: usize,
+) {
+    // Use Gerschgorin's Theorem to Find Upper and Lower Bounds for
+    // All Eigenvalues.
+    off_diagonal[0] = zero();
+
+    let mut upper_bound = diagonal[n - 1] + off_diagonal[n - 1].abs();
+    let mut lower_bound = diagonal[n - 1] - off_diagonal[n - 1].abs();
+
+    let upper_bound_mutex = Arc::new(Mutex::new(upper_bound));
+    let lower_bound_mutex = Arc::new(Mutex::new(lower_bound));
+
+    (0..n - 1).into_par_iter().rev().for_each(|i| {
+        let x = off_diagonal[i].abs() + off_diagonal[i + 1].abs();
+
+        let upper_bound_new_ref = Arc::clone(&upper_bound_mutex);
+        let mut upper_bound_locked = upper_bound_new_ref.lock().unwrap();
+        *upper_bound_locked = if diagonal[i] + x > *upper_bound_locked {
+            diagonal[i] + x
+        } else {
+            *upper_bound_locked
+        };
+
+        let lower_bound_new_ref = Arc::clone(&lower_bound_mutex);
+        let mut lower_bound_locked = lower_bound_new_ref.lock().unwrap();
+        *lower_bound_locked = if diagonal[i] - x < *lower_bound_locked {
+            diagonal[i] - x
+        } else {
+            *lower_bound_locked
+        };
+    });
+
+    upper_bound = *upper_bound_mutex.lock().unwrap();
+    lower_bound = *lower_bound_mutex.lock().unwrap();
+
+    println!("parallel upper {}", upper_bound.to_f64().unwrap());
+    println!("parallel lower {}", lower_bound.to_f64().unwrap());
+}
 
 pub fn laguerre_polynomial_zeros<
     F: Float + Send + Sync + MulAssign + AddAssign + std::fmt::Debug,
@@ -173,6 +242,7 @@ pub fn laguerre_polynomial_zeros<
     let relative_tolerance = F::from(1e-10).unwrap();
 
     let zeros = givens_bisection(x.as_ref(), &mut bj, relative_tolerance, n);
+    parallel_givens_bisection(x.as_ref(), &mut bj, relative_tolerance, n);
 
     zeros
 }
