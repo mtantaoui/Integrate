@@ -1,5 +1,7 @@
 use integrator::{
-    gauss_quadrature::laguerre::{givens_bisection, laguerre_polynomial_zeros},
+    gauss_quadrature::laguerre::{
+        givens_bisection, laguerre_polynomial_zeros, parallel_givens_bisection,
+    },
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
@@ -62,9 +64,11 @@ fn givens_test() {
     let n = diagonal.len();
     let relative_tolerance = 1e-10;
 
-    let result = givens_bisection(&diagonal, &mut offdiagonal, relative_tolerance, n);
+    // let result1 = givens_bisection(&diagonal, &mut offdiagonal, relative_tolerance, n);
+    let result2 = parallel_givens_bisection(&diagonal, &mut offdiagonal, relative_tolerance, n);
 
-    println!("eigenvalues {:?}", result);
+    // println!("eigenvalues {:?}", result1);
+    println!("parallel computed eigenvalues {:?}", result2);
 
     let zeros = laguerre_polynomial_zeros::<f64>(4);
     println!("Zeros : {:?}", zeros);

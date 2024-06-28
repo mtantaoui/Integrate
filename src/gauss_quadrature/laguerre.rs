@@ -23,6 +23,7 @@
 //!
 
 use std::marker::{Send, Sync};
+use std::mem;
 use std::ops::{AddAssign, MulAssign};
 use std::sync::{Arc, Mutex};
 
@@ -105,9 +106,6 @@ pub fn givens_bisection<F: Float + Sync + Send + MulAssign + AddAssign>(
         }
     }
 
-    println!("sequential upper {}", upper_bound.to_f64().unwrap());
-    println!("sequential lower {}", lower_bound.to_f64().unwrap());
-
     // Calculate tolerances
     let mut epsilon = if upper_bound + lower_bound > zero() {
         upper_bound
@@ -180,12 +178,13 @@ pub fn givens_bisection<F: Float + Sync + Send + MulAssign + AddAssign>(
     }
     eigenvalues
 }
-pub fn parallel_givens_bisection<F: Float + Sync + Send + MulAssign + AddAssign>(
-    diagonal: &[F],
-    off_diagonal: &mut [F],
+
+pub fn parallel_givens_bisection<'a, F: Float + Sync + Send + MulAssign + AddAssign>(
+    diagonal: &'a [F],
+    off_diagonal: &'a mut [F],
     mut relative_tolerance: F,
     n: usize,
-) {
+) -> Vec<F> {
     // Use Gerschgorin's Theorem to Find Upper and Lower Bounds for
     // All Eigenvalues.
     off_diagonal[0] = zero();
@@ -219,8 +218,93 @@ pub fn parallel_givens_bisection<F: Float + Sync + Send + MulAssign + AddAssign>
     upper_bound = *upper_bound_mutex.lock().unwrap();
     lower_bound = *lower_bound_mutex.lock().unwrap();
 
-    println!("parallel upper {}", upper_bound.to_f64().unwrap());
-    println!("parallel lower {}", lower_bound.to_f64().unwrap());
+    // Calculate tolerances
+    let mut epsilon = if upper_bound + lower_bound > zero() {
+        upper_bound
+    } else {
+        lower_bound
+    };
+    epsilon *= F::from(f64::EPSILON).unwrap();
+
+    relative_tolerance = if relative_tolerance < epsilon {
+        epsilon
+    } else {
+        relative_tolerance
+    };
+
+    // Initialize Upperbounds and Lowerbounds
+
+    let eigenvalues_mutex = Arc::new(Mutex::new(vec![upper_bound; n]));
+    let lower_bounds_mutex = Arc::new(Mutex::new(vec![lower_bound; n]));
+
+    // Find all eigenvalues from largest to smallest storing
+    // from smallest to largest.
+
+    let xupper_mutex = Arc::new(Mutex::new(upper_bound));
+
+    (0..n).into_par_iter().rev().for_each(|k| {
+        let xupper_new_ref = Arc::clone(&xupper_mutex);
+        let mut xupper_locked = xupper_new_ref.lock().unwrap();
+
+        let lower_bounds_new_ref = Arc::clone(&lower_bounds_mutex);
+        let mut lower_bounds_locked = lower_bounds_new_ref.lock().unwrap();
+
+        let eigenvalues_new_ref = Arc::clone(&eigenvalues_mutex);
+        let mut eigenvalues_locked = eigenvalues_new_ref.lock().unwrap();
+
+        let mut xlower = lower_bound;
+
+        for i in (0..=k).rev() {
+            if xlower < lower_bounds_locked[i] {
+                xlower = lower_bounds_locked[i];
+                break;
+            }
+        }
+
+        *xupper_locked = if *xupper_locked > eigenvalues_locked[k] {
+            eigenvalues_locked[k]
+        } else {
+            *xupper_locked
+        };
+
+        let mut tolerance = F::from(2.0).unwrap()
+            * F::from(f64::EPSILON).unwrap()
+            * (xlower.abs() + xupper_locked.abs())
+            + relative_tolerance;
+
+        while *xupper_locked - xlower > tolerance {
+            let xmid = F::from(0.5).unwrap() * (*xupper_locked + xlower);
+
+            let j = sturm_sequence(diagonal, off_diagonal, xmid, n) as isize - 1;
+
+            if j < k as isize {
+                if j < 0 {
+                    lower_bounds_locked[0] = xmid;
+                    xlower = xmid;
+                } else {
+                    xlower = xmid;
+                    lower_bounds_locked[j as usize + 1] = xmid;
+
+                    if eigenvalues_locked[j as usize] > xmid {
+                        eigenvalues_locked[j as usize] = xmid;
+                    }
+                }
+            } else {
+                *xupper_locked = xmid;
+            }
+
+            tolerance = F::from(2.0).unwrap()
+                * F::from(f64::EPSILON).unwrap()
+                * (xlower.abs() + xupper_locked.abs())
+                + relative_tolerance;
+        }
+        eigenvalues_locked[k] = F::from(0.5).unwrap() * (*xupper_locked + xlower);
+    });
+
+    let mut eigenvalues_guard = eigenvalues_mutex.lock().unwrap();
+
+    mem::take(&mut *eigenvalues_guard)
+    // eigenvalues_guard.to_vec()
 }
 
 pub fn laguerre_polynomial_zeros<
