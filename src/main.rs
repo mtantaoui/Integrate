@@ -58,17 +58,25 @@ fn romberg() {
     println!("romberg: {}", integral)
 }
 
+fn parallel_givens_test() {
+    let diagonal = vec![1.0, 2.0, 3.0, 4.0];
+    let mut offdiagonal = vec![0.0, 1.0, 2.0, 3.0];
+    let n = diagonal.len();
+    let relative_tolerance = 1e-10;
+    let result2 = parallel_givens_bisection(&diagonal, &mut offdiagonal, relative_tolerance, n);
+    println!("parallel computed eigenvalues {:?}", result2);
+
+    let zeros = laguerre_polynomial_zeros::<f64>(4);
+    println!("Zeros : {:?}", zeros);
+}
+
 fn givens_test() {
     let diagonal = vec![1.0, 2.0, 3.0, 4.0];
     let mut offdiagonal = vec![0.0, 1.0, 2.0, 3.0];
     let n = diagonal.len();
     let relative_tolerance = 1e-10;
-
-    // let result1 = givens_bisection(&diagonal, &mut offdiagonal, relative_tolerance, n);
-    let result2 = parallel_givens_bisection(&diagonal, &mut offdiagonal, relative_tolerance, n);
-
-    // println!("eigenvalues {:?}", result1);
-    println!("parallel computed eigenvalues {:?}", result2);
+    let result1 = givens_bisection(&diagonal, &mut offdiagonal, relative_tolerance, n);
+    println!("eigenvalues {:?}", result1);
 
     let zeros = laguerre_polynomial_zeros::<f64>(4);
     println!("Zeros : {:?}", zeros);
@@ -76,7 +84,8 @@ fn givens_test() {
 
 fn main() {
     givens_test();
-
+    println!();
+    parallel_givens_test();
     romberg();
     rectangle();
     trapezoidal();
