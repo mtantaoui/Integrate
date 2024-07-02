@@ -22,311 +22,98 @@
 //! for $i = 1,...,n$.
 //!
 
-use std::marker::{Send, Sync};
-use std::mem;
-use std::ops::{AddAssign, MulAssign};
-use std::sync::{Arc, Mutex};
+use num::{zero, Float, One, Zero};
+use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
+use rayon::slice::ParallelSlice;
 
-use num::{zero, Float};
-// use rayon::iter::{IntoParallelIterator, ParallelIterator};
-use rayon::prelude::*;
+fn max<F: Float>(a: F, b: F) -> F {
+    let two: F = F::one() + F::one();
+    ((a + b) + (a - b).abs()) / two
+}
 
-pub fn sturm_sequence<F: Float + Send + Sync + AddAssign>(
-    d: &[F],
-    off: &[F],
+fn min<F: Float>(a: F, b: F) -> F {
+    let two: F = F::one() + F::one();
+    ((a + b) - (a - b).abs()) / two
+}
+
+/// Computes Sturm element associatd with characteristic polynomial
+/// using recursive formula.
+fn sturm_element<F: Float + Send + Sync + std::fmt::Debug>(
+    diagonal: &[F],
+    off_diagonal: &[F],
     x: F,
     n: usize,
-) -> usize {
-    let epsilon = F::from(f64::EPSILON).unwrap();
-    let zero = F::zero();
+) -> F {
+    if n.is_zero() {
+        return F::one();
+    }
 
-    let q = Arc::new(Mutex::new(F::one()));
+    if n.is_one() {
+        return diagonal[0] - x;
+    }
+    let (p_r_1, p_r_2) = rayon::join(
+        || sturm_element(diagonal, off_diagonal, x, n - 1),
+        || sturm_element(diagonal, off_diagonal, x, n - 2),
+    );
 
-    (0..n)
-        .into_par_iter()
-        .map(|i| {
-            let q = Arc::clone(&q);
-            let mut k = 0;
-
-            let mut sturm = q.lock().unwrap();
-
-            if sturm.is_zero() {
-                *sturm = d[i] - x - off[i].abs() / epsilon;
-            } else {
-                *sturm = d[i] - x - off[i] * off[i] / *sturm;
-            }
-            if sturm.lt(&zero) {
-                k += 1;
-            }
-            k
-        })
-        .sum()
-
-    // let mut q = F::one();
-    // let mut k: usize = 0;
-    // for i in 0..n {
-    //     if q.is_zero() {
-    //         q = d[i] - x - off[i].abs() / epsilon;
-    //     } else {
-    //         q = d[i] - x - off[i] * off[i] / q;
-    //     }
-    //     if q < zero() {
-    //         k += 1;
-    //     }
-    // }
-    // k
+    (diagonal[n - 1] - x) * p_r_1 - off_diagonal[n - 1].powi(2) * p_r_2
 }
 
-pub fn givens_bisection<F: Float + Sync + Send + MulAssign + AddAssign>(
+pub fn sturm_sequence<F: Float + Send + Sync + std::fmt::Debug>(
+    diagonal: &[F],
+    off_diagonal: &[F],
+    x: F,
+) -> Vec<F> {
+    let mut sequence = Vec::new();
+    let n = diagonal.len();
+
+    (0..n + 1)
+        .into_par_iter()
+        .map(|i| sturm_element(diagonal, off_diagonal, x, i))
+        .collect_into_vec(&mut sequence);
+
+    sequence
+}
+
+pub fn nb_eigenvalues_lt_x<F: Float + Send + Sync + std::fmt::Debug>(
     diagonal: &[F],
     off_diagonal: &mut [F],
-    mut relative_tolerance: F,
-    n: usize,
-) -> Vec<F> {
-    // Use Gerschgorin's Theorem to Find Upper and Lower Bounds for
-    // All Eigenvalues.
-    off_diagonal[0] = zero();
+    x: F,
+) -> usize {
+    let sturm_seq = sturm_sequence(diagonal, off_diagonal, x);
 
-    let mut upper_bound = diagonal[n - 1] + off_diagonal[n - 1].abs();
-    let mut lower_bound = diagonal[n - 1] - off_diagonal[n - 1].abs();
+    let nb_sign_changes: usize = sturm_seq
+        .par_windows(2)
+        .map(|window| if window[0] * window[1] < zero() { 1 } else { 0 })
+        .sum();
 
-    for i in (0..=n - 2).rev() {
-        let x = off_diagonal[i].abs() + off_diagonal[i + 1].abs();
+    let (lower_bound, upper_bound) = gershgorin_bounds(diagonal, off_diagonal);
 
-        upper_bound = if diagonal[i] + x > upper_bound {
-            diagonal[i] + x
-        } else {
-            upper_bound
-        };
+    println!("lower : {:?} \nupper : {:?}", lower_bound, upper_bound);
 
-        lower_bound = if diagonal[i] - x < lower_bound {
-            diagonal[i] - x
-        } else {
-            lower_bound
-        }
-    }
-
-    // Calculate tolerances
-    let mut epsilon = if upper_bound + lower_bound > zero() {
-        upper_bound
-    } else {
-        lower_bound
-    };
-    epsilon *= F::from(f64::EPSILON).unwrap();
-
-    relative_tolerance = if relative_tolerance < epsilon {
-        epsilon
-    } else {
-        relative_tolerance
-    };
-
-    // Initialize Upperbounds and Lowerbounds
-
-    let mut eigenvalues = vec![upper_bound; n];
-    let mut lower_bounds = vec![lower_bound; n];
-
-    // Find all eigenvalues from largest to smallest storing
-    // from smallest to largest.
-
-    let mut xupper = upper_bound;
-    for k in (0..=n - 1).rev() {
-        let mut xlower = lower_bound;
-
-        for i in (0..=k).rev() {
-            if xlower < lower_bounds[i] {
-                xlower = lower_bounds[i];
-                break;
-            }
-        }
-
-        xupper = if xupper > eigenvalues[k] {
-            eigenvalues[k]
-        } else {
-            xupper
-        };
-
-        let mut tolerance =
-            F::from(2.0).unwrap() * F::from(f64::EPSILON).unwrap() * (xlower.abs() + xupper.abs())
-                + relative_tolerance;
-
-        while xupper - xlower > tolerance {
-            let xmid = F::from(0.5).unwrap() * (xupper + xlower);
-
-            let j = sturm_sequence(diagonal, off_diagonal, xmid, n) as isize - 1;
-
-            if j < k as isize {
-                if j < 0 {
-                    lower_bounds[0] = xmid;
-                    xlower = xmid;
-                } else {
-                    xlower = xmid;
-                    lower_bounds[j as usize + 1] = xmid;
-
-                    if eigenvalues[j as usize] > xmid {
-                        eigenvalues[j as usize] = xmid;
-                    }
-                }
-            } else {
-                xupper = xmid;
-            }
-            tolerance = F::from(2.0).unwrap()
-                * F::from(f64::EPSILON).unwrap()
-                * (xlower.abs() + xupper.abs())
-                + relative_tolerance;
-        }
-        eigenvalues[k] = F::from(0.5).unwrap() * (xupper + xlower);
-    }
-    eigenvalues
+    nb_sign_changes
 }
 
-pub fn parallel_givens_bisection<'a, F: Float + Sync + Send + MulAssign + AddAssign>(
-    diagonal: &'a [F],
-    off_diagonal: &'a mut [F],
-    mut relative_tolerance: F,
-    n: usize,
-) -> Vec<F> {
-    // Use Gerschgorin's Theorem to Find Upper and Lower Bounds for
-    // All Eigenvalues.
+fn gershgorin_bounds<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &mut [F]) -> (F, F) {
+    let n = diagonal.len();
+
     off_diagonal[0] = zero();
 
-    let mut upper_bound = diagonal[n - 1] + off_diagonal[n - 1].abs();
-    let mut lower_bound = diagonal[n - 1] - off_diagonal[n - 1].abs();
-
-    let upper_bound_mutex = Arc::new(Mutex::new(upper_bound));
-    let lower_bound_mutex = Arc::new(Mutex::new(lower_bound));
-
-    (0..n - 1).into_par_iter().rev().for_each(|i| {
-        let x = off_diagonal[i].abs() + off_diagonal[i + 1].abs();
-
-        let upper_bound_new_ref = Arc::clone(&upper_bound_mutex);
-        let mut upper_bound_locked = upper_bound_new_ref.lock().unwrap();
-        *upper_bound_locked = if diagonal[i] + x > *upper_bound_locked {
-            diagonal[i] + x
-        } else {
-            *upper_bound_locked
-        };
-
-        let lower_bound_new_ref = Arc::clone(&lower_bound_mutex);
-        let mut lower_bound_locked = lower_bound_new_ref.lock().unwrap();
-        *lower_bound_locked = if diagonal[i] - x < *lower_bound_locked {
-            diagonal[i] - x
-        } else {
-            *lower_bound_locked
-        };
-    });
-
-    upper_bound = *upper_bound_mutex.lock().unwrap();
-    lower_bound = *lower_bound_mutex.lock().unwrap();
-
-    // Calculate tolerances
-    let mut epsilon = if upper_bound + lower_bound > zero() {
-        upper_bound
-    } else {
-        lower_bound
-    };
-    epsilon *= F::from(f64::EPSILON).unwrap();
-
-    relative_tolerance = if relative_tolerance < epsilon {
-        epsilon
-    } else {
-        relative_tolerance
-    };
-
-    // Initialize Upperbounds and Lowerbounds
-
-    let eigenvalues_mutex = Arc::new(Mutex::new(vec![upper_bound; n]));
-    let lower_bounds_mutex = Arc::new(Mutex::new(vec![lower_bound; n]));
-
-    // Find all eigenvalues from largest to smallest storing
-    // from smallest to largest.
-
-    let xupper_mutex = Arc::new(Mutex::new(upper_bound));
-
-    (0..n).into_par_iter().rev().for_each(|k| {
-        let xupper_new_ref = Arc::clone(&xupper_mutex);
-        let mut xupper_locked = xupper_new_ref.lock().unwrap();
-
-        let lower_bounds_new_ref = Arc::clone(&lower_bounds_mutex);
-        let mut lower_bounds_locked = lower_bounds_new_ref.lock().unwrap();
-
-        let eigenvalues_new_ref = Arc::clone(&eigenvalues_mutex);
-        let mut eigenvalues_locked = eigenvalues_new_ref.lock().unwrap();
-
-        let mut xlower = lower_bound;
-
-        for i in (0..=k).rev() {
-            if xlower < lower_bounds_locked[i] {
-                xlower = lower_bounds_locked[i];
-                break;
-            }
-        }
-
-        *xupper_locked = if *xupper_locked > eigenvalues_locked[k] {
-            eigenvalues_locked[k]
-        } else {
-            *xupper_locked
-        };
-
-        let mut tolerance = F::from(2.0).unwrap()
-            * F::from(f64::EPSILON).unwrap()
-            * (xlower.abs() + xupper_locked.abs())
-            + relative_tolerance;
-
-        while *xupper_locked - xlower > tolerance {
-            let xmid = F::from(0.5).unwrap() * (*xupper_locked + xlower);
-
-            let j = sturm_sequence(diagonal, off_diagonal, xmid, n) as isize - 1;
-
-            if j < k as isize {
-                if j < 0 {
-                    lower_bounds_locked[0] = xmid;
-                    xlower = xmid;
-                } else {
-                    xlower = xmid;
-                    lower_bounds_locked[j as usize + 1] = xmid;
-
-                    if eigenvalues_locked[j as usize] > xmid {
-                        eigenvalues_locked[j as usize] = xmid;
-                    }
-                }
-            } else {
-                *xupper_locked = xmid;
-            }
-
-            tolerance = F::from(2.0).unwrap()
-                * F::from(f64::EPSILON).unwrap()
-                * (xlower.abs() + xupper_locked.abs())
-                + relative_tolerance;
-        }
-        eigenvalues_locked[k] = F::from(0.5).unwrap() * (*xupper_locked + xlower);
-    });
-
-    let mut eigenvalues_guard = eigenvalues_mutex.lock().unwrap();
-
-    mem::take(&mut *eigenvalues_guard)
-    // eigenvalues_guard.to_vec()
-}
-
-pub fn laguerre_polynomial_zeros<
-    F: Float + Send + Sync + MulAssign + AddAssign + std::fmt::Debug,
->(
-    n: usize,
-) -> Vec<F> {
-    // define the jacobi matrix
-    let mut bj: Vec<F> = (0..n)
+    let (lower_bound, upper_bound) = (0..n - 1)
         .into_par_iter()
-        .map(|i| F::from(i).unwrap())
-        .collect();
+        .map(|i| {
+            let x = off_diagonal[i].abs() + off_diagonal[i + 1].abs();
+            (diagonal[i] - x, diagonal[i] + x)
+        })
+        .reduce(
+            || {
+                (
+                    diagonal[n - 1] - off_diagonal[n - 1].abs(),
+                    diagonal[n - 1] + off_diagonal[n - 1].abs(),
+                )
+            }, // the "identity" is 0 in both columns
+            |(l1, u1), (l2, u2)| (min(l1, l2), max(u1, u2)),
+        );
 
-    let x: Vec<F> = (0..n)
-        .into_par_iter()
-        .map(|i| F::from(2 * i + 1).unwrap())
-        .collect();
-
-    let relative_tolerance = F::from(1e-10).unwrap();
-
-    let zeros = givens_bisection(x.as_ref(), &mut bj, relative_tolerance, n);
-    parallel_givens_bisection(x.as_ref(), &mut bj, relative_tolerance, n);
-
-    zeros
+    (lower_bound, upper_bound)
 }

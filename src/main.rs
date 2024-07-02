@@ -1,7 +1,5 @@
 use integrator::{
-    gauss_quadrature::laguerre::{
-        givens_bisection, laguerre_polynomial_zeros, parallel_givens_bisection,
-    },
+    gauss_quadrature::laguerre::nb_eigenvalues_lt_x,
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
@@ -58,34 +56,22 @@ fn romberg() {
     println!("romberg: {}", integral)
 }
 
-fn parallel_givens_test() {
-    let diagonal = vec![1.0, 2.0, 3.0, 4.0];
-    let mut offdiagonal = vec![0.0, 1.0, 2.0, 3.0];
-    let n = diagonal.len();
-    let relative_tolerance = 1e-10;
-    let result2 = parallel_givens_bisection(&diagonal, &mut offdiagonal, relative_tolerance, n);
-    println!("parallel computed eigenvalues {:?}", result2);
-
-    let zeros = laguerre_polynomial_zeros::<f64>(4);
-    println!("Zeros : {:?}", zeros);
-}
-
 fn givens_test() {
     let diagonal = vec![1.0, 2.0, 3.0, 4.0];
     let mut offdiagonal = vec![0.0, 1.0, 2.0, 3.0];
-    let n = diagonal.len();
-    let relative_tolerance = 1e-10;
-    let result1 = givens_bisection(&diagonal, &mut offdiagonal, relative_tolerance, n);
-    println!("eigenvalues {:?}", result1);
 
-    let zeros = laguerre_polynomial_zeros::<f64>(4);
-    println!("Zeros : {:?}", zeros);
+    // let diagonal = vec![2.0, 1.0, 0.0, 4.0];
+    // let mut offdiagonal = vec![0.0, 3.0, 0.0, 1.0];
+
+    let x = 4.23606798;
+
+    let nb_eig = nb_eigenvalues_lt_x(diagonal.as_ref(), &mut offdiagonal, x);
+
+    println!("number of eignevalues less than {} is {}", x, nb_eig)
 }
 
 fn main() {
     givens_test();
-    println!();
-    parallel_givens_test();
     romberg();
     rectangle();
     trapezoidal();
