@@ -1,10 +1,11 @@
 use integrator::{
-    gauss_quadrature::laguerre::nb_eigenvalues_lt_x,
+    gauss_quadrature::laguerre::eigenvalue,
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
     romberg::romberg_method,
 };
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 const A: f64 = 0.0;
 const B: f64 = 1.0;
@@ -57,17 +58,23 @@ fn romberg() {
 }
 
 fn givens_test() {
-    let diagonal = vec![1.0, 2.0, 3.0, 4.0];
-    let mut offdiagonal = vec![0.0, 1.0, 2.0, 3.0];
+    // let diagonal = vec![1.0, 2.0, 3.0, 4.0];
+    // let mut offdiagonal = vec![0.0, 1.0, 2.0, 3.0];
 
-    // let diagonal = vec![2.0, 1.0, 0.0, 4.0];
-    // let mut offdiagonal = vec![0.0, 3.0, 0.0, 1.0];
+    let diagonal = vec![2.0, 1.0, 0.0, 4.0];
+    let offdiagonal = vec![0.0, 3.0, 0.0, 1.0];
 
-    let x = 4.23606798;
+    // let diagonal = vec![1.0, 1.0, 1.0, 1.0];
+    // let mut offdiagonal = vec![0.0, 0.0, 0.0, 0.0];
 
-    let nb_eig = nb_eigenvalues_lt_x(diagonal.as_ref(), &mut offdiagonal, x);
+    let n = diagonal.len();
 
-    println!("number of eignevalues less than {} is {}", x, nb_eig)
+    let eigenvalues: Vec<f64> = (0..n)
+        .into_par_iter()
+        .map(|k| eigenvalue(diagonal.as_slice(), offdiagonal.as_slice(), k))
+        .collect();
+
+    println!("eig: {:?}", eigenvalues);
 }
 
 fn main() {

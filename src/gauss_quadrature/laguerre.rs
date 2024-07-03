@@ -22,6 +22,8 @@
 //! for $i = 1,...,n$.
 //!
 
+use std::fmt::Debug;
+
 use num::{zero, Float, One, Zero};
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 use rayon::slice::ParallelSlice;
@@ -38,12 +40,7 @@ fn min<F: Float>(a: F, b: F) -> F {
 
 /// Computes Sturm element associatd with characteristic polynomial
 /// using recursive formula.
-fn sturm_element<F: Float + Send + Sync + std::fmt::Debug>(
-    diagonal: &[F],
-    off_diagonal: &[F],
-    x: F,
-    n: usize,
-) -> F {
+fn sturm_element<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F], x: F, n: usize) -> F {
     if n.is_zero() {
         return F::one();
     }
@@ -59,11 +56,7 @@ fn sturm_element<F: Float + Send + Sync + std::fmt::Debug>(
     (diagonal[n - 1] - x) * p_r_1 - off_diagonal[n - 1].powi(2) * p_r_2
 }
 
-pub fn sturm_sequence<F: Float + Send + Sync + std::fmt::Debug>(
-    diagonal: &[F],
-    off_diagonal: &[F],
-    x: F,
-) -> Vec<F> {
+pub fn sturm_sequence<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F], x: F) -> Vec<F> {
     let mut sequence = Vec::new();
     let n = diagonal.len();
 
@@ -75,9 +68,9 @@ pub fn sturm_sequence<F: Float + Send + Sync + std::fmt::Debug>(
     sequence
 }
 
-pub fn nb_eigenvalues_lt_x<F: Float + Send + Sync + std::fmt::Debug>(
+pub fn nb_eigenvalues_lt_x<F: Float + Send + Sync>(
     diagonal: &[F],
-    off_diagonal: &mut [F],
+    off_diagonal: &[F],
     x: F,
 ) -> usize {
     let sturm_seq = sturm_sequence(diagonal, off_diagonal, x);
@@ -87,17 +80,13 @@ pub fn nb_eigenvalues_lt_x<F: Float + Send + Sync + std::fmt::Debug>(
         .map(|window| if window[0] * window[1] < zero() { 1 } else { 0 })
         .sum();
 
-    let (lower_bound, upper_bound) = gershgorin_bounds(diagonal, off_diagonal);
-
-    println!("lower : {:?} \nupper : {:?}", lower_bound, upper_bound);
-
     nb_sign_changes
 }
 
-fn gershgorin_bounds<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &mut [F]) -> (F, F) {
+fn gershgorin_bounds<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F]) -> (F, F) {
     let n = diagonal.len();
 
-    off_diagonal[0] = zero();
+    // off_diagonal[0] = zero();
 
     let (lower_bound, upper_bound) = (0..n - 1)
         .into_par_iter()
@@ -111,9 +100,42 @@ fn gershgorin_bounds<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &mut 
                     diagonal[n - 1] - off_diagonal[n - 1].abs(),
                     diagonal[n - 1] + off_diagonal[n - 1].abs(),
                 )
-            }, // the "identity" is 0 in both columns
+            },
             |(l1, u1), (l2, u2)| (min(l1, l2), max(u1, u2)),
         );
 
     (lower_bound, upper_bound)
+}
+
+pub fn eigenvalue<F: Float + Send + Sync + Debug>(
+    diagonal: &[F],
+    off_diagonal: &[F],
+    k: usize,
+) -> F {
+    let n = diagonal.len();
+    let epsilon = F::from(f64::EPSILON).unwrap();
+    let two = F::one() + F::one();
+
+    let (lower_bound, upper_bound) = gershgorin_bounds(diagonal, off_diagonal);
+
+    let mut tolerance = two * epsilon * (upper_bound.abs() + lower_bound.abs());
+
+    let mut xupper = upper_bound;
+    let mut xlower = lower_bound;
+
+    while (xupper - xlower).abs() > tolerance {
+        let xmid = (xupper + xlower) / two;
+
+        let nb_eig_lt_xmid = nb_eigenvalues_lt_x(diagonal, off_diagonal, xmid);
+
+        if nb_eig_lt_xmid >= n - k {
+            xupper = xmid;
+        } else {
+            xlower = xmid;
+        }
+
+        tolerance = epsilon * (xupper.abs() + xlower.abs());
+    }
+
+    (xlower + xupper) / two
 }
