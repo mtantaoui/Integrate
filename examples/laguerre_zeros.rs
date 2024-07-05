@@ -2,11 +2,13 @@ use num::{zero, Float, One, Zero};
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 use rayon::slice::ParallelSlice;
 
+#[time_graph::instrument]
 fn max<F: Float>(a: F, b: F) -> F {
     let two: F = F::one() + F::one();
     ((a + b) + (a - b).abs()) / two
 }
 
+#[time_graph::instrument]
 fn min<F: Float>(a: F, b: F) -> F {
     let two: F = F::one() + F::one();
     ((a + b) - (a - b).abs()) / two
@@ -44,27 +46,51 @@ pub fn sturm_sequence<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F]
     sequence
 }
 
+// #[time_graph::instrument]
+// pub fn nb_eigenvalues_lt_x<F: Float + Send + Sync>(
+//     diagonal: &[F],
+//     off_diagonal: &[F],
+//     x: F,
+// ) -> usize {
+//     let sturm_seq = sturm_sequence(diagonal, off_diagonal, x);
+
+//     let nb_sign_changes: usize = sturm_seq
+//         .par_windows(2)
+//         .map(|window| if window[0] * window[1] < zero() { 1 } else { 0 })
+//         .sum();
+
+//     nb_sign_changes
+// }
+
 #[time_graph::instrument]
 pub fn nb_eigenvalues_lt_x<F: Float + Send + Sync>(
     diagonal: &[F],
     off_diagonal: &[F],
     x: F,
 ) -> usize {
-    let sturm_seq = sturm_sequence(diagonal, off_diagonal, x);
+    let mut q = F::one();
+    let epsilon = F::from(f64::EPSILON).unwrap();
+    let mut k: usize = 0;
+    let n = diagonal.len();
 
-    let nb_sign_changes: usize = sturm_seq
-        .par_windows(2)
-        .map(|window| if window[0] * window[1] < zero() { 1 } else { 0 })
-        .sum();
+    for i in 0..n {
+        q = if q.is_zero() {
+            diagonal[i] - x - off_diagonal[i].abs() / epsilon
+        } else {
+            diagonal[i] - x - off_diagonal[i].powi(2) / q
+        };
 
-    nb_sign_changes
+        if q.is_sign_negative() {
+            k += 1;
+        }
+    }
+
+    k
 }
 
 #[time_graph::instrument]
 fn gershgorin_bounds<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F]) -> (F, F) {
     let n = diagonal.len();
-
-    // off_diagonal[0] = zero();
 
     let (lower_bound, upper_bound) = (0..n - 1)
         .into_par_iter()
@@ -145,24 +171,22 @@ pub fn laguerre_polynomial_zeros(n: usize) -> Vec<f64> {
 
 #[time_graph::instrument]
 fn zeros() {
-    let n = 20;
-    let zeros: Vec<f64> = laguerre_polynomial_zeros(n);
+    let n = 100;
+    laguerre_polynomial_zeros(n);
 }
 
 fn main() {
     time_graph::enable_data_collection(true);
 
     zeros();
+
     let graph = time_graph::get_full_graph();
 
-    println!("{}", graph.as_dot());
+    // println!("{}", graph.as_dot());
 
-    #[cfg(feature = "json")]
-    println!("{}", graph.as_json());
+    // println!("{}", graph.as_json());
 
-    #[cfg(feature = "table")]
-    println!("{}", graph.as_table());
+    // println!("{}", graph.as_table());
 
-    #[cfg(feature = "table")]
     println!("{}", graph.as_short_table());
 }

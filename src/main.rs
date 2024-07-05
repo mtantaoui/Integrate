@@ -55,12 +55,11 @@ fn romberg() {
     let integral = romberg_method(square, A, B, NUM_STEPS);
     println!("romberg: {}", integral)
 }
-#[time_graph::instrument]
-fn givens_test() {
-    let n = 30;
-    let zeros: Vec<f64> = laguerre_polynomial_zeros(n);
 
-    println!("eig: {:?}", zeros);
+fn givens_test() {
+    let n = 1000;
+    let zeros: Vec<f64> = laguerre_polynomial_zeros(n);
+    // println!("eig: {:?}", zeros);
 }
 
 fn main() {

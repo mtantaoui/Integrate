@@ -36,49 +36,29 @@ fn min<F: Float>(a: F, b: F) -> F {
     ((a + b) - (a - b).abs()) / two
 }
 
-/// Computes Sturm element associatd with characteristic polynomial
-/// using recursive formula.
-fn sturm_element<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F], x: F, n: usize) -> F {
-    if n.is_zero() {
-        return F::one();
-    }
-
-    if n.is_one() {
-        return diagonal[0] - x;
-    }
-    let (p_r_1, p_r_2) = rayon::join(
-        || sturm_element(diagonal, off_diagonal, x, n - 1),
-        || sturm_element(diagonal, off_diagonal, x, n - 2),
-    );
-
-    (diagonal[n - 1] - x) * p_r_1 - off_diagonal[n - 1].powi(2) * p_r_2
-}
-
-pub fn sturm_sequence<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F], x: F) -> Vec<F> {
-    let mut sequence = Vec::new();
-    let n = diagonal.len();
-
-    (0..n + 1)
-        .into_par_iter()
-        .map(|i| sturm_element(diagonal, off_diagonal, x, i))
-        .collect_into_vec(&mut sequence);
-
-    sequence
-}
-
 pub fn nb_eigenvalues_lt_x<F: Float + Send + Sync>(
     diagonal: &[F],
     off_diagonal: &[F],
     x: F,
 ) -> usize {
-    let sturm_seq = sturm_sequence(diagonal, off_diagonal, x);
+    let mut q = F::one();
+    let epsilon = F::from(f64::EPSILON).unwrap();
+    let mut k: usize = 0;
+    let n = diagonal.len();
 
-    let nb_sign_changes: usize = sturm_seq
-        .par_windows(2)
-        .map(|window| if window[0] * window[1] < zero() { 1 } else { 0 })
-        .sum();
+    for i in 0..n {
+        q = if q.is_zero() {
+            diagonal[i] - x - off_diagonal[i].abs() / epsilon
+        } else {
+            diagonal[i] - x - off_diagonal[i].powi(2) / q
+        };
 
-    nb_sign_changes
+        if q.is_sign_negative() {
+            k += 1;
+        }
+    }
+
+    k
 }
 
 fn gershgorin_bounds<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F]) -> (F, F) {
@@ -112,7 +92,7 @@ fn kth_eigenvalue<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F], k:
 
     let (mut xlower, mut xupper) = gershgorin_bounds(diagonal, off_diagonal);
 
-    let mut tolerance = two * epsilon * (xupper.abs() + xlower.abs());
+    let mut tolerance = epsilon * (xupper.abs() + xlower.abs());
 
     while (xupper - xlower).abs() > tolerance {
         let xmid = (xupper + xlower) / two;
@@ -157,5 +137,5 @@ pub fn laguerre_polynomial_zeros(n: usize) -> Vec<f64> {
 
     let zeros = eigenvalues(diagonal.as_slice(), off_diagonal.as_slice());
 
-    return zeros;
+    zeros
 }
