@@ -20,11 +20,16 @@
 //! A_i = \dfrac{n!^2}{ x_i  L_{n-1} (x_i) ^2  }
 //! ```
 //! for $i = 1,...,n$.
-//!
 
-use num::{zero, Float, One, Zero};
-use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
-use rayon::slice::ParallelSlice;
+extern crate test;
+
+use std::f64::NAN;
+
+use num::{Float, ToPrimitive};
+
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
+
+use super::bessel::bessel_j0_zeros;
 
 fn max<F: Float>(a: F, b: F) -> F {
     let two: F = F::one() + F::one();
@@ -138,4 +143,35 @@ pub fn laguerre_polynomial_zeros(n: usize) -> Vec<f64> {
     let zeros = eigenvalues(diagonal.as_slice(), off_diagonal.as_slice());
 
     zeros
+}
+
+pub fn laguerre_polynomial_zeros_approximate(n: usize) -> Vec<f64> {
+    (1..=n)
+        .into_par_iter()
+        .map(|i| approximate_laguerre_zero(i, n))
+        .collect()
+}
+
+fn approximate_laguerre_zero(m: usize, n: usize) -> f64 {
+    let n_f = n.to_f64().unwrap();
+
+    let j_0_m = bessel_j0_zeros(m);
+    let k_n: f64 = n_f + 0.5;
+
+    let term1 = j_0_m.powi(2) / (4.0 * k_n);
+    let term2 = 1.0 + (j_0_m.powi(2) - 2.0) / (48.0 * k_n.powi(2));
+
+    term1 * term2
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use test::Bencher;
+
+    #[bench]
+    fn bench_laguerre_zeros(bencher: &mut Bencher) {
+        bencher.iter(|| laguerre_polynomial_zeros(10_000))
+    }
 }

@@ -1,66 +1,15 @@
-use num::{zero, Float, One, Zero};
-use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
-use rayon::slice::ParallelSlice;
+use num::Float;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
-#[time_graph::instrument]
 fn max<F: Float>(a: F, b: F) -> F {
     let two: F = F::one() + F::one();
     ((a + b) + (a - b).abs()) / two
 }
 
-#[time_graph::instrument]
 fn min<F: Float>(a: F, b: F) -> F {
     let two: F = F::one() + F::one();
     ((a + b) - (a - b).abs()) / two
 }
-
-/// Computes Sturm element associatd with characteristic polynomial
-/// using recursive formula.
-#[time_graph::instrument]
-fn sturm_element<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F], x: F, n: usize) -> F {
-    if n.is_zero() {
-        return F::one();
-    }
-
-    if n.is_one() {
-        return diagonal[0] - x;
-    }
-    let (p_r_1, p_r_2) = rayon::join(
-        || sturm_element(diagonal, off_diagonal, x, n - 1),
-        || sturm_element(diagonal, off_diagonal, x, n - 2),
-    );
-
-    (diagonal[n - 1] - x) * p_r_1 - off_diagonal[n - 1].powi(2) * p_r_2
-}
-
-#[time_graph::instrument]
-pub fn sturm_sequence<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F], x: F) -> Vec<F> {
-    let mut sequence = Vec::new();
-    let n = diagonal.len();
-
-    (0..n + 1)
-        .into_par_iter()
-        .map(|i| sturm_element(diagonal, off_diagonal, x, i))
-        .collect_into_vec(&mut sequence);
-
-    sequence
-}
-
-// #[time_graph::instrument]
-// pub fn nb_eigenvalues_lt_x<F: Float + Send + Sync>(
-//     diagonal: &[F],
-//     off_diagonal: &[F],
-//     x: F,
-// ) -> usize {
-//     let sturm_seq = sturm_sequence(diagonal, off_diagonal, x);
-
-//     let nb_sign_changes: usize = sturm_seq
-//         .par_windows(2)
-//         .map(|window| if window[0] * window[1] < zero() { 1 } else { 0 })
-//         .sum();
-
-//     nb_sign_changes
-// }
 
 #[time_graph::instrument]
 pub fn nb_eigenvalues_lt_x<F: Float + Send + Sync>(
@@ -171,7 +120,7 @@ pub fn laguerre_polynomial_zeros(n: usize) -> Vec<f64> {
 
 #[time_graph::instrument]
 fn zeros() {
-    let n = 100;
+    let n = 1_000;
     laguerre_polynomial_zeros(n);
 }
 
