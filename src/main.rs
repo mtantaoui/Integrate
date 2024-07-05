@@ -1,11 +1,10 @@
 use integrator::{
-    gauss_quadrature::laguerre::eigenvalue,
+    gauss_quadrature::laguerre::laguerre_polynomial_zeros,
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
     romberg::romberg_method,
 };
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 const A: f64 = 0.0;
 const B: f64 = 1.0;
@@ -56,25 +55,12 @@ fn romberg() {
     let integral = romberg_method(square, A, B, NUM_STEPS);
     println!("romberg: {}", integral)
 }
-
+#[time_graph::instrument]
 fn givens_test() {
-    // let diagonal = vec![1.0, 2.0, 3.0, 4.0];
-    // let mut offdiagonal = vec![0.0, 1.0, 2.0, 3.0];
+    let n = 30;
+    let zeros: Vec<f64> = laguerre_polynomial_zeros(n);
 
-    let diagonal = vec![2.0, 1.0, 0.0, 4.0];
-    let offdiagonal = vec![0.0, 3.0, 0.0, 1.0];
-
-    // let diagonal = vec![1.0, 1.0, 1.0, 1.0];
-    // let mut offdiagonal = vec![0.0, 0.0, 0.0, 0.0];
-
-    let n = diagonal.len();
-
-    let eigenvalues: Vec<f64> = (0..n)
-        .into_par_iter()
-        .map(|k| eigenvalue(diagonal.as_slice(), offdiagonal.as_slice(), k))
-        .collect();
-
-    println!("eig: {:?}", eigenvalues);
+    println!("eig: {:?}", zeros);
 }
 
 fn main() {

@@ -10,3 +10,6 @@ itertools = "0.13.0"
 num = "0.4.1"
 num-traits = "0.2.18"
 rayon = "1.10.0"
+
+[dev-dependencies]
+time-graph = { version = "0.3.1", features = ["json", "table"] }

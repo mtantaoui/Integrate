@@ -1,27 +1,3 @@
-//! Gauss-Laguerre quadrature formulas are used to integrate functions $f(x) e^{-x}$ over the positive $x$-axis.
-//!
-//! With respect to the inner product
-//!
-//! ```math
-//!  \langle f,g \rangle = \int_{0}^{+\infty} f(x) * g(x) * w(x) dx
-//! ```
-//!
-//! the Laguerre polynomials $L_n(x) = e^x \dfrac{\partial^{n} x^n e^{-x}}{\partial x^n}$ for $n > 0$, and $L_0(x) = 1$ form an orthogonal
-//! family of polynomials with weight function $w(x) = e^{-x}$ on the positive $x$-axis.
-//!
-//! The $n$-point Gauss-Laguerre quadrature formula, $GL_n ( f(x) )$, for approximating the integral of $f(x) e^{-x}$ over $\left[0, \infty \right[$,
-//! is given by
-//! ```math
-//! GL_n ( f(x) ) = A_1 f(x_1) + ··· + A_n f(x_n)
-//! ```
-//! where $xi$ , $i = 1,...,n$, are the zeros of $L_n$ and
-//!
-//! ```math
-//! A_i = \dfrac{n!^2}{ x_i  L_{n-1} (x_i) ^2  }
-//! ```
-//! for $i = 1,...,n$.
-//!
-
 use num::{zero, Float, One, Zero};
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 use rayon::slice::ParallelSlice;
@@ -38,6 +14,7 @@ fn min<F: Float>(a: F, b: F) -> F {
 
 /// Computes Sturm element associatd with characteristic polynomial
 /// using recursive formula.
+#[time_graph::instrument]
 fn sturm_element<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F], x: F, n: usize) -> F {
     if n.is_zero() {
         return F::one();
@@ -54,6 +31,7 @@ fn sturm_element<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F], x: 
     (diagonal[n - 1] - x) * p_r_1 - off_diagonal[n - 1].powi(2) * p_r_2
 }
 
+#[time_graph::instrument]
 pub fn sturm_sequence<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F], x: F) -> Vec<F> {
     let mut sequence = Vec::new();
     let n = diagonal.len();
@@ -66,6 +44,7 @@ pub fn sturm_sequence<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F]
     sequence
 }
 
+#[time_graph::instrument]
 pub fn nb_eigenvalues_lt_x<F: Float + Send + Sync>(
     diagonal: &[F],
     off_diagonal: &[F],
@@ -81,6 +60,7 @@ pub fn nb_eigenvalues_lt_x<F: Float + Send + Sync>(
     nb_sign_changes
 }
 
+#[time_graph::instrument]
 fn gershgorin_bounds<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F]) -> (F, F) {
     let n = diagonal.len();
 
@@ -105,6 +85,7 @@ fn gershgorin_bounds<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F])
     (lower_bound, upper_bound)
 }
 
+#[time_graph::instrument]
 fn kth_eigenvalue<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F], k: usize) -> F {
     let n = diagonal.len();
     let epsilon = F::from(f64::EPSILON).unwrap();
@@ -131,6 +112,7 @@ fn kth_eigenvalue<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F], k:
     (xlower + xupper) / two
 }
 
+#[time_graph::instrument]
 fn eigenvalues<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F]) -> Vec<F> {
     let n = diagonal.len();
     let eigenvalues: Vec<F> = (0..n)
@@ -140,6 +122,7 @@ fn eigenvalues<F: Float + Send + Sync>(diagonal: &[F], off_diagonal: &[F]) -> Ve
     eigenvalues
 }
 
+#[time_graph::instrument]
 pub fn laguerre_polynomial_zeros(n: usize) -> Vec<f64> {
     // define the Jacobi matrix (tridiagonal symmetric matrix)
 
@@ -158,4 +141,28 @@ pub fn laguerre_polynomial_zeros(n: usize) -> Vec<f64> {
     let zeros = eigenvalues(diagonal.as_slice(), off_diagonal.as_slice());
 
     return zeros;
+}
+
+#[time_graph::instrument]
+fn zeros() {
+    let n = 20;
+    let zeros: Vec<f64> = laguerre_polynomial_zeros(n);
+}
+
+fn main() {
+    time_graph::enable_data_collection(true);
+
+    zeros();
+    let graph = time_graph::get_full_graph();
+
+    println!("{}", graph.as_dot());
+
+    #[cfg(feature = "json")]
+    println!("{}", graph.as_json());
+
+    #[cfg(feature = "table")]
+    println!("{}", graph.as_table());
+
+    #[cfg(feature = "table")]
+    println!("{}", graph.as_short_table());
 }
