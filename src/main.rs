@@ -1,6 +1,6 @@
 use integrator::{
     gauss_quadrature::laguerre::{
-        laguerre_polynomial_zeros, laguerre_polynomial_zeros_approximate,
+        laguerre_polynomial_approximate_zeros, laguerre_polynomial_zeros,
     },
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
@@ -61,7 +61,7 @@ fn romberg() {
 fn laguerre_roots() {
     let n = 100;
     let computed = laguerre_polynomial_zeros(n);
-    let mut approximated = laguerre_polynomial_zeros_approximate(n);
+    let mut approximated = laguerre_polynomial_approximate_zeros(n);
 
     approximated.reverse();
 

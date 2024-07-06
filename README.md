@@ -12,6 +12,12 @@ a small, lightweight numerical integration written in Rust.
 - compare sequential strum sequence to parallelized strun sequence.
 - parallelize givens bisection algorithm
 
+# references for Laguerre polynomial zeros
+
+- http://naturalunits.blogspot.com/2014/06/zeros-of-laguerre-polynomial.html
+- https://en.wikipedia.org/wiki/Laguerre_polynomials#Recursive_definition,_closed_form,_and_generating_function (Recursive definition, closed form, and generating function)
+- compare (approximate + ITP method) of zero-finding to computing eigenvalues of companion matrix method.
+
 # references for Givens bisection algorithm:
 
 - https://math.mit.edu/~edelman/homepage/papers/sturm.pdf
