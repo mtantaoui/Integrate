@@ -23,7 +23,9 @@
 
 extern crate test;
 
-use num::{Float, ToPrimitive};
+use std::f64::NAN;
+
+use num::{one, Float, One, ToPrimitive, Zero};
 
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
@@ -148,6 +150,34 @@ pub fn laguerre_polynomial_approximate_zeros(n: usize) -> Vec<f64> {
         .into_par_iter()
         .map(|m| approximate_laguerre_zero(m, n))
         .collect()
+}
+
+pub fn eval_laguerre<F: Float>(n: usize, x: F) -> F {
+    if n.is_zero() {
+        return F::one();
+    }
+
+    if n.is_one() {
+        return F::one() - x;
+    }
+
+    let mut l_k_1 = F::one(); // L_{k-1}
+    let mut l_k = F::one() - x; // L_k
+
+    let mut l = F::nan();
+
+    for k in 2..=n {
+        let a = F::from(2 * (k - 1) + 1).unwrap();
+        let b = F::from(k - 1).unwrap();
+        let c = F::from(k).unwrap();
+
+        l = ((a - x) * l_k - b * l_k_1) / c; // L_{k+1}
+
+        l_k_1 = l_k;
+        l_k = l;
+    }
+
+    l
 }
 
 fn approximate_laguerre_zero(m: usize, n: usize) -> f64 {
@@ -311,26 +341,18 @@ mod tests {
         assert!(is_close)
     }
 
-    #[test]
-    fn test_laguerre_polynomial_approximate_zeros() {
-        let n = 100;
-        // let roots = laguerre_polynomial_zeros(n);
-        let roots = laguerre_polynomial_approximate_zeros(n);
-        for m in 0..n {
-            let root = FIRST_100_ROOTS[m];
-            let approximated_root = roots[m];
-
-            println!("approximation: {}, root: {}", approximated_root, root);
-        }
+    #[bench]
+    fn bench_laguerre_poly_eval(bencher: &mut Bencher) {
+        bencher.iter(|| eval_laguerre(100_000, 2.0))
     }
 
     #[bench]
     fn bench_laguerre_zeros(bencher: &mut Bencher) {
-        bencher.iter(|| laguerre_polynomial_zeros(10_000))
+        bencher.iter(|| laguerre_polynomial_zeros(100))
     }
 
     #[bench]
     fn bench_laguerre_approximate_zeros(bencher: &mut Bencher) {
-        bencher.iter(|| laguerre_polynomial_approximate_zeros(10_000))
+        bencher.iter(|| laguerre_polynomial_approximate_zeros(100))
     }
 }
