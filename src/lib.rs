@@ -39,6 +39,5 @@
 //!   to each subinterval.
 
 pub mod gauss_quadrature;
-pub mod matrices;
 pub mod newton_cotes;
 pub mod romberg;

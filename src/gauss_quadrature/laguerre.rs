@@ -23,9 +23,7 @@
 
 extern crate test;
 
-use std::f64::NAN;
-
-use num::{one, Float, One, ToPrimitive, Zero};
+use num::{Float, One, ToPrimitive, Zero};
 
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
@@ -190,28 +188,6 @@ fn approximate_laguerre_zero(m: usize, n: usize) -> f64 {
     let term2 = 1.0 + (j_0_m.powi(2) - 2.0) / (48.0 * k_n.powi(2));
 
     term1 * term2
-}
-
-fn laguerre_zeros_bounds(m: usize, n: usize) -> (f64, f64) {
-    // converting n to f64
-    let n_f = n.to_f64().unwrap();
-
-    // converting m to f64
-    let m_f = m.to_f64().unwrap();
-
-    // Bessel J0 function m'th positive zero
-    let j_0_m = bessel_j0_zeros(m);
-
-    let k_n: f64 = n_f + 0.5;
-    let k_m: f64 = m_f + 0.5;
-
-    let lower_bound = j_0_m.powi(2) / (4.0 * k_n);
-
-    // computing second term in formula for simplifocation
-    let upper_bound_term = (4.0 * k_m + 0.25).sqrt();
-    let upper_bound = (k_m / k_n) * (2.0 * k_m + upper_bound_term);
-
-    (lower_bound, upper_bound)
 }
 
 #[cfg(test)]
