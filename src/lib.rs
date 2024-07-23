@@ -41,3 +41,4 @@
 pub mod gauss_quadrature;
 pub mod newton_cotes;
 pub mod romberg;
+mod utils;

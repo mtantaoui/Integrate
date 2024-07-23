@@ -1,7 +1,4 @@
 use integrator::{
-    gauss_quadrature::laguerre::{
-        laguerre_polynomial_approximate_zeros, laguerre_polynomial_zeros,
-    },
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
@@ -58,21 +55,7 @@ fn romberg() {
     println!("romberg: {}", integral)
 }
 
-fn laguerre_roots() {
-    let n = 100;
-    let computed = laguerre_polynomial_zeros(n);
-    let mut approximated = laguerre_polynomial_approximate_zeros(n);
-
-    approximated.reverse();
-
-    for (c, a) in computed.into_iter().zip(approximated) {
-        println!("computed: {}", c);
-        println!("approximated: {}", a);
-
-        println!();
-        println!();
-    }
-}
+fn laguerre_roots() {}
 
 fn main() {
     laguerre_roots();
