@@ -3,6 +3,7 @@ use integrator::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
     romberg::romberg_method,
+    utils::orthogonal_polynomials::{LaguerrePolynomial, OrthogonalPolynomial},
 };
 
 const A: f64 = 0.0;
@@ -55,7 +56,10 @@ fn romberg() {
     println!("romberg: {}", integral)
 }
 
-fn laguerre_roots() {}
+fn laguerre_roots() {
+    let lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(1_000);
+    println!("{:?}", lag.zeros());
+}
 
 fn main() {
     laguerre_roots();

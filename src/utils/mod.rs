@@ -1,1 +1,1 @@
-pub(crate) mod newton_raphson;
+pub mod orthogonal_polynomials;

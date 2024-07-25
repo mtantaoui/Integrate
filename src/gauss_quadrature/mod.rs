@@ -8,6 +8,6 @@
 //! and Gauss-Chebyshev used to integrate a function of the form $\frac{f(x)}{\sqrt( 1-x^2 )}$ over the interval $\[-1,1\]$.
 //!
 
-mod bessel;
+pub mod bessel;
 pub mod laguerre;
 pub mod legendre;

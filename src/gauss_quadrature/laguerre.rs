@@ -25,7 +25,6 @@ extern crate test;
 
 use num::{zero, Float, One, ToPrimitive, Zero};
 
-use crate::utils::newton_raphson::newton_raphson;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use super::bessel::bessel_j0_zeros;
