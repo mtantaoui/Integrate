@@ -131,7 +131,7 @@ impl<F: Float + Sync + Send + AddAssign> OrthogonalPolynomial<F> for LaguerrePol
             // If the location of the root relative to a is less than //
             // the tolerance, return the estimate of the root.        //
 
-            if delta.abs() < tolerance {
+            if delta.abs() < tolerance || num_iterations > 100 {
                 break;
             }
 
