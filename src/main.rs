@@ -57,8 +57,27 @@ fn romberg() {
 }
 
 fn laguerre_roots() {
-    let lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(1_000);
-    println!("{:?}", lag.zeros());
+    let n = 100;
+    let lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(n);
+    let roots = lag.zeros();
+    let ams_roots = lag.zeros_amsterdam();
+    let ub = lag.zeros_upper_bounds();
+    let lb = lag.zeros_lower_bounds();
+
+    for i in 0..n {
+        println!("{} ", lag.eval(roots[i]))
+    }
+
+    // for (i, ((root, upper_bound), lower_bound)) in roots.into_iter().zip(ub).zip(lb).enumerate() {
+    //     println!(
+    //         "{} - root:{} - upper:{} - lower:{} - {}",
+    //         i,
+    //         root,
+    //         upper_bound,
+    //         lower_bound,
+    //         root <= upper_bound
+    //     )
+    // }
 }
 
 fn main() {
