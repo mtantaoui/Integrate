@@ -1,9 +1,10 @@
 use integrator::{
+    gauss_quadrature::laguerre::LaguerrePolynomial,
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
     romberg::romberg_method,
-    utils::orthogonal_polynomials::{LaguerrePolynomial, OrthogonalPolynomial},
+    utils::orthogonal_polynomials::OrthogonalPolynomial,
 };
 
 const A: f64 = 0.0;
@@ -56,32 +57,13 @@ fn romberg() {
     println!("romberg: {}", integral)
 }
 
-fn laguerre_roots() {
+fn laguerre_zeros() {
     let n = 100;
-    let lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(n);
-    let roots = lag.zeros();
-    let ams_roots = lag.zeros_amsterdam();
-    let ub = lag.zeros_upper_bounds();
-    let lb = lag.zeros_lower_bounds();
-
-    for i in 0..n {
-        println!("{} ", lag.eval(roots[i]))
-    }
-
-    // for (i, ((root, upper_bound), lower_bound)) in roots.into_iter().zip(ub).zip(lb).enumerate() {
-    //     println!(
-    //         "{} - root:{} - upper:{} - lower:{} - {}",
-    //         i,
-    //         root,
-    //         upper_bound,
-    //         lower_bound,
-    //         root <= upper_bound
-    //     )
-    // }
+    let _lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(n);
 }
 
 fn main() {
-    laguerre_roots();
+    laguerre_zeros();
 
     romberg();
     rectangle();

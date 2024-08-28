@@ -23,99 +23,119 @@
 
 extern crate test;
 
-use num::{zero, Float, One, ToPrimitive, Zero};
+use std::{fmt::Debug, marker::PhantomData, ops::AddAssign};
 
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use num::{one, zero, Float, One, Zero};
+use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
-use super::bessel::bessel_j0_zeros;
+use crate::utils::{
+    matrix::TridiagonalSymmetricFloatMatrix, orthogonal_polynomials::OrthogonalPolynomial,
+};
 
-/// TODO: Documentation and examples
-pub fn laguerre_polynomial_zeros(n: usize) -> Vec<f64> {
-    // let approx_zeros = laguerre_polynomial_zeros(n);
-
-    // (0..=n).into_par_iter().map(|i| {
-    //     let l_n = |x: f64| eval_laguerre(i, x);
-
-    //     let dl_n = |x: f64| eval_laguerre_derivative(i, x);
-
-    //     // newton_raphson(l_n, dl_n, 0.0, f64::EPSILON);
-
-    //     let a: f64 = 0.0;
-    //     let tolerance: f64 = 0.00000001;
-
-    //     newton_raphson::<f64>(l_n, dl_n, a, tolerance)
-    // });
-
-    vec![0.0; 5]
+#[derive(Clone, Debug)]
+pub struct LaguerrePolynomial<F: Float> {
+    degree: usize,
+    _x: PhantomData<F>,
 }
 
-/// TODO: Documentation and examples
-fn laguerre_polynomial_approximate_zeros(n: usize) -> Vec<f64> {
-    (1..=n)
-        .into_par_iter()
-        .map(|m| approximate_laguerre_zero(m, n))
-        .collect()
+impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for LaguerrePolynomial<F> {
+    fn new(degree: usize) -> LaguerrePolynomial<F> {
+        LaguerrePolynomial {
+            degree,
+            _x: PhantomData,
+        }
+    }
+
+    fn eval(&self, x: F) -> F {
+        if self.degree.is_zero() {
+            return F::one();
+        }
+
+        if self.degree.is_one() {
+            return F::one() - x;
+        }
+
+        let mut l_k_1 = F::one(); // L_{k-1}
+        let mut l_k = F::one() - x; // L_k
+
+        let mut l = F::nan();
+
+        for k in 2..=self.degree {
+            let a = F::from(2 * (k - 1) + 1).unwrap();
+            let b = F::from(k - 1).unwrap();
+            let c = F::from(k).unwrap();
+
+            l = ((a - x) * l_k - b * l_k_1) / c; // L_{k+1}
+
+            l_k_1 = l_k;
+            l_k = l;
+        }
+
+        l
+    }
+
+    fn eval_derivative(&self, x: F) -> F {
+        if x.is_zero() || self.degree.is_zero() {
+            return zero();
+        }
+
+        let l_n_x = self.eval(x); // L_n(x)
+        let l_n_1_x = LaguerrePolynomial::new(self.degree - 1).eval(x); // L_{n-1}(x)
+
+        let n = F::from(self.degree).unwrap(); // converting n to Float to compute derivative
+
+        (n * l_n_x - n * l_n_1_x) / x
+    }
+
+    fn zeros(&self) -> Vec<F> {
+        // define the Jacobi matrix (tridiagonal symmetric matrix)
+
+        // we first define the sub-diagonal
+        let offdiagonal: Vec<F> = (0..self.degree)
+            .into_par_iter()
+            .map(|o| F::from(o).unwrap())
+            .collect();
+
+        // then the diagonal
+        let diagonal: Vec<F> = (0..self.degree)
+            .into_par_iter()
+            .map(|i| {
+                let d = 2 * i + 1;
+                F::from(d).unwrap()
+            })
+            .collect();
+
+        let matrix = TridiagonalSymmetricFloatMatrix::new(diagonal, offdiagonal);
+
+        matrix.eigenvalues()
+    }
 }
 
-/// TODO: Documentation and examples
-fn eval_laguerre<F: Float>(n: usize, x: F) -> F {
-    if n.is_zero() {
-        return F::one();
-    }
+fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<F>, Vec<F>) {
+    let l_n: LaguerrePolynomial<F> = LaguerrePolynomial::new(n);
+    let l_n_plus_1: LaguerrePolynomial<F> = LaguerrePolynomial::new(n + 1);
 
-    if n.is_one() {
-        return F::one() - x;
-    }
+    let zeros = l_n.zeros();
 
-    let mut l_k_1 = F::one(); // L_{k-1}
-    let mut l_k = F::one() - x; // L_k
+    let n = F::from(n).unwrap();
+    let two = F::one() + F::one();
 
-    let mut l = F::nan();
+    let weights = zeros
+        .par_iter()
+        .map(|x_i| {
+            let numerator = *x_i;
+            let denominator = (n + one()).powf(two) * l_n_plus_1.eval(*x_i).powf(two);
 
-    for k in 2..=n {
-        let a = F::from(2 * (k - 1) + 1).unwrap();
-        let b = F::from(k - 1).unwrap();
-        let c = F::from(k).unwrap();
+            numerator / denominator
+        })
+        .collect();
 
-        l = ((a - x) * l_k - b * l_k_1) / c; // L_{k+1}
-
-        l_k_1 = l_k;
-        l_k = l;
-    }
-
-    l
-}
-
-fn eval_laguerre_derivative<F: Float>(n: usize, x: F) -> F {
-    if x.is_zero() || n.is_zero() {
-        return zero();
-    }
-
-    let l_n_x = eval_laguerre(n, x); // L_n(x)
-    let l_n_1_x = eval_laguerre(n - 1, x); // L_{n-1}(x)
-
-    let n = F::from(n).unwrap(); // converting n to Float to compute derivative
-
-    let l_derivative = (n * l_n_x - n * l_n_1_x) / x;
-
-    return l_derivative;
-}
-
-/// TODO: Documentation and examples
-fn approximate_laguerre_zero(m: usize, n: usize) -> f64 {
-    let n_f = n.to_f64().unwrap();
-
-    let j_0_m = bessel_j0_zeros(m);
-    let k_n: f64 = n_f + 0.5;
-
-    let term1 = j_0_m.powi(2) / (4.0 * k_n);
-    let term2 = 1.0 + (j_0_m.powi(2) - 2.0) / (48.0 * k_n.powi(2));
-
-    term1 * term2
+    (zeros, weights)
 }
 
 #[cfg(test)]
 mod tests {
+    use rayon::iter::IndexedParallelIterator;
 
     use super::*;
     use test::Bencher;
@@ -123,23 +143,23 @@ mod tests {
     const EPSILON: f64 = 10e-10;
 
     const L_N_X: &[f64; 17] = &[
-        0.1000000000000000E+01,
+        1.0,
         0.0000000000000000E+00,
-        -0.5000000000000000E+00,
-        -0.6666666666666667E+00,
-        -0.6250000000000000E+00,
-        -0.4666666666666667E+00,
-        -0.2569444444444444E+00,
-        -0.4047619047619048E-01,
-        0.1539930555555556E+00,
-        0.3097442680776014E+00,
-        0.4189459325396825E+00,
-        0.4801341790925124E+00,
-        0.4962122235082305E+00,
-        -0.4455729166666667E+00,
-        0.8500000000000000E+00,
-        -0.3166666666666667E+01,
-        0.3433333333333333E+02,
+        -5E-1,
+        -6.666_666_666_666_667E-1,
+        -6.25E-1,
+        -4.666_666_666_666_667E-1,
+        -2.569_444_444_444_444E-1,
+        -4.047_619_047_619_048E-2,
+        1.539_930_555_555_556E-1,
+        3.097_442_680_776_014E-1,
+        4.189_459_325_396_825E-1,
+        4.801_341_790_925_124E-1,
+        4.962_122_235_082_305E-1,
+        -4.455_729_166_666_667E-1,
+        8.5E-1,
+        -3.166_666_666_666_667,
+        3.433_333_333_333_333E1,
     ];
 
     const L_N_X_DERIV: &[f64; 17] = &[
@@ -170,129 +190,246 @@ mod tests {
     ];
 
     // computed using scipy roots_laguerre
-    const FIRST_100_ROOTS: [f64; 100] = [
-        1.43861470e-02,
-        7.58036120e-02,
-        1.86314102e-01,
-        3.45969181e-01,
-        5.54810938e-01,
-        8.12891284e-01,
-        1.12027384e+00,
-        1.47703433e+00,
-        1.88326083e+00,
-        2.33905385e+00,
-        2.84452654e+00,
-        3.39980483e+00,
-        4.00502758e+00,
-        4.66034684e+00,
-        5.36592799e+00,
-        6.12195003e+00,
-        6.92860583e+00,
-        7.78610238e+00,
-        8.69466111e+00,
-        9.65451824e+00,
-        1.06659251e+01,
-        1.17291485e+01,
-        1.28444712e+01,
-        1.40121922e+01,
-        1.52326276e+01,
-        1.65061105e+01,
-        1.78329919e+01,
-        1.92136416e+01,
-        2.06484480e+01,
-        2.21378194e+01,
-        2.36821848e+01,
-        2.52819939e+01,
-        2.69377187e+01,
-        2.86498542e+01,
-        3.04189188e+01,
-        3.22454560e+01,
-        3.41300351e+01,
-        3.60732524e+01,
-        3.80757324e+01,
-        4.01381291e+01,
-        4.22611275e+01,
-        4.44454451e+01,
-        4.66918335e+01,
-        4.90010802e+01,
-        5.13740103e+01,
-        5.38114889e+01,
-        5.63144230e+01,
-        5.88837640e+01,
-        6.15205103e+01,
-        6.42257101e+01,
-        6.70004645e+01,
-        6.98459306e+01,
-        7.27633254e+01,
-        7.57539295e+01,
-        7.88190913e+01,
-        8.19602322e+01,
-        8.51788512e+01,
-        8.84765308e+01,
-        9.18549433e+01,
-        9.53158573e+01,
-        9.88611460e+01,
-        1.02492795e+02,
-        1.06212911e+02,
-        1.10023736e+02,
-        1.13927651e+02,
-        1.17927199e+02,
-        1.22025092e+02,
-        1.26224231e+02,
-        1.30527723e+02,
-        1.34938905e+02,
-        1.39461365e+02,
-        1.44098970e+02,
-        1.48855901e+02,
-        1.53736688e+02,
-        1.58746249e+02,
-        1.63889946e+02,
-        1.69173640e+02,
-        1.74603761e+02,
-        1.80187391e+02,
-        1.85932360e+02,
-        1.91847369e+02,
-        1.97942133e+02,
-        2.04227560e+02,
-        2.10715973e+02,
-        2.17421393e+02,
-        2.24359895e+02,
-        2.31550068e+02,
-        2.39013630e+02,
-        2.46776241e+02,
-        2.54868629e+02,
-        2.63328168e+02,
-        2.72201170e+02,
-        2.81546328e+02,
-        2.91440134e+02,
-        3.01985855e+02,
-        3.13329534e+02,
-        3.25691263e+02,
-        3.39435102e+02,
-        3.55261312e+02,
-        3.74984113e+02,
+    const FIRST_100_LAGUERRE_ROOTS: [f64; 100] = [
+        374.984113,
+        355.261312,
+        339.435102,
+        325.691263,
+        313.329534,
+        301.985855,
+        291.440134,
+        281.546328,
+        272.20117,
+        263.328168,
+        254.868629,
+        246.776241,
+        239.01363,
+        231.550068,
+        224.359895,
+        217.421393,
+        210.715973,
+        204.22756,
+        197.942133,
+        191.847369,
+        185.93236,
+        180.187391,
+        174.603761,
+        169.17364,
+        163.889946,
+        158.746249,
+        153.736688,
+        148.855901,
+        144.09897,
+        139.461365,
+        134.938905,
+        130.527723,
+        126.224231,
+        122.025092,
+        117.927199,
+        113.927651,
+        110.023736,
+        106.212911,
+        102.492795,
+        98.861146,
+        95.3158573,
+        91.8549433,
+        88.4765308,
+        85.1788512,
+        81.9602322,
+        78.8190913,
+        75.7539295,
+        72.7633254,
+        69.8459306,
+        67.0004645,
+        64.2257101,
+        61.5205103,
+        58.883764,
+        56.314423,
+        53.8114889,
+        51.3740103,
+        49.0010802,
+        46.6918335,
+        44.4454451,
+        42.2611275,
+        40.1381291,
+        38.0757324,
+        36.0732524,
+        34.1300351,
+        32.245456,
+        30.4189188,
+        28.6498542,
+        26.9377187,
+        25.2819939,
+        23.6821848,
+        22.1378194,
+        20.648448,
+        19.2136416,
+        17.8329919,
+        16.5061105,
+        15.2326276,
+        14.0121922,
+        12.8444712,
+        11.7291485,
+        10.6659251,
+        9.65451824,
+        8.69466111,
+        7.78610238,
+        6.92860583,
+        6.12195003,
+        5.36592799,
+        4.66034684,
+        4.00502758,
+        3.39980483,
+        2.84452654,
+        2.33905385,
+        1.88326083,
+        1.47703433,
+        1.12027384,
+        0.812891284,
+        0.554810938,
+        0.345969181,
+        0.186314102,
+        0.075803612,
+        0.014386147,
+    ];
+
+    const FIRST_100_LAGUERRE_WEIGHTS: [f64; 100] = [
+        3.24656516e-162,
+        8.90503141e-154,
+        5.6260373e-147,
+        4.64686301e-141,
+        9.8824946e-136,
+        7.71361149e-131,
+        2.73996547e-126,
+        5.11064048e-122,
+        5.53964175e-118,
+        3.7620973e-114,
+        1.69596926e-110,
+        5.31213273e-107,
+        1.19948442e-103,
+        2.01265479e-100,
+        2.57396151e-97,
+        2.56339222e-94,
+        2.02484835e-91,
+        1.28896375e-88,
+        6.70480123e-86,
+        2.88487552e-83,
+        1.03790059e-80,
+        3.15247255e-78,
+        8.15375261e-76,
+        1.80985953e-73,
+        3.47185478e-71,
+        5.79263076e-69,
+        8.45495649e-67,
+        1.08536745e-64,
+        1.23137657e-62,
+        1.24023504e-60,
+        1.11356697e-58,
+        8.94733725e-57,
+        6.4562691e-55,
+        4.19774702e-53,
+        2.46681069e-51,
+        1.3139812e-49,
+        6.36127057e-48,
+        2.8060375e-46,
+        1.1304819e-44,
+        4.168864e-43,
+        1.41013923e-41,
+        4.38379098e-40,
+        1.254833e-38,
+        3.3130638e-37,
+        8.08163234e-36,
+        1.8242002e-34,
+        3.81586014e-33,
+        7.40742896e-32,
+        1.33620942e-30,
+        2.24264627e-29,
+        3.50627215e-28,
+        5.11236982e-27,
+        6.95919878e-26,
+        8.85323177e-25,
+        1.05359406e-23,
+        1.17402171e-22,
+        1.22600701e-21,
+        1.20084697e-20,
+        1.10409452e-19,
+        9.53624945e-19,
+        7.7430891e-18,
+        5.91443247e-17,
+        4.2526129e-16,
+        2.88011506e-15,
+        1.83835018e-14,
+        1.10649802e-13,
+        6.28352496e-13,
+        3.36821417e-12,
+        1.70506256e-11,
+        8.15479892e-11,
+        3.6863292e-10,
+        1.57560032e-09,
+        6.36971137e-09,
+        2.43642586e-08,
+        8.8200584e-08,
+        3.02263874e-07,
+        9.8083359e-07,
+        3.01426749e-06,
+        8.77430976e-06,
+        2.41957523e-05,
+        6.32108705e-05,
+        0.000156452074,
+        0.000366854837,
+        0.000814871592,
+        0.00171431974,
+        0.00341497999,
+        0.006438951,
+        0.0114854424,
+        0.0193678281,
+        0.0308463086,
+        0.0463401336,
+        0.0655510093,
+        0.0870966385,
+        0.108314112,
+        0.125407091,
+        0.13404334,
+        0.130356613,
+        0.112115103,
+        0.0796767462,
+        0.0363926059,
     ];
 
     #[test]
     fn test_laguerre_polynomial_zeros() {
+        const EPSILON: f64 = 10e-7;
+
         let n = 100;
-        let mut computed = laguerre_polynomial_zeros(n);
+        let lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(n);
 
-        computed.reverse();
+        let lag_zeros = lag.zeros();
 
-        let is_close = FIRST_100_ROOTS
-            .into_iter()
-            .zip(computed)
-            .all(|(test_root, root)| (test_root - root).abs() < EPSILON);
+        FIRST_100_LAGUERRE_ROOTS
+            .into_par_iter()
+            .zip(lag_zeros)
+            .for_each(|(test_zero, zero)| assert!((test_zero - zero).abs() < EPSILON))
+    }
 
-        // assert!(is_close)
-        assert!(true);
+    #[test]
+    fn test_laguerre_polynomial_weights() {
+        const EPSILON: f64 = 10e-7;
+
+        let n = 100;
+        let (_, weights) = roots_laguerre::<f64>(n);
+
+        FIRST_100_LAGUERRE_WEIGHTS
+            .into_par_iter()
+            .zip(weights)
+            .for_each(|(test_weight, weight)| assert!((test_weight - weight).abs() < EPSILON))
     }
 
     #[test]
     fn test_eval_laguerre() {
-        for ((&ln_test, &n), &x) in L_N_X.into_iter().zip(N_VALUES).zip(X_VALUES) {
-            let ln = eval_laguerre(n, x);
+        for ((&ln_test, &n), &x) in L_N_X.iter().zip(N_VALUES).zip(X_VALUES) {
+            let lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(n);
+
+            let ln = lag.eval(x);
 
             let is_close = (ln - ln_test).abs() < EPSILON;
 
@@ -302,8 +439,10 @@ mod tests {
 
     #[test]
     fn test_eval_laguerre_derivative() {
-        for ((&dln_test, &n), &x) in L_N_X_DERIV.into_iter().zip(N_VALUES).zip(X_VALUES) {
-            let dln = eval_laguerre_derivative(n, x);
+        for ((&dln_test, &n), &x) in L_N_X_DERIV.iter().zip(N_VALUES).zip(X_VALUES) {
+            let lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(n);
+
+            let dln = lag.eval_derivative(x);
 
             let is_close = (dln - dln_test).abs() < EPSILON;
 
@@ -312,17 +451,11 @@ mod tests {
     }
 
     #[bench]
-    fn bench_laguerre_poly_eval(bencher: &mut Bencher) {
-        bencher.iter(|| eval_laguerre(100_000, 2.0))
-    }
+    fn bench_roots_laguerre(bencher: &mut Bencher) {
+        let n: usize = 1_000;
 
-    #[bench]
-    fn bench_laguerre_zeros(bencher: &mut Bencher) {
-        bencher.iter(|| laguerre_polynomial_zeros(100))
-    }
-
-    #[bench]
-    fn bench_laguerre_approximate_zeros(bencher: &mut Bencher) {
-        bencher.iter(|| laguerre_polynomial_approximate_zeros(100))
+        bencher.iter(|| {
+            roots_laguerre::<f64>(n);
+        })
     }
 }
