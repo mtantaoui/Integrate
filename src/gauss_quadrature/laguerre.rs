@@ -25,7 +25,7 @@ extern crate test;
 
 use std::{fmt::Debug, iter::Sum, marker::PhantomData, ops::AddAssign};
 
-use num::{one, zero, Float, One, Zero};
+use num::{one, Float, One, Zero};
 use rayon::iter::{
     IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelIterator,
 };
@@ -37,14 +37,14 @@ use crate::utils::{
 use super::utils::check_laguerre_args;
 
 #[derive(Clone, Debug)]
-pub struct LaguerrePolynomial<F: Float> {
+pub struct Laguerre<F: Float> {
     degree: usize,
     _x: PhantomData<F>,
 }
 
-impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for LaguerrePolynomial<F> {
-    fn new(degree: usize) -> LaguerrePolynomial<F> {
-        LaguerrePolynomial {
+impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Laguerre<F> {
+    fn new(degree: usize) -> Self {
+        Laguerre {
             degree,
             _x: PhantomData,
         }
@@ -78,21 +78,21 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Lag
         l
     }
 
-    /// this method used in the process of computing zeros and weights,
-    /// was implemented for some tests, maybe to be removed later
-    /// depending on how OrthogonalPolynomial trait is evolving
-    fn eval_derivative(&self, x: F) -> F {
-        if x.is_zero() || self.degree.is_zero() {
-            return zero();
-        }
+    // /// this method used in the process of computing zeros and weights,
+    // /// was implemented for some tests, maybe to be removed later
+    // /// depending on how OrthogonalPolynomial trait is evolving
+    // fn eval_derivative(&self, x: F) -> F {
+    //     if x.is_zero() || self.degree.is_zero() {
+    //         return zero();
+    //     }
 
-        let l_n_x = self.eval(x); // L_n(x)
-        let l_n_1_x = LaguerrePolynomial::new(self.degree - 1).eval(x); // L_{n-1}(x)
+    //     let l_n_x = self.eval(x); // L_n(x)
+    //     let l_n_1_x = LaguerrePolynomial::new(self.degree - 1).eval(x); // L_{n-1}(x)
 
-        let n = F::from(self.degree).unwrap(); // converting n to Float to compute derivative
+    //     let n = F::from(self.degree).unwrap(); // converting n to Float to compute derivative
 
-        (n * l_n_x - n * l_n_1_x) / x
-    }
+    //     (n * l_n_x - n * l_n_1_x) / x
+    // }
 
     fn zeros(&self) -> Vec<F> {
         // define the Jacobi matrix (tridiagonal symmetric matrix)
@@ -119,8 +119,8 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Lag
 }
 
 fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<F>, Vec<F>) {
-    let l_n: LaguerrePolynomial<F> = LaguerrePolynomial::new(n);
-    let l_n_plus_1: LaguerrePolynomial<F> = LaguerrePolynomial::new(n + 1);
+    let l_n: Laguerre<F> = Laguerre::new(n);
+    let l_n_plus_1: Laguerre<F> = Laguerre::new(n + 1);
 
     let zeros = l_n.zeros();
 
@@ -183,25 +183,25 @@ mod tests {
         3.433_333_333_333_333E1,
     ];
 
-    const L_N_X_DERIV: &[f64; 17] = &[
-        0.0,
-        -1.0,
-        -1.0,
-        -0.5,
-        0.16666666666666785,
-        0.7916666666666679,
-        1.258333333333331,
-        1.5152777777777793,
-        1.5557539682539598,
-        1.4017609126984052,
-        1.092016644620804,
-        0.673070712081147,
-        0.19293653298857372,
-        -1.1484374999999991,
-        -0.8749999999999991,
-        -1.8749999999999991,
-        11.666666666666785,
-    ];
+    // const L_N_X_DERIV: &[f64; 17] = &[
+    //     0.0,
+    //     -1.0,
+    //     -1.0,
+    //     -0.5,
+    //     0.16666666666666785,
+    //     0.7916666666666679,
+    //     1.258333333333331,
+    //     1.5152777777777793,
+    //     1.5557539682539598,
+    //     1.4017609126984052,
+    //     1.092016644620804,
+    //     0.673070712081147,
+    //     0.19293653298857372,
+    //     -1.1484374999999991,
+    //     -0.8749999999999991,
+    //     -1.8749999999999991,
+    //     11.666666666666785,
+    // ];
 
     const N_VALUES: &[usize; 17] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 5, 5, 5, 5];
 
@@ -422,7 +422,7 @@ mod tests {
         const EPSILON: f64 = 10e-7;
 
         let n = 100;
-        let lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(n);
+        let lag: Laguerre<f64> = Laguerre::new(n);
 
         let lag_zeros = lag.zeros();
 
@@ -448,7 +448,7 @@ mod tests {
     #[test]
     fn test_eval_laguerre() {
         for ((&ln_test, &n), &x) in L_N_X.iter().zip(N_VALUES).zip(X_VALUES) {
-            let lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(n);
+            let lag: Laguerre<f64> = Laguerre::new(n);
 
             let ln = lag.eval(x);
 
@@ -458,18 +458,18 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_eval_laguerre_derivative() {
-        for ((&dln_test, &n), &x) in L_N_X_DERIV.iter().zip(N_VALUES).zip(X_VALUES) {
-            let lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(n);
+    // #[test]
+    // fn test_eval_laguerre_derivative() {
+    //     for ((&dln_test, &n), &x) in L_N_X_DERIV.iter().zip(N_VALUES).zip(X_VALUES) {
+    //         let lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(n);
 
-            let dln = lag.eval_derivative(x);
+    //         let dln = lag.eval_derivative(x);
 
-            let is_close = (dln - dln_test).abs() < EPSILON;
+    //         let is_close = (dln - dln_test).abs() < EPSILON;
 
-            assert!(is_close)
-        }
-    }
+    //         assert!(is_close)
+    //     }
+    // }
 
     #[bench]
     fn bench_roots_laguerre(bencher: &mut Bencher) {

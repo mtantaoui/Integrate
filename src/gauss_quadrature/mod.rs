@@ -9,6 +9,7 @@
 //!
 
 pub mod bessel;
+pub mod hermite;
 pub mod laguerre;
 pub mod legendre;
 mod utils;

@@ -3,6 +3,8 @@ extern crate test;
 use num::Float;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
+const MAX_ITERATIONS: usize = 1000;
+
 pub struct TridiagonalSymmetricFloatMatrix<F: Float> {
     diagonal: Vec<F>,
     offdiagonal: Vec<F>,
@@ -34,7 +36,9 @@ impl<F: Float + Send + Sync> TridiagonalSymmetricFloatMatrix<F> {
 
         let mut tolerance = two * epsilon * (xupper.abs() + xlower.abs());
 
-        while (xupper - xlower).abs() > tolerance {
+        let mut iteration: usize = 0;
+
+        while (xupper - xlower).abs() > tolerance && iteration < MAX_ITERATIONS {
             let xmid = (xupper + xlower) / two;
 
             let nb_eig_lt_xmid = self.nb_eigenvalues_lt_x(xmid);
@@ -46,6 +50,8 @@ impl<F: Float + Send + Sync> TridiagonalSymmetricFloatMatrix<F> {
             }
 
             tolerance = epsilon * (xupper.abs() + xlower.abs());
+
+            iteration += 1;
         }
 
         (xlower + xupper) / two

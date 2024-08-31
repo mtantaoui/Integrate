@@ -9,7 +9,7 @@ pub trait OrthogonalPolynomial<F: Float + Debug + AddAssign> {
 
     fn eval(&self, x: F) -> F;
 
-    fn eval_derivative(&self, x: F) -> F;
+    // fn eval_derivative(&self, x: F) -> F;
 
     fn zeros(&self) -> Vec<F>;
 }
