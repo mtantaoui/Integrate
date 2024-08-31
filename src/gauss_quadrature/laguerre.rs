@@ -74,6 +74,9 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Lag
         l
     }
 
+    /// this method used in the process of computing zeros and weights,
+    /// was implemented for some tests, maybe to be removed later
+    /// depending on how OrthogonalPolynomial trait is evolving
     fn eval_derivative(&self, x: F) -> F {
         if x.is_zero() || self.degree.is_zero() {
             return zero();
@@ -111,7 +114,7 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Lag
     }
 }
 
-fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<F>, Vec<F>) {
+pub fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<F>, Vec<F>) {
     let l_n: LaguerrePolynomial<F> = LaguerrePolynomial::new(n);
     let l_n_plus_1: LaguerrePolynomial<F> = LaguerrePolynomial::new(n + 1);
 
