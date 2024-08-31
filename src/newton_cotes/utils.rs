@@ -4,7 +4,8 @@ use num::{Float, Unsigned};
 ///
 /// * `a` - lower limit of the integration interval.
 /// * `b` - lower limit of the integration interval.
-pub fn check_integral_args<F: Float, U: Unsigned>(a: F, b: F, n: U) {
+/// * `n` - number of steps.
+pub fn check_newton_method_args<F: Float, U: Unsigned>(a: F, b: F, n: U) {
     if n.is_zero() {
         panic!("number of steps can't be zero");
     }

@@ -1,15 +1,14 @@
 use integrator::{
-    gauss_quadrature::laguerre::roots_laguerre,
+    gauss_quadrature::laguerre::gauss_laguerre_rule,
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
     romberg::romberg_method,
 };
-use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
 const A: f64 = 0.0;
 const B: f64 = 1.0;
-const NUM_STEPS: usize = 400;
+const NUM_STEPS: usize = 300;
 const POW: i32 = 2;
 
 fn rectangle() {
@@ -63,13 +62,7 @@ fn laguerre() {
     }
 
     let n = NUM_STEPS;
-    let (zeros, weights) = roots_laguerre::<f64>(n);
-
-    let value: f64 = weights
-        .into_par_iter()
-        .zip(zeros)
-        .map(|(w, x)| w * f(x))
-        .sum();
+    let value = gauss_laguerre_rule(f, n);
 
     println!("laguerre: {}", value);
 }

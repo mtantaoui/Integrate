@@ -78,7 +78,7 @@ extern crate test;
 use num::{Float, ToPrimitive, Unsigned};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
-use super::utils::check_integral_args;
+use super::utils::check_newton_method_args;
 
 /// This function integrates $f(x)$ from $a$ to $a+nh$ using the Simpson's
 /// rule by summing from the left end of the interval to the right end.
@@ -109,7 +109,7 @@ pub fn trapezoidal_rule<F1: Float + Sync, F2: Float + Send, U: Unsigned + ToPrim
     n: U,
 ) -> f64 {
     // checking arguments
-    check_integral_args(a, b, n);
+    check_newton_method_args(a, b, n);
 
     // length of each subinterval
     let h: F1 = (b - a) / F1::from(n).expect("failed to convert length of subinterval h");

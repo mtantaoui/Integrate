@@ -23,14 +23,18 @@
 
 extern crate test;
 
-use std::{fmt::Debug, marker::PhantomData, ops::AddAssign};
+use std::{fmt::Debug, iter::Sum, marker::PhantomData, ops::AddAssign};
 
 use num::{one, zero, Float, One, Zero};
-use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::{
+    IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelIterator,
+};
 
 use crate::utils::{
     matrix::TridiagonalSymmetricFloatMatrix, orthogonal_polynomials::OrthogonalPolynomial,
 };
+
+use super::utils::check_laguerre_args;
 
 #[derive(Clone, Debug)]
 pub struct LaguerrePolynomial<F: Float> {
@@ -114,7 +118,7 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Lag
     }
 }
 
-pub fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<F>, Vec<F>) {
+fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<F>, Vec<F>) {
     let l_n: LaguerrePolynomial<F> = LaguerrePolynomial::new(n);
     let l_n_plus_1: LaguerrePolynomial<F> = LaguerrePolynomial::new(n + 1);
 
@@ -134,6 +138,20 @@ pub fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (
         .collect();
 
     (zeros, weights)
+}
+
+pub fn gauss_laguerre_rule<F: Float + Debug + Sync + Send + AddAssign + Sum>(
+    f: fn(F) -> F,
+    n: usize,
+) -> F {
+    check_laguerre_args(n);
+    let (zeros, weights) = roots_laguerre::<F>(n);
+
+    weights
+        .into_par_iter()
+        .zip(zeros)
+        .map(|(w, x)| w * f(x))
+        .sum()
 }
 
 #[cfg(test)]
