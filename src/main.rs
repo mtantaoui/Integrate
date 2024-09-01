@@ -1,9 +1,10 @@
 use integrator::{
-    gauss_quadrature::laguerre::gauss_laguerre_rule,
+    gauss_quadrature::hermite::Hermite,
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
     romberg::romberg_method,
+    utils::orthogonal_polynomials::OrthogonalPolynomial,
 };
 
 const A: f64 = 0.0;
@@ -57,14 +58,26 @@ fn romberg() {
 }
 
 fn laguerre() {
-    fn f(x: f64) -> f64 {
-        (-x).exp()
-    }
+    let h1: Hermite<f64> = Hermite::new(1);
+    let h1_zeros = h1.zeros();
 
-    let n = NUM_STEPS;
-    let value = gauss_laguerre_rule(f, n);
+    let h2: Hermite<f64> = Hermite::new(2);
+    let h2_zeros = h2.zeros();
 
-    println!("laguerre: {}", value);
+    let h3: Hermite<f64> = Hermite::new(3);
+    let h3_zeros = h3.zeros();
+
+    let h4: Hermite<f32> = Hermite::new(4);
+    let h4_zeros = h4.zeros();
+
+    let h5: Hermite<f32> = Hermite::new(5);
+    let h5_zeros = h5.zeros();
+
+    println!("{:?}  \n", h1_zeros);
+    println!("{:?}  \n", h2_zeros);
+    println!("{:?}  \n", h3_zeros);
+    println!("{:?}  \n", h4_zeros);
+    println!("{:?}  \n", h5_zeros);
 }
 
 fn main() {

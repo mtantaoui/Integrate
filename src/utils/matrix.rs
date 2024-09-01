@@ -3,8 +3,6 @@ extern crate test;
 use num::Float;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
-const MAX_ITERATIONS: usize = 1000;
-
 pub struct TridiagonalSymmetricFloatMatrix<F: Float> {
     diagonal: Vec<F>,
     offdiagonal: Vec<F>,
@@ -20,27 +18,20 @@ impl<F: Float + Send + Sync> TridiagonalSymmetricFloatMatrix<F> {
 
     pub fn eigenvalues(&self) -> Vec<F> {
         let n = self.diagonal.len();
-        let eigenvalues: Vec<F> = (0..n)
-            .into_par_iter()
-            .map(|k| self.kth_eigenvalue(k))
-            .collect();
+        let eigenvalues: Vec<F> = (0..n).into_iter().map(|k| self.kth_eigenvalue(k)).collect();
         eigenvalues
     }
 
     fn kth_eigenvalue(&self, k: usize) -> F {
         let n = self.diagonal.len();
-        let epsilon = F::from(f64::EPSILON).unwrap();
+        let epsilon = F::from(f32::EPSILON).unwrap();
         let two = F::one() + F::one();
 
         let (mut xlower, mut xupper) = self.gershgorin_bounds();
 
         let mut tolerance = two * epsilon * (xupper.abs() + xlower.abs());
 
-        let mut iteration: usize = 0;
-
-        while (xupper - xlower).abs() > tolerance
-        // && iteration < MAX_ITERATIONS
-        {
+        while (xupper - xlower).abs() > tolerance {
             let xmid = (xupper + xlower) / two;
 
             let nb_eig_lt_xmid = self.nb_eigenvalues_lt_x(xmid);
@@ -56,8 +47,6 @@ impl<F: Float + Send + Sync> TridiagonalSymmetricFloatMatrix<F> {
             if tolerance.is_zero() {
                 tolerance = epsilon
             }
-
-            iteration += 1;
         }
 
         (xlower + xupper) / two
@@ -130,8 +119,6 @@ mod tests {
         let matrix = TridiagonalSymmetricFloatMatrix::new(diagonal, offdiagonal);
 
         matrix.eigenvalues();
-
-        // println!("{:?}", eig);
     }
 
     #[bench]
