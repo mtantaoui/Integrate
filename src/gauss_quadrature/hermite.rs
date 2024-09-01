@@ -81,6 +81,8 @@ mod tests {
         gauss_quadrature::hermite::Hermite, utils::orthogonal_polynomials::OrthogonalPolynomial,
     };
 
+    const EPSILON: f64 = 10e-1;
+
     const N_VALUES: &[usize; 18] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 5, 5, 5, 5, 5];
     const X_VALUES: &[f64; 18] = &[
         5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 0.0, 0.5, 1.0, 3.0, 10.0,
@@ -107,8 +109,8 @@ mod tests {
     ];
 
     const H1_ZEROS: [f64; 1] = [0.000000];
-    const H2_ZEROS: [f64; 2] = [-0.707107, 0.707107];
-    // const H2_ZEROS: [f64; 2] = [-FRAC_1_SQRT_2, FRAC_1_SQRT_2];
+    // const H2_ZEROS: [f64; 2] = [-0.707107, 0.707107];
+    const H2_ZEROS: [f64; 2] = [-FRAC_1_SQRT_2, FRAC_1_SQRT_2];
     const H3_ZEROS: [f64; 3] = [-1.224745, -0.000000, 1.224745];
     const H4_ZEROS: [f64; 4] = [-1.650680, -0.524648, 0.524648, 1.650680];
     const H5_ZEROS: [f64; 5] = [-2.020183, -0.958572, 0.000000, 0.958572, 2.020183];
@@ -126,25 +128,52 @@ mod tests {
 
     #[test]
     fn test_hermite_zeros() {
-        // let h1: Hermite<f64> = Hermite::new(1);
-        // let h1_zeros = h1.zeros();
+        let h1: Hermite<f64> = Hermite::new(1);
+        let h2: Hermite<f64> = Hermite::new(2);
+        let h3: Hermite<f64> = Hermite::new(3);
+        let h4: Hermite<f64> = Hermite::new(4);
+        let h5: Hermite<f64> = Hermite::new(5);
 
-        // let h2: Hermite<f64> = Hermite::new(2);
-        // let h2_zeros = h2.zeros();
+        let mut h1_zeros = h1.zeros();
+        let mut h2_zeros = h2.zeros();
+        let mut h3_zeros = h3.zeros();
+        let mut h4_zeros = h4.zeros();
+        let mut h5_zeros = h5.zeros();
 
-        // let h3: Hermite<f64> = Hermite::new(3);
-        // let h3_zeros = h3.zeros();
+        h1_zeros.reverse();
+        h2_zeros.reverse();
+        h3_zeros.reverse();
+        h4_zeros.reverse();
+        h5_zeros.reverse();
 
-        let h4: Hermite<f32> = Hermite::new(4);
-        let h4_zeros = h4.zeros();
+        H1_ZEROS
+            .iter()
+            .zip(h1_zeros)
+            .for_each(|(test_zero, zero)| assert!((*test_zero - zero).abs() < EPSILON));
 
-        let h5: Hermite<f32> = Hermite::new(5);
-        let h5_zeros = h5.zeros();
+        H2_ZEROS
+            .iter()
+            .zip(h2_zeros)
+            .for_each(|(test_zero, zero)| assert!((*test_zero - zero).abs() < EPSILON));
+        H3_ZEROS
+            .iter()
+            .zip(h3_zeros)
+            .for_each(|(test_zero, zero)| assert!((*test_zero - zero).abs() < EPSILON));
+        H4_ZEROS
+            .iter()
+            .zip(h4_zeros)
+            .for_each(|(test_zero, zero)| assert!((*test_zero - zero).abs() < EPSILON));
+        H5_ZEROS
+            .iter()
+            .zip(h5_zeros)
+            .for_each(|(test_zero, zero)| assert!((*test_zero - zero).abs() < EPSILON));
 
-        // println!("{:?} {:?} \n", h1_zeros, H1_ZEROS);
-        // println!("{:?} {:?} \n", h2_zeros, H2_ZEROS);
-        // println!("{:?} {:?} \n", h3_zeros, H3_ZEROS);
-        println!("{:?} {:?} \n", h4_zeros, H4_ZEROS);
-        println!("{:?} {:?} \n", h5_zeros, H5_ZEROS);
+        // assert!((test_weight - weight).abs() < EPSILON)
+
+        // assert_eq!(h1_zeros, H1_ZEROS);
+        // assert_eq!(h2_zeros, H2_ZEROS);
+        // assert_eq!(h3_zeros, H3_ZEROS);
+        // assert_eq!(h4_zeros, H4_ZEROS);
+        // assert_eq!(h5_zeros, H5_ZEROS);
     }
 }

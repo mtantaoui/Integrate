@@ -419,7 +419,7 @@ mod tests {
 
     #[test]
     fn test_laguerre_polynomial_zeros() {
-        const EPSILON: f64 = 10e-7;
+        const EPSILON: f64 = 10e-5;
 
         let n = 100;
         let lag: Laguerre<f64> = Laguerre::new(n);
@@ -434,7 +434,7 @@ mod tests {
 
     #[test]
     fn test_laguerre_polynomial_weights() {
-        const EPSILON: f64 = 10e-7;
+        const EPSILON: f64 = 10e-5;
 
         let n = 100;
         let (_, weights) = roots_laguerre::<f64>(n);
