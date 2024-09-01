@@ -38,7 +38,9 @@ impl<F: Float + Send + Sync> TridiagonalSymmetricFloatMatrix<F> {
 
         let mut iteration: usize = 0;
 
-        while (xupper - xlower).abs() > tolerance && iteration < MAX_ITERATIONS {
+        while (xupper - xlower).abs() > tolerance
+        // && iteration < MAX_ITERATIONS
+        {
             let xmid = (xupper + xlower) / two;
 
             let nb_eig_lt_xmid = self.nb_eigenvalues_lt_x(xmid);
@@ -50,6 +52,10 @@ impl<F: Float + Send + Sync> TridiagonalSymmetricFloatMatrix<F> {
             }
 
             tolerance = epsilon * (xupper.abs() + xlower.abs());
+
+            if tolerance.is_zero() {
+                tolerance = epsilon
+            }
 
             iteration += 1;
         }
