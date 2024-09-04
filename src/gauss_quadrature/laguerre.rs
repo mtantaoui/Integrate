@@ -150,9 +150,6 @@ pub fn gauss_laguerre_rule<F: Float + Debug + Sync + Send + AddAssign + Sum>(
     check_gauss_rule_args(n);
     let (zeros, weights) = roots_laguerre::<F>(n);
 
-    println!("{:?}", zeros);
-    println!("{:?}", weights);
-
     weights
         .into_par_iter()
         .zip(zeros)
