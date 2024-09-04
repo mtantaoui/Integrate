@@ -21,7 +21,7 @@
 //! ```
 //! for $i = 1,...,n$.
 
-extern crate test;
+// extern crate test;
 
 use std::{fmt::Debug, iter::Sum, marker::PhantomData, ops::AddAssign};
 
@@ -150,6 +150,9 @@ pub fn gauss_laguerre_rule<F: Float + Debug + Sync + Send + AddAssign + Sum>(
     check_gauss_rule_args(n);
     let (zeros, weights) = roots_laguerre::<F>(n);
 
+    println!("{:?}", zeros);
+    println!("{:?}", weights);
+
     weights
         .into_par_iter()
         .zip(zeros)
@@ -162,7 +165,7 @@ mod tests {
     use rayon::iter::IndexedParallelIterator;
 
     use super::*;
-    use test::Bencher;
+    // use test::Bencher;
 
     const EPSILON: f64 = 10e-10;
 
@@ -474,12 +477,12 @@ mod tests {
     //     }
     // }
 
-    #[bench]
-    fn bench_roots_laguerre(bencher: &mut Bencher) {
-        let n: usize = 1_000;
+    // #[bench]
+    // fn bench_roots_laguerre(bencher: &mut Bencher) {
+    //     let n: usize = 1_000;
 
-        bencher.iter(|| {
-            roots_laguerre::<f64>(n);
-        })
-    }
+    //     bencher.iter(|| {
+    //         roots_laguerre::<f64>(n);
+    //     })
+    // }
 }

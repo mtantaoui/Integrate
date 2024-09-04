@@ -1,4 +1,4 @@
-#![feature(test)]
+// #![feature(test)]
 
 //! Numerical integration is concerned with developing algorithms to
 //! approximate the integral of a function $f(x)$. The most commonly used algorithms

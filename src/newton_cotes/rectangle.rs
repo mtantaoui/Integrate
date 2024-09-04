@@ -88,7 +88,7 @@
 //! ```
 //! However, if the function $f(x)$ is linear, then $n$ may be chosen to be $1$.
 
-extern crate test;
+// extern crate test;
 
 use num::{Float, ToPrimitive, Unsigned};
 use rayon::prelude::*;
@@ -155,7 +155,7 @@ mod tests {
     use std::ops::Div;
 
     use super::*;
-    use test::Bencher;
+    // use test::Bencher;
 
     const EPSILON: f64 = 10e-5;
     const NUM_STEPS: usize = 1000;
@@ -227,17 +227,17 @@ mod tests {
         assert!((integral - analytic_result).abs() < EPSILON);
     }
 
-    #[bench]
-    fn bench_integral_value(bencher: &mut Bencher) {
-        fn f1(x: f64) -> f64 {
-            x.powi(2)
-        }
+    // #[bench]
+    // fn bench_integral_value(bencher: &mut Bencher) {
+    //     fn f1(x: f64) -> f64 {
+    //         x.powi(2)
+    //     }
 
-        let a = 0.0;
-        let b = 1.0;
+    //     let a = 0.0;
+    //     let b = 1.0;
 
-        bencher.iter(|| {
-            rectangle_rule(f1, a, b, NUM_STEPS);
-        })
-    }
+    //     bencher.iter(|| {
+    //         rectangle_rule(f1, a, b, NUM_STEPS);
+    //     })
+    // }
 }

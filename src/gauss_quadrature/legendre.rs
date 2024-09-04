@@ -86,7 +86,7 @@
 //!
 
 // The required theta values for the Legendre nodes for l <= 100
-extern crate test;
+// extern crate test;
 
 use std::{cmp::Ordering, f64::consts::PI};
 
@@ -6187,7 +6187,7 @@ mod tests {
     use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
     use super::*;
-    use test::{black_box, Bencher};
+    // use test::{black_box, Bencher};
 
     const EPSILON: f64 = 10e-5;
     const NUM_STEPS: usize = 1_000_000;
@@ -6212,19 +6212,19 @@ mod tests {
         assert!((integral - analytic_result).abs() < EPSILON);
     }
 
-    #[bench]
-    fn bench_integral_value(bencher: &mut Bencher) {
-        fn f1(x: f64) -> f64 {
-            x.powi(2)
-        }
+    // #[bench]
+    // fn bench_integral_value(bencher: &mut Bencher) {
+    //     fn f1(x: f64) -> f64 {
+    //         x.powi(2)
+    //     }
 
-        let a = 0.0;
-        let b = 1.0;
+    //     let a = 0.0;
+    //     let b = 1.0;
 
-        bencher.iter(|| {
-            legendre_rule(f1, a, b, NUM_STEPS);
-        })
-    }
+    //     bencher.iter(|| {
+    //         legendre_rule(f1, a, b, NUM_STEPS);
+    //     })
+    // }
 
     /// Test the numerical integration of ln(x) over the range ]0,1],
     /// exact value of the numerical integration is -1.
@@ -6259,27 +6259,27 @@ mod tests {
         }
     }
 
-    #[bench]
-    fn bench_glpair(bencher: &mut Bencher) {
-        // number of nodes used in Gauss-Legendre integral computation
-        let l: usize = 1_000;
-        let exact = -1.0;
+    // #[bench]
+    // fn bench_glpair(bencher: &mut Bencher) {
+    //     // number of nodes used in Gauss-Legendre integral computation
+    //     let l: usize = 1_000;
+    //     let exact = -1.0;
 
-        println!("Integral Exact Value: {}", exact);
+    //     println!("Integral Exact Value: {}", exact);
 
-        bencher.iter(|| {
-            black_box(
-                // Gauss-Legendre rule using glpair function
-                (1..=l)
-                    .into_par_iter()
-                    .map(|k| {
-                        let (_, weight, x) = glpair(l, k);
-                        0.5 * weight * (0.5 * (x + 1.0)).ln()
-                    })
-                    .sum::<f64>(),
-            );
-        })
-    }
+    //     bencher.iter(|| {
+    //         black_box(
+    //             // Gauss-Legendre rule using glpair function
+    //             (1..=l)
+    //                 .into_par_iter()
+    //                 .map(|k| {
+    //                     let (_, weight, x) = glpair(l, k);
+    //                     0.5 * weight * (0.5 * (x + 1.0)).ln()
+    //                 })
+    //                 .sum::<f64>(),
+    //         );
+    //     })
+    // }
 
     // Test the numerical integration of cos(1000 x) over the range [-1,1]
     // for varying number of Gauss-Legendre quadrature nodes l.

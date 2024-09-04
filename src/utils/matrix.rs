@@ -1,4 +1,4 @@
-extern crate test;
+// extern crate test;
 
 use num::Float;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
@@ -112,7 +112,7 @@ fn min<F: Float>(a: F, b: F) -> F {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test::Bencher;
+    // use test::Bencher;
 
     #[test]
     fn test_tdsf_matrix() {
@@ -124,15 +124,15 @@ mod tests {
         matrix.eigenvalues();
     }
 
-    #[bench]
-    fn bench_eigenvalues(bencher: &mut Bencher) {
-        let n: usize = 1_000;
-        let diagonal: Vec<f64> = (1..=n).map(|e| e.pow(2) as f64).collect();
-        let offdiagonal: Vec<f64> = (0..n).map(|e| e.pow(4) as f64).collect();
-        let matrix = TridiagonalSymmetricFloatMatrix::new(diagonal, offdiagonal);
+    // #[bench]
+    // fn bench_eigenvalues(bencher: &mut Bencher) {
+    //     let n: usize = 1_000;
+    //     let diagonal: Vec<f64> = (1..=n).map(|e| e.pow(2) as f64).collect();
+    //     let offdiagonal: Vec<f64> = (0..n).map(|e| e.pow(4) as f64).collect();
+    //     let matrix = TridiagonalSymmetricFloatMatrix::new(diagonal, offdiagonal);
 
-        bencher.iter(|| {
-            matrix.eigenvalues();
-        })
-    }
+    //     bencher.iter(|| {
+    //         matrix.eigenvalues();
+    //     })
+    // }
 }
