@@ -34,7 +34,7 @@ use crate::utils::{
     matrix::TridiagonalSymmetricFloatMatrix, orthogonal_polynomials::OrthogonalPolynomial,
 };
 
-use super::utils::check_laguerre_args;
+use super::utils::check_gauss_rule_args;
 
 #[derive(Clone, Debug)]
 pub struct Laguerre<F: Float> {
@@ -95,6 +95,9 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Lag
     // }
 
     fn zeros(&self) -> Vec<F> {
+        if self.degree.is_zero() {
+            return vec![];
+        }
         // define the Jacobi matrix (tridiagonal symmetric matrix)
 
         // we first define the sub-diagonal
@@ -144,7 +147,7 @@ pub fn gauss_laguerre_rule<F: Float + Debug + Sync + Send + AddAssign + Sum>(
     f: fn(F) -> F,
     n: usize,
 ) -> F {
-    check_laguerre_args(n);
+    check_gauss_rule_args(n);
     let (zeros, weights) = roots_laguerre::<F>(n);
 
     weights

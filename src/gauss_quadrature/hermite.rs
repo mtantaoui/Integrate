@@ -1,11 +1,21 @@
+use std::f64::consts::PI;
 use std::fmt::Debug;
+use std::iter::Sum;
+use std::ops::Mul;
+
 use std::{marker::PhantomData, ops::AddAssign};
 
-use num::{Float, One, Zero};
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use num::bigint::ToBigInt;
+use num::{BigRational, BigUint, Float, One, Zero};
+use rayon::iter::{
+    IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelExtend,
+    ParallelIterator,
+};
 
 use crate::utils::matrix::TridiagonalSymmetricFloatMatrix;
 use crate::utils::orthogonal_polynomials::OrthogonalPolynomial;
+
+use super::utils::check_gauss_rule_args;
 
 #[derive(Clone, Debug)]
 pub struct Hermite<F: Float> {
@@ -51,26 +61,97 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Her
     }
 
     fn zeros(&self) -> Vec<F> {
+        if self.degree.is_zero() {
+            return vec![];
+        }
+
         let two = F::one() + F::one();
 
+        // define the Jacobi matrix (tridiagonal symmetric matrix)
         let diagonal = vec![F::zero(); self.degree];
 
-        // let mut offdiagonal = vec![one / two; self.degree - 1];
-
-        let mut offdiagonal: Vec<F> = (0..self.degree - 1)
-            .into_par_iter()
-            .map(|i| {
-                let i = F::from(i).unwrap();
-                ((i + F::one()) / two).sqrt()
-            })
-            .collect();
-
-        offdiagonal.insert(0, F::zero());
+        let mut offdiagonal = vec![F::zero()];
+        offdiagonal.par_extend((0..self.degree - 1).into_par_iter().map(|i| {
+            let i = F::from(i).unwrap();
+            ((i + F::one()) / two).sqrt()
+        }));
 
         let matrix = TridiagonalSymmetricFloatMatrix::new(diagonal, offdiagonal);
 
         matrix.eigenvalues()
     }
+}
+
+// weights formula : https://wikimedia.org/api/rest_v1/media/math/render/svg/2e6f152a1e9ecd4ab8ddf912aaa69bb8d0e66a3c
+fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
+    n: usize,
+) -> (Vec<F>, Vec<F>) {
+    let h_n: Hermite<F> = Hermite::new(n); // H_n
+    let zeros = h_n.zeros();
+
+    let h: Hermite<F> = Hermite::new(n - 1); // H_{n-1}
+
+    // params used in weights formula
+    let sqrt_pi = F::from(PI).unwrap().sqrt();
+
+    let n_fact = F::from(factorial(n)).unwrap();
+
+    let two = F::one() + F::one();
+    let n_squared = F::from(n).unwrap().powf(two);
+    let n = F::from(n).unwrap();
+
+    let two_pow = two.powf(n - F::one());
+
+    let weights = zeros
+        .par_iter()
+        .map(|x_i| {
+            let h_x = h.eval(*x_i); // H_{n-1}(x_i)
+
+            let numerator = two_pow * n_fact * sqrt_pi;
+
+            let denominator = n_squared * h_x * h_x;
+
+            if denominator.is_infinite() || numerator.is_infinite() {
+                // switching everything number to BigInt
+                let numer = two_pow.to_bigint().unwrap() * n_fact.to_bigint().unwrap();
+                let denom = h_x.abs().to_bigint().unwrap().pow(2) * n_squared.to_bigint().unwrap();
+                let ratio = BigRational::new(numer, denom);
+
+                F::from(ratio).unwrap() * sqrt_pi
+            } else {
+                numerator / denominator
+            }
+        })
+        .collect();
+
+    (zeros, weights)
+}
+
+pub fn gauss_hermite_rule<F: Float + Debug + Sync + Send + AddAssign + Sum + ToBigInt>(
+    f: fn(F) -> F,
+    n: usize,
+) -> F {
+    check_gauss_rule_args(n);
+
+    let (zeros, weights) = roots_hermite::<F>(n);
+
+    println!("{:?}", zeros);
+    println!("{:?}", weights);
+
+    weights
+        .into_par_iter()
+        .zip(zeros)
+        .map(|(w, x)| w * f(x))
+        .sum()
+}
+
+fn factorial(n: usize) -> BigUint {
+    (1..n + 1)
+        .into_par_iter()
+        // .with_min_len(64)
+        .fold_with(BigUint::from(1_usize), |acc, x| acc.mul(x))
+        .reduce_with(Mul::mul)
+        .unwrap()
 }
 
 #[cfg(test)]

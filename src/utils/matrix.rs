@@ -18,7 +18,10 @@ impl<F: Float + Send + Sync> TridiagonalSymmetricFloatMatrix<F> {
 
     pub fn eigenvalues(&self) -> Vec<F> {
         let n = self.diagonal.len();
-        let eigenvalues: Vec<F> = (0..n).into_iter().map(|k| self.kth_eigenvalue(k)).collect();
+        let eigenvalues: Vec<F> = (0..n)
+            .into_par_iter()
+            .map(|k| self.kth_eigenvalue(k))
+            .collect();
         eigenvalues
     }
 
@@ -112,7 +115,7 @@ mod tests {
     use test::Bencher;
 
     #[test]
-    fn test_tsf_matrix() {
+    fn test_tdsf_matrix() {
         let n: usize = 1_000;
         let diagonal: Vec<f64> = (1..=n).map(|e| e.pow(2) as f64).collect();
         let offdiagonal: Vec<f64> = (0..n).map(|e| e.pow(4) as f64).collect();
