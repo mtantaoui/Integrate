@@ -1,12 +1,11 @@
 use std::f64::consts::PI;
 
 use integrator::{
-    gauss_quadrature::hermite::gauss_hermite_rule,
+    gauss_quadrature::{hermite::gauss_hermite_rule, laguerre::gauss_laguerre_rule},
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
     romberg::romberg_method,
-    // utils::orthogonal_polynomials::OrthogonalPolynomial,
 };
 
 const A: f64 = 0.0;
@@ -64,9 +63,11 @@ fn hermite() {
         1.0
     }
 
-    let integral = gauss_hermite_rule(f, 170); // 170  is the maximum value for n
-    println!("value {}", PI.sqrt());
-    println!("integral {}", integral);
+    let integral = gauss_laguerre_rule(f, 170); // 170  is the maximum value for n, to test on x86 arch
+    println!("integral {}\t value {}", integral, 1);
+
+    let integral = gauss_hermite_rule(f, 170); // 170  is the maximum value for n, to test on x86 arch
+    println!("integral {}\t value {}", integral, PI.sqrt());
 }
 
 fn main() {

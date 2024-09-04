@@ -135,9 +135,6 @@ pub fn gauss_hermite_rule<F: Float + Debug + Sync + Send + AddAssign + Sum + ToB
 
     let (zeros, weights) = roots_hermite::<F>(n);
 
-    println!("{:?}", zeros);
-    println!("{:?}", weights);
-
     weights
         .into_par_iter()
         .zip(zeros)
