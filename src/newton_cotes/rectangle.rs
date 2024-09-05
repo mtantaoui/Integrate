@@ -1,3 +1,5 @@
+//! Rectangle rule:
+//!
 //! The rectangle rule approximates the integral of a function $f(x)$ on the
 //! closed and bounded interval $[a, a+h]$ of length $h > 0$ by the (signed) area
 //! of the rectangle with length h and height the value of the function $f(x)$

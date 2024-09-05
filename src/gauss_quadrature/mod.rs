@@ -1,3 +1,5 @@
+//! Gauss quadrature methods:
+//!
 //! Instead of evaluating the integrand at equally spaced nodes as in Newton-Cotes methods,
 //! Gaussian quadrature methods make a judicious choice of nodes so as to maximize the precision
 //! of the numerical integration relative to the number of integrand evaluations.

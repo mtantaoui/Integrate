@@ -1,3 +1,4 @@
+//! Trapezoidal rule:
 //!
 //! The trapezoidal rule approximates the integral of a function $f(x)$ on the closed and
 //! bounded interval $\[a, a+h\]$ of length $h > 0$ by the (signed) area of the trapezoid formed

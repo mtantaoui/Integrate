@@ -1,3 +1,5 @@
+//! Simpson's rule:
+//!
 //! Simpson's rule approximates the integral of a function $f(x)$ on the closed and bounded interval
 //! $\[a, a+h\]$ of length $h > 0$ by the integral on $\[a, a+h\]$ of the quadratic passing through the
 //! points $(a, f(a))$, $(a+\frac{h}{2}, f(a+\frac{h}{2}))$ and $(a+h, f(a+h))$.
