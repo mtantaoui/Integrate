@@ -1,2 +1,5 @@
 [build]
-rustdocflags = [ "--html-in-header", "./docs/docs-header.html" ]
+profiler = true
+rustdocflags = [ "--html-in-header", "./docs/docs-header.html" 
+#, "-C", "instrument-coverage",  "-Z",  "unstable-options", "--persist-doctests",  "target/debug/doctestbins"
+]
