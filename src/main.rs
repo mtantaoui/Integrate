@@ -1,7 +1,11 @@
 use std::f64::consts::PI;
 
 use integrator::{
-    gauss_quadrature::{hermite::gauss_hermite_rule, laguerre::gauss_laguerre_rule},
+    gauss_quadrature::{
+        chebyshev::{gauss_first_kind_chebyshev_rule, gauss_second_kind_chebyshev_rule},
+        hermite::gauss_hermite_rule,
+        laguerre::gauss_laguerre_rule,
+    },
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
     },
@@ -70,9 +74,27 @@ fn hermite() {
     println!("integral {}\t value {}", integral, PI.sqrt());
 }
 
-fn main() {
-    hermite();
+fn chebyshev() {
+    fn f(x: f64) -> f64 {
+        (1.0 - x.powi(2)).sqrt()
+    }
 
+    fn g(x: f64) -> f64 {
+        1.0 / (1.0 - x.powi(2)).sqrt()
+    }
+
+    let n: usize = 100;
+
+    let integral = gauss_first_kind_chebyshev_rule(f, n);
+    println!("integral {}\t value {}", integral, 2);
+
+    let integral = gauss_second_kind_chebyshev_rule(g, n);
+    println!("integral {}\t value {}", integral, 2);
+}
+
+fn main() {
+    chebyshev();
+    hermite();
     romberg();
     rectangle();
     trapezoidal();
