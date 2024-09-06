@@ -11,6 +11,7 @@
 //!
 
 pub mod bessel;
+pub mod chebyshev;
 pub mod hermite;
 pub mod laguerre;
 pub mod legendre;
