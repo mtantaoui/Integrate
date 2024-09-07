@@ -38,7 +38,8 @@
 //!   in which each subinterval is half a wave length and the algorithm is applied
 //!   to each subinterval.
 
+pub mod adaptive_quadrature;
 pub mod gauss_quadrature;
 pub mod newton_cotes;
 pub mod romberg;
-pub mod utils;
+mod utils;

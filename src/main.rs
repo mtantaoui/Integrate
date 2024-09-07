@@ -1,6 +1,7 @@
 use std::f64::consts::PI;
 
 use integrator::{
+    adaptive_quadrature::simpson::adaptive_simpson_method,
     gauss_quadrature::{
         chebyshev::{gauss_first_kind_chebyshev_rule, gauss_second_kind_chebyshev_rule},
         hermite::gauss_hermite_rule,
@@ -92,7 +93,17 @@ fn chebyshev() {
     println!("integral {}\t value {}", integral, 2);
 }
 
+fn adaptive_simpson() {
+    fn square(x: f64) -> f64 {
+        x.powi(POW)
+    }
+
+    let integral = adaptive_simpson_method(square, A, B, 2_usize);
+    println!("adaptive simpson: {}", integral)
+}
+
 fn main() {
+    adaptive_simpson();
     chebyshev();
     hermite();
     romberg();

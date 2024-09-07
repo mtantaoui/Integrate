@@ -25,8 +25,8 @@ llvm-cov report \
     ) \
   --instr-profile=json5format.profdata --summary-only # and/or other options
 
-  rm ./*.profraw
-  rm ./*.profdata
+rm ./*.profraw
+rm ./*.profdata
 
 
 

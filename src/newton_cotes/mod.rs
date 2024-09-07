@@ -1,4 +1,4 @@
-//! Newton-Cotes methods:
+//! Newton-Cotes methods
 //!
 //! Newton-Cotes methods approximate the integral of a function by summing a weighted
 //! combination of the function evaluated at equally-spaced points and nodes. If the

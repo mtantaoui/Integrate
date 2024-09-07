@@ -1,4 +1,4 @@
-//! Romberg's method:
+//! Romberg's method
 //!
 //! Romberg's method is used to estimate the integral of a function on a closed and bounded interval.
 //! Classically, the method consists of successively applying the composite trapezoidal rule, each time
@@ -194,4 +194,82 @@ fn romberg_coefficients<F: Float, U: Unsigned + ToPrimitive>(m: U) -> [F; 2] {
         denominator,        // 1 / (4^m - 1)
         _4_m * denominator, // 4^m / (4^m - 1)
     ]
+}
+
+#[cfg(test)]
+mod tests {
+    use std::ops::Div;
+
+    use super::*;
+    // use test::Bencher;
+
+    const EPSILON: f64 = 10e-5;
+    const NUM_STEPS: usize = 10;
+
+    #[test]
+    fn test_integral_value() {
+        fn square(x: f64) -> f64 {
+            x.powi(2)
+        }
+
+        let a = 0.0;
+        let b = 1.0;
+
+        let integral = romberg_method(square, a, b, NUM_STEPS);
+
+        let analytic_result: f64 = 1.0.div(3.0);
+
+        assert!((integral - analytic_result).abs() < EPSILON);
+    }
+
+    #[test]
+    fn test_f32_to_f64() {
+        // f32 to f64
+        fn square(x: f32) -> f64 {
+            x.powi(2) as f64
+        }
+
+        let a = 0.0;
+        let b = 1.0;
+
+        let integral = romberg_method(square, a, b, NUM_STEPS);
+
+        let analytic_result: f64 = 1.0.div(3.0);
+
+        assert!((integral - analytic_result).abs() < EPSILON);
+    }
+
+    #[test]
+    fn test_f64_to_f32() {
+        // f64 to f32
+        fn square(x: f64) -> f32 {
+            x.powi(2) as f32
+        }
+
+        let a = 0.0;
+        let b = 1.0;
+
+        let integral = romberg_method(square, a, b, NUM_STEPS);
+
+        let analytic_result: f64 = 1.0.div(3.0);
+
+        assert!((integral - analytic_result).abs() < EPSILON);
+    }
+
+    #[test]
+    fn test_f32_to_f32() {
+        // f32 to f32
+        fn square(x: f32) -> f32 {
+            x.powi(2)
+        }
+
+        let a = 0.0;
+        let b = 1.0;
+
+        let integral = romberg_method(square, a, b, NUM_STEPS);
+
+        let analytic_result: f64 = 1.0.div(3.0);
+
+        assert!((integral - analytic_result).abs() < EPSILON);
+    }
 }
