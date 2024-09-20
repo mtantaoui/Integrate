@@ -8,7 +8,6 @@ struct SubInterval<F: Float> {
     lower_limit: F,
     function: [F; 5],
     interval: Option<Box<SubInterval<F>>>,
-    // interval: Option<&mut <SubInterval<F>>,
 }
 
 pub fn adaptive_simpson_method<
@@ -108,7 +107,6 @@ fn simpson_rule_update<F: Float + MulAssign + Debug>(
     let four = two + two;
     let six = four + two;
 
-    println!("function: {:?}", pinterval.function);
     let h = pinterval.upper_limit - pinterval.lower_limit;
     let h4 = h / four;
 
