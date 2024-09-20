@@ -95,7 +95,6 @@ pub fn adaptive_simpson_method<
         epsilon = epsilon_density * (pinterval.upper_limit - pinterval.lower_limit);
     }
 
-    // panic!("Shit Failed");
     return integral;
 }
 
