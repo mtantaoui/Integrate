@@ -95,7 +95,7 @@ pub fn adaptive_simpson_method<
         epsilon = epsilon_density * (pinterval.upper_limit - pinterval.lower_limit);
     }
 
-    return integral;
+    integral
 }
 
 fn simpson_rule_update<F: Float + MulAssign + Debug>(
@@ -122,5 +122,5 @@ fn simpson_rule_update<F: Float + MulAssign + Debug>(
         + pinterval.function[4];
     s2 *= h / (six * two);
 
-    return (s1, s2);
+    (s1, s2)
 }
