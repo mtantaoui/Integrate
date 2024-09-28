@@ -22,3 +22,9 @@ a small, lightweight numerical integration written in Rust.
 
 - https://math.mit.edu/~edelman/homepage/papers/sturm.pdf
 - https://ia902301.us.archive.org/2/items/c-36_20211010/C36.pdf
+
+
+
+# tests cases:
+    -   https://people.math.sc.edu/Burkardt/cpp_src/test_int/test_int.html
+    -   https://people.math.sc.edu/Burkardt/cpp_src/test_nint/test_nint.html //  quote

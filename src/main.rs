@@ -69,10 +69,10 @@ fn hermite() {
     }
 
     let integral = gauss_laguerre_rule(f, 170); // 170  is the maximum value for n, to test on x86 arch
-    println!("integral {}\t value {}", integral, 1);
+    println!("hermite integral {}\t value {}", integral, 1);
 
     let integral = gauss_hermite_rule(f, 170); // 170  is the maximum value for n, to test on x86 arch
-    println!("integral {}\t value {}", integral, PI.sqrt());
+    println!("hermite integral {}\t value {}", integral, PI.sqrt());
 }
 
 fn chebyshev() {

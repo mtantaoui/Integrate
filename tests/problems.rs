@@ -482,16 +482,16 @@ fn problem24<F: Float + Send + Sum + Sync>() -> Problem<F> {
 fn problem25<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let constant = F::from(0.7).unwrap();
-        let epsilon = F::from(10e-6).unwrap();
+        let epsilon = F::from(10e-10).unwrap();
 
-        if x < constant + epsilon && x > constant - epsilon {
+        if x <= constant + epsilon && x >= constant - epsilon {
             F::zero()
         } else {
             (x - constant).abs().ln()
         }
     }
 
-    let exact = F::from(-1.6108).unwrap();
+    let exact = F::from(0.3 * 0.3.ln() + 0.7 * 0.7.ln() - 1.0).unwrap();
 
     Problem {
         function: f,
@@ -503,30 +503,30 @@ fn problem25<F: Float>() -> Problem<F> {
 
 pub fn problems_vec<F: Float + Send + Sum + Sync>() -> Vec<Problem<F>> {
     vec![
-        problem01(),
-        problem02(),
-        problem03(),
-        problem04(),
-        problem05(),
-        problem06(),
-        problem07(),
-        problem08(),
-        problem09(),
-        problem10(),
-        problem11(),
-        problem12(),
-        problem13(),
-        problem14(),
-        problem15(),
-        problem16(),
-        problem17(),
-        problem18(),
-        problem19(),
-        problem20(),
-        problem21(),
-        problem22(),
-        problem23(),
-        problem24(),
-        // problem25(),
+        // problem01(),
+        // problem02(),
+        // problem03(),
+        // problem04(),
+        // problem05(),
+        // problem06(),
+        // problem07(),
+        // problem08(),
+        // problem09(),
+        // problem10(),
+        // problem11(),
+        // problem12(),
+        // problem13(),
+        // problem14(),
+        // problem15(),
+        // problem16(),
+        // problem17(),
+        // problem18(),
+        // problem19(),
+        // problem20(),
+        // problem21(),
+        // problem22(),
+        // problem23(),
+        // problem24(),
+        problem25(),
     ]
 }
