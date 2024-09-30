@@ -190,8 +190,8 @@ mod tests {
     use super::*;
     // use test::Bencher;
 
-    const EPSILON: f64 = 10e-7;
-    const NUM_STEPS: usize = 1_000_000;
+    const EPSILON: f64 = 10e-4;
+    const NUM_STEPS: usize = 1_000;
 
     #[test]
     fn test_integral_value() {

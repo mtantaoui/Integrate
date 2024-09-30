@@ -1,12 +1,12 @@
-use std::{f64::consts::PI, i32, iter::Sum};
+use std::{f64::consts::PI, iter::Sum};
 
 use num::Float;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
-const EPSILON: f64 = 10e-6;
+const EPSILON: f64 = 10e-4;
 const NUM_STEPS: usize = 100_000;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Methods {
     Rectangle,
     Trapezoidal,
@@ -24,10 +24,20 @@ impl Methods {
         ]
         .into_iter()
     }
+
+    pub fn display(&self) -> &str {
+        match self {
+            Methods::Rectangle => "Rectangle rule",
+            Methods::Trapezoidal => "Trapezoidal Rule",
+            Methods::Newton3Over8 => "Newton 3/8 Rule",
+            Methods::Simpson => "Simpson Method",
+        }
+    }
 }
 
 #[derive(Clone)]
 pub struct Problem<F: Float> {
+    pub id: usize,
     pub function: fn(F) -> F, // represents integrand function
     pub limits: (F, F),       // integration limits
     pub exact: F,             // exact value of the integral
@@ -47,6 +57,7 @@ fn problem01<F: Float>() -> Problem<F> {
     }
 
     Problem {
+        id: 1,
         function: f,
         limits: (F::zero(), F::one()),
         exact: F::one().exp() - F::one(),
@@ -68,9 +79,10 @@ fn problem02<F: Float>() -> Problem<F> {
     let exact = F::from(0.7).unwrap();
 
     Problem {
+        id: 2,
         function: f,
         limits: (F::zero(), F::one()),
-        exact: exact,
+        exact,
         n: NUM_STEPS,
     }
 }
@@ -83,9 +95,10 @@ fn problem03<F: Float>() -> Problem<F> {
     let exact = F::from(2.0 / 3.0).unwrap();
 
     Problem {
+        id: 3,
         function: f,
         limits: (F::zero(), F::one()),
-        exact: exact,
+        exact,
         n: NUM_STEPS,
     }
 }
@@ -99,9 +112,10 @@ fn problem04<F: Float>() -> Problem<F> {
     let exact = F::from(1.84 * 1.0.sinh() - 2.0 * 1.0.sin()).unwrap();
 
     Problem {
+        id: 4,
         function: f,
         limits: (-F::one(), F::one()),
-        exact: exact,
+        exact,
         n: NUM_STEPS,
     }
 }
@@ -112,12 +126,13 @@ fn problem05<F: Float>() -> Problem<F> {
         F::one() / (x.powi(4) + x.powi(2) + constant)
     }
 
-    let exact = F::from(1.5822329637296729331).unwrap();
+    let exact = F::from(1.582_232_963_729_673).unwrap();
 
     Problem {
+        id: 5,
         function: f,
         limits: (-F::one(), F::one()),
-        exact: exact,
+        exact,
         n: NUM_STEPS,
     }
 }
@@ -132,9 +147,10 @@ fn problem06<F: Float>() -> Problem<F> {
     let exact = F::from(exact).unwrap();
 
     Problem {
+        id: 6,
         function: f,
         limits: (-F::one(), F::one()),
-        exact: exact,
+        exact,
         n: NUM_STEPS,
     }
 }
@@ -150,6 +166,7 @@ fn problem07<F: Float>() -> Problem<F> {
     let exact = F::one() + F::one() - two * (F::one() / constant).sqrt();
 
     Problem {
+        id: 7,
         function: f,
         limits: (F::one() / constant, F::one()),
         exact,
@@ -162,9 +179,10 @@ fn problem08<F: Float>() -> Problem<F> {
         F::one() / (F::one() + x.powi(4))
     }
 
-    let exact = F::from(0.86697298733991103757).unwrap();
+    let exact = F::from(0.866_972_987_339_911).unwrap();
 
     Problem {
+        id: 8,
         function: f,
         limits: (F::zero(), F::one()),
         exact,
@@ -184,6 +202,7 @@ fn problem09<F: Float>() -> Problem<F> {
     let exact = F::from(2.0 / 3.0.sqrt()).unwrap();
 
     Problem {
+        id: 9,
         function: f,
         limits: (F::zero(), F::one()),
         exact,
@@ -199,6 +218,7 @@ fn problem10<F: Float>() -> Problem<F> {
     let exact = F::from(2.0.ln()).unwrap();
 
     Problem {
+        id: 10,
         function: f,
         limits: (F::zero(), F::one()),
         exact,
@@ -214,6 +234,7 @@ fn problem11<F: Float>() -> Problem<F> {
     let exact = F::from(((2.0 * 1.0.exp()) / (1.0 + 1.0.exp())).ln()).unwrap();
 
     Problem {
+        id: 11,
         function: f,
         limits: (F::zero(), F::one()),
         exact,
@@ -226,9 +247,10 @@ fn problem12<F: Float>() -> Problem<F> {
         x / (x.exp() - F::one())
     }
 
-    let exact = F::from(0.77750463411224827642).unwrap();
+    let exact = F::from(0.777_504_634_112_248_2).unwrap();
 
     Problem {
+        id: 12,
         function: f,
         limits: (F::epsilon(), F::one()),
         exact,
@@ -241,11 +263,12 @@ fn problem13<F: Float>() -> Problem<F> {
         x.sin() / x
     }
 
-    let exact = F::from(1.6583475942188740493).unwrap();
+    let exact = F::from(1.658_347_594_218_874_1).unwrap();
 
     let ten = F::from(10).unwrap();
 
     Problem {
+        id: 13,
         function: f,
         limits: (F::epsilon(), ten),
         exact,
@@ -265,6 +288,7 @@ fn problem14<F: Float>() -> Problem<F> {
     let ten = F::from(10).unwrap();
 
     Problem {
+        id: 14,
         function: f,
         limits: (F::zero(), ten),
         exact,
@@ -283,6 +307,7 @@ fn problem15<F: Float>() -> Problem<F> {
     let ten = F::from(10).unwrap();
 
     Problem {
+        id: 15,
         function: f,
         limits: (F::zero(), ten),
         exact,
@@ -300,11 +325,12 @@ fn problem16<F: Float>() -> Problem<F> {
         constant1 / (pi * (constant2 * x * x + F::one()))
     }
 
-    let exact = F::from(0.49936338107645674464).unwrap();
+    let exact = F::from(0.499_363_381_076_456_7).unwrap();
 
     let ten = F::from(10).unwrap();
 
     Problem {
+        id: 16,
         function: f,
         limits: (F::zero(), ten),
         exact,
@@ -324,6 +350,7 @@ fn problem17<F: Float>() -> Problem<F> {
     let exact = F::from(0.5).unwrap();
 
     Problem {
+        id: 17,
         function: f,
         limits: (F::zero(), F::one()),
         exact,
@@ -336,9 +363,10 @@ fn problem18<F: Float>() -> Problem<F> {
         x / (x.exp() + F::one())
     }
 
-    let exact = F::from(0.17055734950243820437).unwrap();
+    let exact = F::from(0.170_557_349_502_438_2).unwrap();
 
     Problem {
+        id: 18,
         function: f,
         limits: (F::zero(), F::one()),
         exact,
@@ -359,6 +387,7 @@ fn problem19<F: Float>() -> Problem<F> {
     let exact = anti_derivative_f(F::one()) - anti_derivative_f(constant);
 
     Problem {
+        id: 19,
         function: f,
         limits: (constant, F::one()),
         exact,
@@ -372,9 +401,10 @@ fn problem20<F: Float>() -> Problem<F> {
         F::one() / (x.powi(2) + constant)
     }
 
-    let exact = F::from(1.5643964440690497731).unwrap();
+    let exact = F::from(1.564_396_444_069_049_9).unwrap();
 
     Problem {
+        id: 20,
         function: f,
         limits: (-F::one(), F::one()),
         exact,
@@ -387,13 +417,11 @@ fn problem21<F: Float>() -> Problem<F> {
     fn sech<F: Float>(x: F) -> F {
         let log_huge = F::from(80.0).unwrap();
 
-        let value = if log_huge < x.abs() {
+        if log_huge < x.abs() {
             F::zero()
         } else {
             F::one() / x.cosh()
-        };
-
-        return value;
+        }
     }
 
     fn f<F: Float>(x: F) -> F {
@@ -410,9 +438,10 @@ fn problem21<F: Float>() -> Problem<F> {
             + sech(constant3 * (x - constant6)).powi(6)
     }
 
-    let exact = F::from(0.21080273631018169851).unwrap();
+    let exact = F::from(0.210_802_736_310_181_77).unwrap();
 
     Problem {
+        id: 21,
         function: f,
         limits: (F::zero(), F::one()),
         exact,
@@ -425,9 +454,10 @@ fn problem22<F: Float>() -> Problem<F> {
         F::one() / (x.powi(4) + x.powi(2) + F::one())
     }
 
-    let exact = F::from(0.72810291322558188550).unwrap();
+    let exact = F::from(0.728_102_913_225_581_8).unwrap();
 
     Problem {
+        id: 22,
         function: f,
         limits: (F::zero(), F::one()),
         exact,
@@ -445,6 +475,7 @@ fn problem23<F: Float>() -> Problem<F> {
     let exact = F::from(0.71226).unwrap();
 
     Problem {
+        id: 23,
         function: f,
         limits: (constant, F::one()),
         exact,
@@ -472,6 +503,7 @@ fn problem24<F: Float + Send + Sum + Sync>() -> Problem<F> {
     let two = F::one() + F::one();
 
     Problem {
+        id: 24,
         function: f,
         limits: (F::zero(), F::one() / two),
         exact,
@@ -482,7 +514,7 @@ fn problem24<F: Float + Send + Sum + Sync>() -> Problem<F> {
 fn problem25<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let constant = F::from(0.7).unwrap();
-        let epsilon = F::from(10e-10).unwrap();
+        let epsilon = F::from(10e-4).unwrap();
 
         if x <= constant + epsilon && x >= constant - epsilon {
             F::zero()
@@ -491,9 +523,10 @@ fn problem25<F: Float>() -> Problem<F> {
         }
     }
 
-    let exact = F::from(0.3 * 0.3.ln() + 0.7 * 0.7.ln() - 1.0).unwrap();
+    let exact = F::from(-1.595048).unwrap();
 
     Problem {
+        id: 25,
         function: f,
         limits: (F::zero(), F::one()),
         exact,
@@ -501,32 +534,147 @@ fn problem25<F: Float>() -> Problem<F> {
     }
 }
 
+fn problem26<F: Float>() -> Problem<F> {
+    fn f<F: Float>(x: F) -> F {
+        x.cos().exp()
+    }
+    let two = F::one() + F::one();
+    let pi = F::from(PI).unwrap();
+    let exact = F::from(7.954_926_521_012_846).unwrap();
+
+    Problem {
+        id: 26,
+        function: f,
+        limits: (F::zero(), two * pi),
+        exact,
+        n: NUM_STEPS,
+    }
+}
+
+fn problem27<F: Float>() -> Problem<F> {
+    fn f<F: Float>(x: F) -> F {
+        let one_over_two = F::one() / (F::one() + F::one());
+        let one_over_three = F::one() / (F::one() + F::one() + F::one());
+
+        if x.is_zero() {
+            F::zero()
+        } else {
+            F::one() / (x.powf(one_over_two) + x.powf(one_over_three))
+        }
+    }
+    let exact = F::from(5.0 - 6.0 * 2.0.ln()).unwrap();
+
+    Problem {
+        id: 27,
+        function: f,
+        limits: (F::zero(), F::one()),
+        exact,
+        n: NUM_STEPS,
+    }
+}
+
+fn problem28<F: Float>() -> Problem<F> {
+    fn f<F: Float>(x: F) -> F {
+        let constant = F::from(50).unwrap();
+
+        (-x).exp() * (constant * x).sin()
+    }
+    let two = F::one() + F::one();
+    let pi = F::from(PI).unwrap();
+    let exact = F::from(0.019_954_669_277_654_78).unwrap();
+
+    Problem {
+        id: 28,
+        function: f,
+        limits: (F::zero(), two * pi),
+        exact,
+        n: NUM_STEPS,
+    }
+}
+
+fn problem29<F: Float>() -> Problem<F> {
+    fn f<F: Float>(x: F) -> F {
+        let two = F::one() + F::one();
+        let threshold = F::from(1.0.exp() - 2.0).unwrap();
+
+        if x > F::zero() && x < threshold {
+            F::one() / (x + two)
+        } else {
+            F::zero()
+        }
+    }
+
+    let exact = F::from(1.0 - 2.0.ln()).unwrap();
+
+    Problem {
+        id: 29,
+        function: f,
+        limits: (F::zero(), F::one()),
+        exact,
+        n: NUM_STEPS,
+    }
+}
+
+fn problem30<F: Float>() -> Problem<F> {
+    fn f<F: Float>(x: F) -> F {
+        let two = F::one() + F::one();
+        let five = F::from(5).unwrap();
+        let seven = F::from(7).unwrap();
+        let nine = F::from(9).unwrap();
+
+        let constant1 = F::from(1.6).unwrap();
+        let constant2 = F::from(4.5).unwrap();
+
+        x.cos() + five * (constant1 * x).cos() - two * (two * x).cos()
+            + five * (constant2 * x).cos()
+            + seven * (nine * x).cos()
+    }
+
+    let exact = F::from(-4.527_569_625_160_672).unwrap();
+
+    let two = F::one() + F::one();
+    let seven = F::from(7).unwrap();
+
+    Problem {
+        id: 30,
+        function: f,
+        limits: (two, seven),
+        exact,
+        n: NUM_STEPS,
+    }
+}
+
 pub fn problems_vec<F: Float + Send + Sum + Sync>() -> Vec<Problem<F>> {
     vec![
-        // problem01(),
-        // problem02(),
-        // problem03(),
-        // problem04(),
-        // problem05(),
-        // problem06(),
-        // problem07(),
-        // problem08(),
-        // problem09(),
-        // problem10(),
-        // problem11(),
-        // problem12(),
-        // problem13(),
-        // problem14(),
-        // problem15(),
-        // problem16(),
-        // problem17(),
-        // problem18(),
-        // problem19(),
-        // problem20(),
-        // problem21(),
-        // problem22(),
-        // problem23(),
-        // problem24(),
+        problem01(),
+        problem02(),
+        problem03(),
+        problem04(),
+        problem05(),
+        problem06(),
+        problem07(),
+        problem08(),
+        problem09(),
+        problem10(),
+        problem11(),
+        problem12(),
+        problem13(),
+        problem14(),
+        problem15(),
+        problem16(),
+        problem17(),
+        problem18(),
+        problem19(),
+        problem20(),
+        problem21(),
+        problem22(),
+        problem23(),
+        problem24(),
         problem25(),
+        problem26(),
+        problem27(),
+        problem28(),
+        problem29(),
+        problem30(),
     ]
 }

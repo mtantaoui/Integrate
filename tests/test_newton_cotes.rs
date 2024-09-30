@@ -18,6 +18,16 @@ fn test_problem_f64(problem: Problem<f64>, method: Methods) {
 
     let result = integrate(method, f, a, b, n);
 
+    let test_passed = problem.check_result(result);
+    let test_result = if test_passed { "passed" } else { "failed" };
+
+    println!(
+        "Method:{} -- Problem number:{} -- test:{}",
+        method.display(),
+        problem.id,
+        test_result
+    );
+
     assert!(problem.check_result(result));
 }
 
@@ -27,6 +37,16 @@ fn test_problem_f32(problem: Problem<f32>, method: Methods) {
     let n: usize = problem.n;
 
     let result = integrate(method, f, a, b, n) as f32;
+
+    let test_passed = problem.check_result(result);
+    let test_result = if test_passed { "passed" } else { "failed" };
+
+    println!(
+        "Method:{} -- Problem number:{} -- test:{}",
+        method.display(),
+        problem.id,
+        test_result
+    );
 
     assert!(problem.check_result(result));
 }
