@@ -6,36 +6,7 @@ use rayon::iter::{IntoParallelIterator, ParallelIterator};
 const EPSILON: f64 = 10e-4;
 const NUM_STEPS: usize = 100_000;
 
-#[derive(Debug, Clone, Copy)]
-pub enum Methods {
-    Rectangle,
-    Trapezoidal,
-    Newton3Over8,
-    Simpson,
-}
-
-impl Methods {
-    pub fn iter() -> core::array::IntoIter<Methods, 4> {
-        [
-            Methods::Rectangle,
-            Methods::Trapezoidal,
-            Methods::Newton3Over8,
-            Methods::Simpson,
-        ]
-        .into_iter()
-    }
-
-    pub fn display(&self) -> &str {
-        match self {
-            Methods::Rectangle => "Rectangle rule",
-            Methods::Trapezoidal => "Trapezoidal Rule",
-            Methods::Newton3Over8 => "Newton 3/8 Rule",
-            Methods::Simpson => "Simpson Method",
-        }
-    }
-}
-
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Problem<F: Float> {
     pub id: usize,
     pub function: fn(F) -> F, // represents integrand function
@@ -51,7 +22,7 @@ impl<F: Float> Problem<F> {
     }
 }
 
-fn problem01<F: Float>() -> Problem<F> {
+pub fn problem01<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         x.exp()
     }
@@ -65,7 +36,7 @@ fn problem01<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem02<F: Float>() -> Problem<F> {
+pub fn problem02<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let atom = F::from(0.3).unwrap();
 
@@ -87,7 +58,7 @@ fn problem02<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem03<F: Float>() -> Problem<F> {
+pub fn problem03<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         x.sqrt()
     }
@@ -103,7 +74,7 @@ fn problem03<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem04<F: Float>() -> Problem<F> {
+pub fn problem04<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let constant = F::from(0.92).unwrap();
         constant * x.cosh() - x.cos()
@@ -120,7 +91,7 @@ fn problem04<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem05<F: Float>() -> Problem<F> {
+pub fn problem05<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let constant = F::from(0.9).unwrap();
         F::one() / (x.powi(4) + x.powi(2) + constant)
@@ -137,7 +108,7 @@ fn problem05<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem06<F: Float>() -> Problem<F> {
+pub fn problem06<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let constant = F::from(0.5).unwrap();
         (x + constant).abs().sqrt()
@@ -155,7 +126,7 @@ fn problem06<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem07<F: Float>() -> Problem<F> {
+pub fn problem07<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         F::one() / x.sqrt()
     }
@@ -174,7 +145,7 @@ fn problem07<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem08<F: Float>() -> Problem<F> {
+pub fn problem08<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         F::one() / (F::one() + x.powi(4))
     }
@@ -190,7 +161,7 @@ fn problem08<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem09<F: Float>() -> Problem<F> {
+pub fn problem09<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let two = F::one() + F::one();
         let ten = F::from(10).unwrap();
@@ -210,7 +181,7 @@ fn problem09<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem10<F: Float>() -> Problem<F> {
+pub fn problem10<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         F::one() / (F::one() + x)
     }
@@ -226,7 +197,7 @@ fn problem10<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem11<F: Float>() -> Problem<F> {
+pub fn problem11<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         F::one() / (F::one() + x.exp())
     }
@@ -242,7 +213,7 @@ fn problem11<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem12<F: Float>() -> Problem<F> {
+pub fn problem12<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         x / (x.exp() - F::one())
     }
@@ -258,7 +229,7 @@ fn problem12<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem13<F: Float>() -> Problem<F> {
+pub fn problem13<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         x.sin() / x
     }
@@ -276,7 +247,7 @@ fn problem13<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem14<F: Float>() -> Problem<F> {
+pub fn problem14<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let constant = F::from(50).unwrap();
         let pi = F::from(PI).unwrap();
@@ -296,7 +267,7 @@ fn problem14<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem15<F: Float>() -> Problem<F> {
+pub fn problem15<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let constant = F::from(25).unwrap();
         constant * (-constant * x).exp()
@@ -315,7 +286,7 @@ fn problem15<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem16<F: Float>() -> Problem<F> {
+pub fn problem16<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let constant1 = F::from(50).unwrap();
         let constant2 = F::from(2500).unwrap();
@@ -338,7 +309,7 @@ fn problem16<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem17<F: Float>() -> Problem<F> {
+pub fn problem17<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let constant = F::from(50).unwrap();
 
@@ -358,7 +329,7 @@ fn problem17<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem18<F: Float>() -> Problem<F> {
+pub fn problem18<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         x / (x.exp() + F::one())
     }
@@ -374,7 +345,7 @@ fn problem18<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem19<F: Float>() -> Problem<F> {
+pub fn problem19<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         x.ln()
     }
@@ -395,7 +366,7 @@ fn problem19<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem20<F: Float>() -> Problem<F> {
+pub fn problem20<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let constant = F::from(1.005).unwrap();
         F::one() / (x.powi(2) + constant)
@@ -412,7 +383,7 @@ fn problem20<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem21<F: Float>() -> Problem<F> {
+pub fn problem21<F: Float>() -> Problem<F> {
     // evaluates the hyperbolic secant, while avoiding COSH overflow.
     fn sech<F: Float>(x: F) -> F {
         let log_huge = F::from(80.0).unwrap();
@@ -449,7 +420,7 @@ fn problem21<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem22<F: Float>() -> Problem<F> {
+pub fn problem22<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         F::one() / (x.powi(4) + x.powi(2) + F::one())
     }
@@ -465,7 +436,7 @@ fn problem22<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem23<F: Float>() -> Problem<F> {
+pub fn problem23<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         (F::one() / x) * (F::one() / x).sin()
     }
@@ -483,7 +454,7 @@ fn problem23<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem24<F: Float + Send + Sum + Sync>() -> Problem<F> {
+pub fn problem24<F: Float + Send + Sum + Sync>() -> Problem<F> {
     fn f<F: Float + Send + Sum + Sync>(x: F) -> F {
         let pi = F::from(PI).unwrap();
         let two = F::one() + F::one();
@@ -511,7 +482,7 @@ fn problem24<F: Float + Send + Sum + Sync>() -> Problem<F> {
     }
 }
 
-fn problem25<F: Float>() -> Problem<F> {
+pub fn problem25<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let constant = F::from(0.7).unwrap();
         let epsilon = F::from(10e-4).unwrap();
@@ -534,7 +505,7 @@ fn problem25<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem26<F: Float>() -> Problem<F> {
+pub fn problem26<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         x.cos().exp()
     }
@@ -551,7 +522,8 @@ fn problem26<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem27<F: Float>() -> Problem<F> {
+#[allow(dead_code)]
+pub fn problem27<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let one_over_two = F::one() / (F::one() + F::one());
         let one_over_three = F::one() / (F::one() + F::one() + F::one());
@@ -573,7 +545,8 @@ fn problem27<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem28<F: Float>() -> Problem<F> {
+#[allow(dead_code)]
+pub fn problem28<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let constant = F::from(50).unwrap();
 
@@ -592,7 +565,7 @@ fn problem28<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem29<F: Float>() -> Problem<F> {
+pub fn problem29<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let two = F::one() + F::one();
         let threshold = F::from(1.0.exp() - 2.0).unwrap();
@@ -615,7 +588,7 @@ fn problem29<F: Float>() -> Problem<F> {
     }
 }
 
-fn problem30<F: Float>() -> Problem<F> {
+pub fn problem30<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         let two = F::one() + F::one();
         let five = F::from(5).unwrap();
@@ -642,39 +615,4 @@ fn problem30<F: Float>() -> Problem<F> {
         exact,
         n: NUM_STEPS,
     }
-}
-
-pub fn problems_vec<F: Float + Send + Sum + Sync>() -> Vec<Problem<F>> {
-    vec![
-        problem01(),
-        problem02(),
-        problem03(),
-        problem04(),
-        problem05(),
-        problem06(),
-        problem07(),
-        problem08(),
-        problem09(),
-        problem10(),
-        problem11(),
-        problem12(),
-        problem13(),
-        problem14(),
-        problem15(),
-        problem16(),
-        problem17(),
-        problem18(),
-        problem19(),
-        problem20(),
-        problem21(),
-        problem22(),
-        problem23(),
-        problem24(),
-        problem25(),
-        problem26(),
-        problem27(),
-        problem28(),
-        problem29(),
-        problem30(),
-    ]
 }

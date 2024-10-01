@@ -1,10 +1,52 @@
-#[path = "./problems.rs"]
-mod pbs;
+mod problems;
+
 const N: usize = 20;
 
-use pbs::{problems_vec, Problem};
+use std::iter::Sum;
 
 use integrator::romberg::romberg_method;
+use num::Float;
+use problems::{
+    problem01, problem02, problem03, problem04, problem05, problem06, problem07, problem08,
+    problem09, problem10, problem11, problem12, problem13, problem14, problem15, problem16,
+    problem17, problem18, problem19, problem20, problem21, problem22, problem23, problem24,
+    problem25, problem26, problem27, problem28, problem29, problem30, Problem,
+};
+
+pub fn romberg_problems<F: Float + Send + Sum + Sync>() -> Vec<Problem<F>> {
+    vec![
+        problem01(),
+        problem02(),
+        problem03(),
+        problem04(),
+        problem05(),
+        problem06(),
+        problem07(),
+        problem08(),
+        problem09(),
+        problem10(),
+        problem11(),
+        problem12(),
+        problem13(),
+        problem14(),
+        problem15(),
+        problem16(),
+        problem17(),
+        problem18(),
+        problem19(),
+        problem20(),
+        problem21(),
+        problem22(),
+        problem23(),
+        problem24(),
+        problem25(),
+        problem26(),
+        problem27(),
+        problem28(),
+        problem29(),
+        problem30(),
+    ]
+}
 
 fn test_problem_f64(problem: Problem<f64>) {
     let f = problem.function;
@@ -44,7 +86,7 @@ fn test_problem_f32(problem: Problem<f32>) {
 
 #[test]
 fn test_f32_problems() {
-    let problems: Vec<Problem<f32>> = problems_vec();
+    let problems: Vec<Problem<f32>> = romberg_problems();
 
     for problem in problems.into_iter() {
         test_problem_f32(problem);
@@ -53,7 +95,7 @@ fn test_f32_problems() {
 
 #[test]
 fn test_f64_problems() {
-    let problems: Vec<Problem<f64>> = problems_vec();
+    let problems: Vec<Problem<f64>> = romberg_problems();
 
     for problem in problems.into_iter() {
         test_problem_f64(problem);

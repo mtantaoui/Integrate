@@ -98,8 +98,11 @@ fn adaptive_simpson() {
         x.powi(POW)
     }
 
-    let integral = adaptive_simpson_method(square, A, B, 2_usize);
-    println!("adaptive simpson: {}", integral)
+    let tolerance = 10.0e-6;
+    let min_h = 10.0e-3;
+
+    let integral = adaptive_simpson_method(square, A, B, min_h, tolerance);
+    println!("adaptive simpson: {}", integral.unwrap());
 }
 
 fn main() {

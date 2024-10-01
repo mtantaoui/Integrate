@@ -1,5 +1,6 @@
-use num::{Float, ToPrimitive, Unsigned};
-use std::fmt::Debug;
+use num::Float;
+use std::fmt;
+
 use std::ops::{AddAssign, MulAssign};
 
 #[derive(Clone, Debug)]
@@ -10,17 +11,26 @@ struct SubInterval<F: Float> {
     interval: Option<Box<SubInterval<F>>>,
 }
 
-pub fn adaptive_simpson_method<
-    F: Float + MulAssign + AddAssign + Debug,
-    U: Unsigned + ToPrimitive + Copy,
->(
+type Result<T> = std::result::Result<T, AdaptiveSimpsonError>;
+
+#[derive(Debug, Clone)]
+pub struct AdaptiveSimpsonError;
+
+impl fmt::Display for AdaptiveSimpsonError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let msg = "No subinterval of length > min_h was found for which the estimated error was less that the pro-rated tolerance";
+        write!(f, "{}", msg)
+    }
+}
+
+pub fn adaptive_simpson_method<F: Float + MulAssign + AddAssign + fmt::Debug>(
     f: fn(F) -> F,
     a: F,
     b: F,
-    n: U,
-) -> F {
+    min_h: F,
+    tolerance: F,
+) -> Result<F> {
     let two = F::one() + F::one();
-    let tolerance = F::from(f32::EPSILON).unwrap();
 
     let mut integral: F = F::zero();
     let epsilon_density = two * tolerance / (b - a);
@@ -44,9 +54,6 @@ pub fn adaptive_simpson_method<
     let mut epsilon = epsilon_density * (b - a);
     let (mut s1, mut s2) = simpson_rule_update(f, &mut pinterval);
 
-    let n = F::from(n).unwrap();
-    let min_h = (b - a) / n;
-
     let mut qinterval: SubInterval<F>;
 
     while pinterval.upper_limit - pinterval.lower_limit > min_h {
@@ -59,8 +66,9 @@ pub fn adaptive_simpson_method<
             // interval.
 
             integral += s2;
+
             if pinterval.interval.is_none() {
-                return integral;
+                return Ok(integral);
             }
 
             // Move to the next interval
@@ -74,9 +82,16 @@ pub fn adaptive_simpson_method<
             // If the two estimates are not close, then create a new
             // interval with same left end point and right end point
             // at the midpoint of the current interval.
+
+            let limit1 = pinterval.lower_limit;
+            let limit2 = (pinterval.upper_limit + pinterval.lower_limit) / two;
+
+            let upper_limit = if limit1 > limit2 { limit1 } else { limit2 };
+            let lower_limit = if limit1 > limit2 { limit2 } else { limit1 };
+
             qinterval = SubInterval {
-                lower_limit: pinterval.lower_limit,
-                upper_limit: (pinterval.upper_limit + pinterval.lower_limit) / two,
+                lower_limit,
+                upper_limit,
                 function: [F::nan(); 5],
                 interval: None,
             };
@@ -94,11 +109,10 @@ pub fn adaptive_simpson_method<
         (s1, s2) = simpson_rule_update(f, &mut pinterval);
         epsilon = epsilon_density * (pinterval.upper_limit - pinterval.lower_limit);
     }
-
-    integral
+    Err(AdaptiveSimpsonError)
 }
 
-fn simpson_rule_update<F: Float + MulAssign + Debug>(
+fn simpson_rule_update<F: Float + MulAssign + fmt::Debug>(
     f: fn(F) -> F,
     pinterval: &mut SubInterval<F>,
 ) -> (F, F) {
