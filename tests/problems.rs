@@ -229,6 +229,7 @@ pub fn problem12<F: Float>() -> Problem<F> {
     }
 }
 
+#[allow(dead_code)]
 pub fn problem13<F: Float>() -> Problem<F> {
     fn f<F: Float>(x: F) -> F {
         x.sin() / x

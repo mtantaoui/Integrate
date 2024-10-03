@@ -4,38 +4,44 @@ use std::iter::Sum;
 
 use integrator::adaptive_quadrature::simpson::adaptive_simpson_method;
 use num::Float;
-use problems::Problem;
+
+use problems::{
+    problem01, problem02, problem03, problem04, problem05, problem06, problem07, problem08,
+    problem09, problem10, problem11, problem12, problem13, problem14, problem15, problem16,
+    problem17, problem18, problem19, problem20, problem21, problem22, problem23, problem24,
+    problem25, problem26, problem29, problem30, Problem,
+};
 
 pub fn adaptive_simpson_problems<F: Float + Send + Sum + Sync>() -> Vec<Problem<F>> {
     vec![
-        problems::problem01(),
-        problems::problem02(),
-        problems::problem03(),
-        problems::problem04(),
-        problems::problem05(),
-        problems::problem06(),
-        problems::problem07(),
-        problems::problem08(),
-        problems::problem09(),
-        problems::problem10(),
-        problems::problem11(),
-        problems::problem12(),
-        problems::problem13(),
-        problems::problem14(),
-        problems::problem15(),
-        problems::problem16(),
-        problems::problem17(),
-        problems::problem18(),
-        problems::problem19(),
-        problems::problem20(),
-        problems::problem21(),
-        problems::problem22(),
-        problems::problem23(),
-        problems::problem24(),
-        problems::problem25(),
-        problems::problem26(),
-        problems::problem29(),
-        problems::problem30(),
+        problem01(),
+        problem02(),
+        problem03(),
+        problem04(),
+        problem05(),
+        problem06(),
+        problem07(),
+        problem08(),
+        problem09(),
+        problem10(),
+        problem11(),
+        problem12(),
+        problem13(),
+        problem14(),
+        problem15(),
+        problem16(),
+        problem17(),
+        problem18(),
+        problem19(),
+        problem20(),
+        problem21(),
+        problem22(),
+        problem23(),
+        problem24(),
+        problem25(),
+        problem26(),
+        problem29(),
+        problem30(),
     ]
 }
 
