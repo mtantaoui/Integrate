@@ -36,6 +36,8 @@ use crate::utils::{
 
 use super::utils::check_gauss_rule_args;
 
+const ORDER_LIMIT: usize = 350;
+
 #[derive(Clone, Debug)]
 pub struct Laguerre<F: Float> {
     degree: usize,
@@ -147,6 +149,9 @@ pub fn gauss_laguerre_rule<F: Float + Debug + Sync + Send + AddAssign + Sum>(
     f: fn(F) -> F,
     n: usize,
 ) -> F {
+    // Beyond this order make, some Laguerrre polynomial zeros are too small
+    let n = if n > ORDER_LIMIT { ORDER_LIMIT } else { n };
+
     check_gauss_rule_args(n);
     let (zeros, weights) = roots_laguerre::<F>(n);
 
