@@ -159,7 +159,7 @@ mod tests {
         gauss_quadrature::hermite::Hermite, utils::orthogonal_polynomials::OrthogonalPolynomial,
     };
 
-    const EPSILON: f64 = 10e-1;
+    const EPSILON: f64 = 10e-7;
 
     const N_VALUES: &[usize; 18] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 5, 5, 5, 5, 5];
     const X_VALUES: &[f64; 18] = &[
@@ -213,45 +213,53 @@ mod tests {
         let h5: Hermite<f64> = Hermite::new(5);
 
         let mut h1_zeros = h1.zeros();
-        let mut h2_zeros = h2.zeros();
-        let mut h3_zeros = h3.zeros();
-        let mut h4_zeros = h4.zeros();
-        let mut h5_zeros = h5.zeros();
-
         h1_zeros.reverse();
+
+        let mut h2_zeros = h2.zeros();
         h2_zeros.reverse();
+
+        let mut h3_zeros = h3.zeros();
         h3_zeros.reverse();
+
+        let mut h4_zeros = h4.zeros();
         h4_zeros.reverse();
+
+        let mut h5_zeros = h5.zeros();
         h5_zeros.reverse();
 
-        H1_ZEROS
+        let h1_test = h1_zeros
             .iter()
-            .zip(h1_zeros)
-            .for_each(|(test_zero, zero)| assert!((*test_zero - zero).abs() < EPSILON));
+            .zip(H1_ZEROS)
+            .all(|(value, test_value)| (value - test_value).abs() <= EPSILON);
 
-        H2_ZEROS
-            .iter()
-            .zip(h2_zeros)
-            .for_each(|(test_zero, zero)| assert!((*test_zero - zero).abs() < EPSILON));
-        H3_ZEROS
-            .iter()
-            .zip(h3_zeros)
-            .for_each(|(test_zero, zero)| assert!((*test_zero - zero).abs() < EPSILON));
-        H4_ZEROS
-            .iter()
-            .zip(h4_zeros)
-            .for_each(|(test_zero, zero)| assert!((*test_zero - zero).abs() < EPSILON));
-        H5_ZEROS
-            .iter()
-            .zip(h5_zeros)
-            .for_each(|(test_zero, zero)| assert!((*test_zero - zero).abs() < EPSILON));
+        assert!(h1_test);
 
-        // assert!((test_weight - weight).abs() < EPSILON)
+        let h2_test = h2_zeros
+            .iter()
+            .zip(H2_ZEROS)
+            .all(|(value, test_value)| (value - test_value).abs() <= EPSILON);
 
-        // assert_eq!(h1_zeros, H1_ZEROS);
-        // assert_eq!(h2_zeros, H2_ZEROS);
-        // assert_eq!(h3_zeros, H3_ZEROS);
-        // assert_eq!(h4_zeros, H4_ZEROS);
-        // assert_eq!(h5_zeros, H5_ZEROS);
+        assert!(h2_test);
+
+        let h3_test = h3_zeros
+            .iter()
+            .zip(H3_ZEROS)
+            .all(|(value, test_value)| (value - test_value).abs() <= EPSILON);
+
+        assert!(h3_test);
+
+        let h4_test = h4_zeros
+            .iter()
+            .zip(H4_ZEROS)
+            .all(|(value, test_value)| (value - test_value).abs() <= EPSILON);
+
+        assert!(h4_test);
+
+        let h5_test = h5_zeros
+            .iter()
+            .zip(H5_ZEROS)
+            .all(|(value, test_value)| (value - test_value).abs() <= EPSILON);
+
+        assert!(h5_test)
     }
 }
