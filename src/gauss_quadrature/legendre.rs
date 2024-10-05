@@ -6157,8 +6157,10 @@ pub fn legendre_rule<
     b: F1,
     n: U,
 ) -> f64 {
-    let c = (b - a) / F1::from(2).unwrap();
-    let d = (b + a) / F1::from(2).unwrap();
+    let two = F1::one() + F1::one();
+
+    let c = (b - a) / two;
+    let d = (b + a) / two;
 
     let n = n.to_usize().unwrap();
 
