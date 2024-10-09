@@ -1,4 +1,4 @@
-//! Trapezoidal rule:
+//! Trapezoidal Rule
 //!
 //! The trapezoidal rule approximates the integral of a function $f(x)$ on the closed and
 //! bounded interval $\[a, a+h\]$ of length $h > 0$ by the (signed) area of the trapezoid formed
@@ -8,8 +8,9 @@
 //! The composite trapezoidal rule is used to approximate the integral of a function
 //! $f(x)$ over a closed and bounded interval $\[a, b\]$ where $a < b$,
 //! by decomposing the interval $\[a, b\]$ into $n > 1$ subintervals of equal length
-//! $h = \frac{b-a}{n}$, then adding the results of applying the trapezoidal
-//!     rule to each subinterval.
+//! $h = \dfrac{b-a}{n}$, then adding the results of applying the trapezoidal
+//! rule to each subinterval.
+//!
 //! By abuse of language both the composite trapezoidal rule and the trapezoidal rule
 //! sometimes are referred to simply as the trapezoidal rule.
 //!
@@ -58,7 +59,11 @@
 //! then the trapezoidal rule is exact.
 //!
 //! The Euler-Maclaurin summation formula also shows that usually n should be chosen large enough
-//! so that $h = \frac{b-a}{n} < 1$.
+//! so that
+//!
+//! ```math
+//! h = \frac{b-a}{n} < 1
+//! ```
 //!
 //! For example, if $h = 0.1$ then
 //! ```math
@@ -83,6 +88,11 @@ use super::utils::check_newton_method_args;
 
 /// This function integrates $f(x)$ from $a$ to $a+nh$ using the Simpson's
 /// rule by summing from the left end of the interval to the right end.
+///  
+/// * `f` - Integrand function of a single variable.
+/// * `a` - lower limit of the integration interval.
+/// * `b` - upper limit of the integration interval.
+/// * `n` - number of subintervals.
 ///
 /// # Examples
 /// ```

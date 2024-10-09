@@ -6,6 +6,7 @@ use integrator::{
         chebyshev::{gauss_first_kind_chebyshev_rule, gauss_second_kind_chebyshev_rule},
         hermite::gauss_hermite_rule,
         laguerre::gauss_laguerre_rule,
+        legendre::legendre_rule,
     },
     newton_cotes::{
         rectangle::rectangle_rule, simpson::simpson_rule, trapezoidal::trapezoidal_rule,
@@ -105,7 +106,17 @@ fn adaptive_simpson() {
     println!("adaptive simpson: {}", integral.unwrap());
 }
 
+fn legendre() {
+    fn square(x: f64) -> f64 {
+        x.exp()
+    }
+
+    let integral = legendre_rule(square, 0.0, 1.0, 1_000_000_usize);
+    println!("legendre: {}", integral)
+}
+
 fn main() {
+    legendre();
     adaptive_simpson();
     chebyshev();
     hermite();

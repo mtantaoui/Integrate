@@ -1,4 +1,4 @@
-//! Rectangle rule:
+//! Rectangle Rule
 //!
 //! The rectangle rule approximates the integral of a function $f(x)$ on the
 //! closed and bounded interval $[a, a+h]$ of length $h > 0$ by the (signed) area
@@ -17,20 +17,21 @@
 //! and let $R_h(f)$ be the result of applying the rectangle rule with n subintervals of length h, i.e.
 //!
 //! ```math
-//! R_h(f)=h [ f(a+h/2) + f(a+3h/2) + ··· + f(b-h/2) ]
+//! R_h(f)=h \left[ f(a+\frac{h}{2}) + f(a+\frac{3h}{2}) + ··· + f(b-\frac{h}{2}) \right]
 //! ```
 //!
 //! An immediate consequence of the Euler-Maclaurin summation formula yields the following equation
-//! relating $\int_{a}^{b} f(x) dx$ and $R_h(f)$
+//! relating $\int_{a}^{b} f(x) dx$ and $R_h(f)$:
 //!
 //! ```math
 //! \begin{split}
-//! R_h(f) &= \int_{a}^{b} f(x) dx - \frac{h^2}{24} \left[ f^\prime (b) - f^\prime (a) \right] +  \frac{7h^4}{5760} \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \\
-//! &··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})  
+//! R_h(f) & = \int_{a}^{b} f(x) dx - \frac{h^2}{24} \left[ f^\prime (b) - f^\prime (a) \right] +  \frac{7h^4}{5760} \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \\
+//! & ··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})  
 //! \end{split}
 //! ```
 //!
-//! where $f'$, $f^{(3)}$, and $f^{(2p-3)}$ are the first, third and $(2p-3)rd$ derivatives of $f$ and $K$ is a constant.
+//! where $f'$, $f^{(3)}$, and $f^{(2p-3)}$ are the first, third and $(2p-3)^{rd}$ derivatives of $f$ and $K$ is a constant.
+//!
 //!
 //! The last term, $O(h^{2p})$ is important. Given an infinitely differentiable function
 //! in which the first $2p-3$ derivatives vanish at both endpoints of the interval of integration,
@@ -47,8 +48,8 @@
 //!
 //! ```math
 //! \begin{split}
-//! R_h(f) - \int_{a}^{b} f(x) dx &= -\frac{h^2}{24} \left[ f^\prime (b) - f^\prime (a) \right] +  \frac{7h^4}{5760} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\
-//! & + ··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+//! R_h(f) - \int_{a}^{b} f(x) dx & = -\frac{h^2}{24} \left[ f^\prime (b) - f^\prime (a) \right] +  \frac{7h^4}{5760} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\
+//! & +  ··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
 //! \end{split}
 //! ```
 //!
@@ -68,7 +69,7 @@
 //!
 //! ```math
 //! \begin{split}
-//! R_{0.1}(f) &= \int_{a}^{b} f(x) dx  - 0.00042 \left[f'(b) - f'(a)\right]  \\
+//! R_{0.1}(f) &= \int_{a}^{b} f(x) dx  - 0.00042 \left[ f'(b) - f'(a) \right]  \\
 //! & + 0.00000012 \left[f^{(3)}(b) - f^{(3)}(a) \right] + ...
 //! \end{split}
 //! ```
@@ -102,7 +103,7 @@ use super::utils::check_newton_method_args;
 ///
 /// * `f` - Integrand function of a single variable.
 /// * `a` - lower limit of the integration interval.
-/// * `b` - lower limit of the integration interval.
+/// * `b` - upper limit of the integration interval.
 /// * `n` - number of subintervals.
 ///
 /// # Examples

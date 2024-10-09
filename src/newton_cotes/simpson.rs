@@ -1,11 +1,11 @@
-//! Simpson's rule:
+//! Simpson's Rule
 //!
 //! Simpson's rule approximates the integral of a function $f(x)$ on the closed and bounded interval
 //! $\[a, a+h\]$ of length $h > 0$ by the integral on $\[a, a+h\]$ of the quadratic passing through the
-//! points $(a, f(a))$, $(a+\frac{h}{2}, f(a+\frac{h}{2}))$ and $(a+h, f(a+h))$.
+//! points $\left(a, f(a)\right)$, $\left(a+\dfrac{h}{2}, f(a+\dfrac{h}{2})\right)$ and $\left(a+h, f(a+h)\right)$.
 //!
 //! The composite Simpson's rule is used to approximate the integral of a function $f(x)$ over a closed and bounded interval $\[a, b\]$ where $a < b$,
-//! by decomposing the interval $\[a, b\]$ into $n > 1$ subintervals of equal length $h = \frac{b-a}{n}$,
+//! by decomposing the interval $\[a, b\]$ into $n > 1$ subintervals of equal length $h = \dfrac{b-a}{n}$,
 //! then adding the results of applying the Simpson's rule to each subinterval. By abuse of
 //! language both the composite Simpson's rule and Simpson's rule sometimes are referred to simply as
 //! Simpson's rule. Let $\int_{a}^{b} f(x) dx$ be the integral of $f(x)$ over the closed and bounded interval
@@ -14,15 +14,15 @@
 //! ```math
 //! \begin{split}
 //! S_h(f) &= \frac{h}{6} \left[ f(a) + 4f(a+\frac{h}{2}) + 2f(a+h) \right. \\
-//! &+ \left. ··· + 2f(b-h) + 4f(b-\frac{h}{2}) + f(b) \right]
+//! & + \left. ··· + 2f(b-h) + 4f(b-\frac{h}{2}) + f(b) \right]
 //! \end{split}
 //! ```
 //!
 //! An immediate consequence of the Euler-Maclaurin summation formula relates $\int_{a}^{b} f(x) dx$ and $S_h(f)$
 //! ```math
 //! \begin{split}
-//! S_h(f) &= \int_{a}^{b} f(x) dx + \frac{h^4}{2880} \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \frac{h^6}{96768} \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\
-//! &+ ··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+//! S_h(f) & = \int_{a}^{b} f(x) dx + \frac{h^4}{2880} \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \frac{h^6}{96768} \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\
+//! & + ··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
 //! \end{split}
 //! ```
 //! where $f^{(3)}$, $f^{(5)}$, and $f^{(2p-3)}$ are the third, fifth and $(p-3)^{th}$ derivatives of $f$ and $K$ is a constant.
@@ -34,7 +34,7 @@
 //! ```
 //! but rather what the theorem says is that
 //! ```math
-//! \lim_{h \to 0} \mid \frac{S_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \mid < M
+//! \lim_{h \to 0} \left| \frac{S_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \right| < M
 //! ```
 //! where M > 0.
 //!
@@ -46,7 +46,10 @@
 //! \end{split}
 //! ```
 //! yields the standard truncation error expression
-//! $$ S_h(f) - \int_{a}^{b} f( x ) dx dx = \frac{h^4}{2880} (b-a) f^{(4)}(c)$$
+//!
+//! ```math
+//! S_h(f) - \int_{a}^{b} f( x ) dx = \frac{h^4}{2880} (b-a) f^{(4)}(c)
+//! ```
 //!  for some point $c$ where $a ≤ c ≤ b$.
 //!
 //!
@@ -58,8 +61,8 @@
 //!
 //! ```math
 //! \begin{split}
-//! S_{0.1}(f) &= \int_{a}^{b} f(x) dx + 3.5 · 10^{-8} \left[ f^{3}(b) - f^{3}(a) \right]\\
-//!  &- 1.033 · 10^{-11} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+//! S_{0.1}(f) & = \int_{a}^{b} f(x) dx + 3.5 · 10^{-8} \left[ f^{3}(b) - f^{3}(a) \right]\\
+//!  & - 1.033 · 10^{-11} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
 //! \end{split}
 //! ```
 //!
@@ -68,8 +71,8 @@
 //!
 //! ```math
 //! \begin{split}
-//! S_{0.01}(f) &= \int_{a}^{b} f(x) dx + 3.5 · 10^{-12} \left[ f^{3}(b) - f^{3}(a) \right] \\
-//! &- 1.033 · 10^{-17} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+//! S_{0.01}(f) & = \int_{a}^{b} f(x) dx + 3.5 · 10^{-12} \left[ f^{3}(b) - f^{3}(a) \right] \\
+//! & - 1.033 · 10^{-17} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
 //! \end{split}
 //! ```
 //!
@@ -77,14 +80,12 @@
 //!
 //! ```math
 //! \begin{split}
-//! S_{0.01}(f) &= \int_{a}^{b} f(x) dx + 3.47  \left[ f^{3}(b) - f^{3}(a) \right] \\
-//! &- 10.33  \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+//! S_{0.01}(f) & = \int_{a}^{b} f(x) dx + 3.47  \left[ f^{3}(b) - f^{3}(a) \right] \\
+//! & - 10.33  \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
 //! \end{split}
 //! ```
 //!
 //! However, if the function $f(x)$ is a cubic, then $n$ may be chosen to be $1$.
-
-// extern crate test;
 
 use std::ops::Div;
 
@@ -99,7 +100,7 @@ use super::utils::check_newton_method_args;
 ///
 /// * `f` - Integrand function of a single variable.
 /// * `a` - lower limit of the integration interval.
-/// * `b` - lower limit of the integration interval.
+/// * `b` - upper limit of the integration interval.
 /// * `n` - number of subintervals.
 ///
 /// # Examples

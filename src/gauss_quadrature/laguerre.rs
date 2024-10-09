@@ -21,8 +21,6 @@
 //! ```
 //! for $i = 1,...,n$.
 
-// extern crate test;
-
 use std::{fmt::Debug, iter::Sum, marker::PhantomData, ops::AddAssign};
 
 use num::{one, Float, One, Zero};
@@ -35,8 +33,6 @@ use crate::utils::{
 };
 
 use super::utils::check_gauss_rule_args;
-
-const ORDER_LIMIT: usize = 350;
 
 #[derive(Clone, Debug)]
 pub struct Laguerre<F: Float> {
@@ -132,7 +128,7 @@ fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<
     let n = F::from(n).unwrap();
     let two = F::one() + F::one();
 
-    let weights = zeros
+    let weights: Vec<F> = zeros
         .par_iter()
         .map(|x_i| {
             let numerator = *x_i;
@@ -142,6 +138,18 @@ fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<
         })
         .collect();
 
+    let warn = zeros
+        .as_slice()
+        .into_par_iter()
+        .zip(weights.as_slice())
+        .any(|(zero, weight)| (*zero).is_nan() || (*weight).is_nan());
+
+    if warn {
+        eprintln!(
+            "Warning: `n` chosen is too big, some values of Laguerre Polynomials weights or zeros are too small and may underflow!"
+        )
+    }
+
     (zeros, weights)
 }
 
@@ -149,9 +157,6 @@ pub fn gauss_laguerre_rule<F: Float + Debug + Sync + Send + AddAssign + Sum>(
     f: fn(F) -> F,
     n: usize,
 ) -> F {
-    // Beyond this order make, some Laguerrre polynomial zeros are too small
-    let n = if n > ORDER_LIMIT { ORDER_LIMIT } else { n };
-
     check_gauss_rule_args(n);
     let (zeros, weights) = roots_laguerre::<F>(n);
 

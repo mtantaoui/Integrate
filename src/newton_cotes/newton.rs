@@ -1,4 +1,4 @@
-//! Newton's 3/8 rule:
+//! Newton's 3/8 Rule
 //!
 //! Newton's 3/8 rule approximates the integral of a function $f(x)$ on the closed and bounded
 //! interval $\[a, a+h\]$ of length $h > 0$ by the integral on $\[a, a+h\]$ of the cubic passing

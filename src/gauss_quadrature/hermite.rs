@@ -102,7 +102,7 @@ fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
 
     let two_pow = two.powf(n - F::one());
 
-    let weights = zeros
+    let weights: Vec<F> = zeros
         .par_iter()
         .map(|x_i| {
             let h_x = h.eval(*x_i); // H_{n-1}(x_i)
@@ -112,7 +112,7 @@ fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
             let denominator = n_squared * h_x * h_x;
 
             if denominator.is_infinite() || numerator.is_infinite() {
-                // switching everything number to BigInt
+                // switching everything to BigInt
                 let numer = two_pow.to_bigint().unwrap() * n_fact.to_bigint().unwrap();
                 let denom = h_x.abs().to_bigint().unwrap().pow(2) * n_squared.to_bigint().unwrap();
                 let ratio = BigRational::new(numer, denom);
@@ -123,6 +123,18 @@ fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
             }
         })
         .collect();
+
+    let warn = zeros
+        .as_slice()
+        .into_par_iter()
+        .zip(weights.as_slice())
+        .any(|(zero, weight)| (*zero).is_nan() || (*weight).is_nan());
+
+    if warn {
+        eprintln!(
+            "Warning: `n` chosen is too big, some values of Hermite Polynomials weights or zeros are too small and may underflow!"
+        )
+    }
 
     (zeros, weights)
 }
