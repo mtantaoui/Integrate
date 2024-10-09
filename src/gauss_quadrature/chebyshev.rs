@@ -214,6 +214,7 @@ mod tests {
 
     use crate::{
         gauss_quadrature::chebyshev::{
+            gauss_first_kind_chebyshev_rule, gauss_second_kind_chebyshev_rule,
             roots_first_kind_chebyshev, roots_second_kind_chebyshev, ChebyshevFirstKind,
             ChebyshevSecondKind,
         },
@@ -577,6 +578,62 @@ mod tests {
             let computed = u_n.eval(0.8);
 
             assert!((computed - test_value).abs() < EPSILON)
+        }
+    }
+
+    // Test the numerical integration of cos(1000 x) over the range [-1,1]
+    // for varying number of Gauss-Chebyshev First Kind quadrature nodes l.
+    // exact value of the numerical integration is 0.002 * sin(1000)
+    // The fact that only twelve digits of accuracy are obtained is due to the
+    // condition number of the summation.
+    #[test]
+    fn test_chebyshev_first_kind_rule() {
+        let exact: f64 = 0.002 * (1000.0_f64).sin();
+
+        fn f(x: f64) -> f64 {
+            (1000.0 * x).cos() * (1.0 - x.powi(2)).sqrt()
+        }
+
+        println!("Integral Exact Value: {}", exact);
+
+        for l in (540..=700_usize).step_by(20) {
+            // Gauss-Legendre rule using glpair function
+            let integral: f64 = gauss_first_kind_chebyshev_rule(f, l);
+
+            println!(
+                "number of nodes: {} \t Gauss-Chebyshev First Kind Integral: {}",
+                l, integral
+            );
+
+            assert!(integral - exact < EPSILON);
+        }
+    }
+
+    // Test the numerical integration of cos(1000 x) over the range [-1,1]
+    // for varying number of Gauss-Chebyshev Second Kind quadrature nodes l.
+    // exact value of the numerical integration is 0.002 * sin(1000)
+    // The fact that only twelve digits of accuracy are obtained is due to the
+    // condition number of the summation.
+    #[test]
+    fn test_chebyshev_second_kind_rule() {
+        let exact: f64 = 0.002 * (1000.0_f64).sin();
+
+        fn f(x: f64) -> f64 {
+            (1000.0 * x).cos() / (1.0 - x.powi(2)).sqrt()
+        }
+
+        println!("Integral Exact Value: {}", exact);
+
+        for l in (540..=700_usize).step_by(20) {
+            // Gauss-Legendre rule using glpair function
+            let integral: f64 = gauss_second_kind_chebyshev_rule(f, l);
+
+            println!(
+                "number of nodes: {} \t Gauss-Chebyshev second Kind Integral: {}",
+                l, integral
+            );
+
+            assert!((integral - exact).abs() < EPSILON);
         }
     }
 }
