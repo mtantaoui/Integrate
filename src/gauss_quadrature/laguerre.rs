@@ -1,3 +1,6 @@
+//! Gauss-Laguerre quadrature
+//!
+//!
 //! Gauss-Laguerre quadrature formulas are used to integrate functions $f(x) e^{-x}$ over the positive $x$-axis.
 //!
 //! With respect to the inner product
@@ -35,7 +38,7 @@ use crate::utils::{
 use super::utils::check_gauss_rule_args;
 
 #[derive(Clone, Debug)]
-pub struct Laguerre<F: Float> {
+struct Laguerre<F: Float> {
     degree: usize,
     _x: PhantomData<F>,
 }

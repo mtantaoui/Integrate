@@ -1,3 +1,6 @@
+//! Gauss-Legendre quadrature
+//!
+//!
 //! Gauss-Legendre quadrature formulas are used to integrate functions $f(x)$ over a closed and bounded interval $\[a, b\]$.
 //!
 //! Let $\int_{a}^{b} f(x) dx$  denote the integral of $f(x)$ from $a$ to $b$. After making the change of variable $t = \frac{2(x-a)}{b-a} - 1$, then
@@ -19,6 +22,7 @@
 //! ```
 //!
 //! and $P_0(x) = 1$, form an orthogonal family of polynomials with weight function $w(x) = 1$ on the interval $\[-1,1\]$.
+//!
 //!
 //! The $n$-point Gauss-Legendre quadrature formula, $GL_n ( f )$, for approximating the integral of $f(x)$ over $\[-1,1\]$, is given by
 //!

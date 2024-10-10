@@ -12,13 +12,13 @@ use crate::utils::orthogonal_polynomials::OrthogonalPolynomial;
 use super::utils::check_gauss_rule_args;
 
 #[derive(Clone, Debug)]
-pub struct ChebyshevFirstKind<F: Float> {
+struct ChebyshevFirstKind<F: Float> {
     degree: usize,
     _x: PhantomData<F>,
 }
 
 #[derive(Clone, Debug)]
-pub struct ChebyshevSecondKind<F: Float> {
+struct ChebyshevSecondKind<F: Float> {
     degree: usize,
     _x: PhantomData<F>,
 }
@@ -629,7 +629,7 @@ mod tests {
             let integral: f64 = gauss_second_kind_chebyshev_rule(f, l);
 
             println!(
-                "number of nodes: {} \t Gauss-Chebyshev second Kind Integral: {}",
+                "number of nodes: {} \t Gauss-Chebyshev Second Kind Integral: {}",
                 l, integral
             );
 
