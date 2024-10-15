@@ -1,3 +1,17 @@
+//! Adaptive Quadrature
+//!
+//! If an integrand is poorly behaved in a small interval about a point,
+//! then an attempt to integrate the function over an interval which contains
+//! the poorly behaved interval either requires that small subintervals
+//! are chosen for composite quadratures or the interval is decomposed into three intervals,
+//! two on which the function is well-behaved and relatively large subintervals
+//! can be chosen for the composite quadrature technique and one in which smaller subintervals need to be chosen.
+//!
+//! Adaptive techniques are attempts to automatically detect and control the length of subintervals.
+//!
+//! The technique for which the link to the listing is given below uses Simpson's rule
+//! for integrating a function $f(x)$ on a closed and bounded interval $\[a,b\]$.
+
 use num::Float;
 use std::fmt;
 
@@ -22,7 +36,53 @@ impl fmt::Display for AdaptiveSimpsonError {
         write!(f, "{}", msg)
     }
 }
-
+/// Simpson-Simpson adaptive method
+///
+/// Integrate, using the Simpson-Simpson adaptive method, the user supplied function $f$ from $a$ to $b$.
+///
+/// - `a` is the lower limit of integration.
+/// - `b` where $b > a$ is the upper limit of integration,
+/// - `tolerance` is the tolerance.
+/// - `min_h` is the minimum subinterval length to be used.
+///
+/// Starting at the left-end point, `a`, find the min power of 2, $m$,
+/// so that the difference between using Simpson's rule and the composite Simpson's
+/// rule on the interval $\[a, a+\frac{b-a}{2^m}\]$ is less than
+/// $$ 2 * \verb|tolerance| * \frac{\text{length of the subinterval}}{b-a}$$
+///
+/// Then repeat the process for integrating over the interval $\[a + \frac{b-a}{2^m}, b\]$ until the right
+/// end point, b, is finally reached.
+///
+/// The integral is then the sum of the integrals of each subinterval.  If at any time,
+/// the length of the subinterval for which the estimates based on Simpson's rule and
+/// the composite Simpson's rule is less than `min_h`, the process is terminated with an
+/// `AdaptiveSimpsonError` error.
+///
+/// # Examples
+/// ```
+/// use integrator::adaptive_quadrature::simpson::adaptive_simpson_method;
+///
+///
+/// fn f(x: f64) -> f64 {
+///     x.exp()
+/// }
+///
+/// let a = 0.0;
+/// let b = 1.0;
+///
+/// let tolerance = 10.0e-6;
+/// let min_h = 10.0e-3;
+///
+///
+/// let result = adaptive_simpson_method(f, a, b, min_h, tolerance);
+///
+///
+/// match result{
+///     Ok(res)=>{println!("{}", res)}
+///     Err(err)=>{println!("{}", err)}
+/// };
+///
+/// ```
 pub fn adaptive_simpson_method<F: Float + MulAssign + AddAssign + fmt::Debug>(
     f: fn(F) -> F,
     a: F,
@@ -138,3 +198,5 @@ fn simpson_rule_update<F: Float + MulAssign + fmt::Debug>(
 
     (s1, s2)
 }
+
+// tests in tests/test_adaptive_quadrature.rs

@@ -169,6 +169,35 @@ fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
     (zeros, weights)
 }
 
+/// Approximate the integral of $f(x) e^{-x^2}$ from $-\infty$ to $+\infty$
+/// using the $n$ point Gauss-Hermite integral approximation formula.
+///
+/// The n-th Hermite polynomial is
+///
+/// $$ H_n(x) = (-1)^n * e^{x^2}* \frac{\partial^{n} e^{-x^2}}{\partial x^n} $$
+///            
+/// For the n point Gauss-Hermite integral approximation formula the           
+/// coefficients are:
+///
+/// $$A_i = \frac{2^{n+1} * n! * \sqrt{\pi}}{H_{n-1} (x_i)^2} $$
+///
+/// where $x_i$ is a zero of the n-th Hermite polynomial $H_n(x)$.
+///
+/// Note that if $x$ is a zero of $H_n(x)$ then $-x$ is also a zero of $H_n(x)$ and the
+/// coefficients associated with $x$ and $-x$ are equal.     
+///
+/// # Examples
+/// ```
+/// use integrator::gauss_quadrature::hermite::gauss_hermite_rule;
+///
+/// fn f(x: f64) -> f64 {
+///     1.0
+/// }
+///
+/// let n:usize = 100;
+///
+/// let integral = gauss_hermite_rule(f, n);
+/// ```
 pub fn gauss_hermite_rule<F: Float + Debug + Sync + Send + AddAssign + Sum + ToBigInt>(
     f: fn(F) -> F,
     n: usize,

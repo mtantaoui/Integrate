@@ -1,3 +1,52 @@
+//! Gauss-Chebyshev quadrature
+//!
+//!
+//! Gauss-Chebyshev quadrature formulas are used to integrate functions like $\frac{f(x)}{\sqrt{1- x^2}}$ and
+//! $f(x) * \sqrt{1- x^2}$ from -1 to 1.
+//!
+//!
+//! - $\Large{\text{Chebyshev polynomials of the first kind}}$
+//!
+//!  With respect to the inner product
+//!
+//! ```math
+//!  \langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) * g(x) * w(x) dx
+//! ```
+//! the Chebyshev polynomials
+//! ```math
+//! T_n(x) = \cos(n * \arccos(x)) \quad \text{for} \quad n>0
+//! ```
+//!
+//! and $T_0(x)=1$ form an orthogonal family of polynomials with weight function $w(x)=\frac{1}{\sqrt{1 - x^2}}$ on $\[-1, 1\]$.
+//!
+//!
+//! The $n$-point Gauss-Chebyshev quadrature formula, $GC_n(f(x))$, for approximating the integral of $\frac{f(x)}{\sqrt{1 - x^2}}$ over $\[-1, 1\]$,
+//! is given by
+//! $$ GC_n ( f(x) ) = A_1 f(x_1) + ··· + A_n f(x_n) $$
+//! where $x_i$ , $i = 1,...,n$, are the zeros of $T_n$ and $A_i = \frac{\pi}{n}$, $i = 1,...,n$.
+//!
+//!
+//!
+//!
+//! - $\Large{\text{Chebyshev polynomials of the second kind}}$
+//!
+//!  With respect to the inner product
+//!
+//! ```math
+//!  \langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) * g(x) * w(x) dx
+//! ```
+//! the Chebyshev polynomials
+//! ```math
+//! U_n(x) * \sin(\arccos(x)) = \sin((n+1) * \arccos(x)) \quad \text{for} \quad n>0
+//! ```
+//!
+//! and $U_0(x)=1$ form an orthogonal family of polynomials with weight function $w(x)=\sqrt{1 - x^2}$ on $\[-1, 1\]$.
+//!
+//!
+//! The $n$-point Gauss-Chebyshev quadrature formula, $GC_n(f(x))$, for approximating the integral of $f(x) * \sqrt{1 - x^2}$ over $\[-1, 1\]$,
+//! is given by
+//! $$ GC_n ( f(x) ) = A_1 f(x_1) + ··· + A_n f(x_n) $$
+//! where $x_i$ , $i = 1,...,n$, are the zeros of $U_n$ and $A_i = \frac{\pi}{n + 1} * \sin^2(\frac{i*\pi}{n + 1} )$, $i = 1,...,n$.
 use std::iter::Sum;
 use std::{f64::consts::PI, marker::PhantomData};
 

@@ -14,14 +14,14 @@
 //!
 //! The $n$-point Gauss-Laguerre quadrature formula, $GL_n ( f(x) )$, for approximating the integral of $f(x) e^{-x}$ over $\left[0, \infty \right[$,
 //! is given by
-//! ```math
-//! GL_n ( f(x) ) = A_1 f(x_1) + ··· + A_n f(x_n)
-//! ```
+//!
+//! $$ GL_n ( f(x) ) = A_1 f(x_1) + ··· + A_n f(x_n) $$
+//!
 //! where $xi$ , $i = 1,...,n$, are the zeros of $L_n$ and
 //!
-//! ```math
-//! A_i = \dfrac{n!^2}{ x_i  L_{n-1} (x_i) ^2  }
-//! ```
+//!
+//! $$ A_i = \dfrac{n!^2}{ x_i  L_{n-1} (x_i) ^2  } $$
+//!
 //! for $i = 1,...,n$.
 
 use std::{fmt::Debug, iter::Sum, marker::PhantomData, ops::AddAssign};
@@ -156,6 +156,21 @@ fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<
     (zeros, weights)
 }
 
+/// Approximate the integral of $f(x) e^{-x}$ from 0 to infinity using the $n$
+/// point Gauss-Laguerre integral approximation formula.
+///
+/// # Examples
+/// ```
+/// use integrator::gauss_quadrature::laguerre::gauss_laguerre_rule;
+///
+/// fn f(x: f64) -> f64 {
+///     1.0
+/// }
+///
+/// let n:usize = 100;
+///
+/// let integral = gauss_laguerre_rule(f, n);
+/// ```
 pub fn gauss_laguerre_rule<F: Float + Debug + Sync + Send + AddAssign + Sum>(
     f: fn(F) -> F,
     n: usize,
