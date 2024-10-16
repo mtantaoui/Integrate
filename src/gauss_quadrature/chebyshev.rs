@@ -5,7 +5,7 @@
 //! $f(x) * \sqrt{1- x^2}$ from -1 to 1.
 //!
 //!
-//! - $\Large{\text{Chebyshev polynomials of the first kind}}$
+//! # Chebyshev polynomials of the first kind
 //!
 //!  With respect to the inner product
 //!
@@ -28,7 +28,7 @@
 //!
 //!
 //!
-//! - $\Large{\text{Chebyshev polynomials of the second kind}}$
+//! # Chebyshev polynomials of the second kind
 //!
 //!  With respect to the inner product
 //!
@@ -46,7 +46,8 @@
 //! The $n$-point Gauss-Chebyshev quadrature formula, $GC_n(f(x))$, for approximating the integral of $f(x) * \sqrt{1 - x^2}$ over $\[-1, 1\]$,
 //! is given by
 //! $$ GC_n ( f(x) ) = A_1 f(x_1) + ··· + A_n f(x_n) $$
-//! where $x_i$ , $i = 1,...,n$, are the zeros of $U_n$ and $A_i = \frac{\pi}{n + 1} * \sin^2(\frac{i*\pi}{n + 1} )$, $i = 1,...,n$.
+//! where $x_i$ , $i = 1,...,n$, are the zeros of $U_n$ and
+//! $$A_i = \frac{\pi}{n + 1} * \sin^2(\frac{i*\pi}{n + 1} ) \quad \text{for} \quad i = 1,...,n.$$
 use std::iter::Sum;
 use std::{f64::consts::PI, marker::PhantomData};
 
@@ -139,6 +140,19 @@ fn roots_second_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
     (zeros, weights)
 }
 
+/// Approximate the integral of $\frac{f(x)}{\sqrt{1 - x^2}}$ from -1 to 1
+/// using the $n$ point Gauss-Chebyshev first kind integral approximation formula.
+/// # Examples
+/// ```
+/// use integrator::gauss_quadrature::chebyshev::gauss_first_kind_chebyshev_rule;
+///
+/// fn f(x: f64) -> f64 {
+///     1.0
+/// }
+///
+/// let n:usize = 100;
+///
+/// let integral = gauss_first_kind_chebyshev_rule(f, n);
 pub fn gauss_first_kind_chebyshev_rule<F: Float + Debug + Sync + Send + AddAssign + Sum>(
     f: fn(F) -> F,
     n: usize,
@@ -154,6 +168,19 @@ pub fn gauss_first_kind_chebyshev_rule<F: Float + Debug + Sync + Send + AddAssig
         .sum()
 }
 
+/// Approximate the integral of $f(x) * \sqrt{1 - x^2}$ from -1 to 1
+/// using the $n$ point Gauss-Chebyshev second kind integral approximation formula.
+/// # Examples
+/// ```
+/// use integrator::gauss_quadrature::chebyshev::gauss_second_kind_chebyshev_rule;
+///
+/// fn f(x: f64) -> f64 {
+///     1.0
+/// }
+///
+/// let n:usize = 100;
+///
+/// let integral = gauss_second_kind_chebyshev_rule(f, n);
 pub fn gauss_second_kind_chebyshev_rule<F: Float + Debug + Sync + Send + AddAssign + Sum>(
     f: fn(F) -> F,
     n: usize,

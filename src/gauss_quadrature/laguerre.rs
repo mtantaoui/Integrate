@@ -19,10 +19,10 @@
 //!
 //! where $xi$ , $i = 1,...,n$, are the zeros of $L_n$ and
 //!
+//! ```math
+//! A_i = \dfrac{n!^2}{ x_i  L_{n-1} (x_i)^2} \quad \text{for} \quad i = 1,...,n
+//! ```
 //!
-//! $$ A_i = \dfrac{n!^2}{ x_i  L_{n-1} (x_i) ^2  } $$
-//!
-//! for $i = 1,...,n$.
 
 use std::{fmt::Debug, iter::Sum, marker::PhantomData, ops::AddAssign};
 

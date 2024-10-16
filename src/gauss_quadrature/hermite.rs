@@ -11,7 +11,7 @@
 //!  the Hermite polynomials
 //!
 //! ```math
-//! H_n(x) = (-1)^n * e^{x^2}* \frac{\partial^{n} e^{-x^2}}{\partial x^n} \quad for \quad n > 0
+//! H_n(x) = (-1)^n * e^{x^2}* \frac{\partial^{n} e^{-x^2}}{\partial x^n} \quad \text{for} \quad n > 0
 //! ```
 //!
 //! and $H_0(x) = 1$ form an orthogonal family of polynomials with weight function $w(x) = e^{-x^2}$ on the entire $x$-axis.
@@ -25,7 +25,7 @@
 //!
 //!  where $x_i$ , $i = 1,...,n$, are the zeros of $H_n$ and
 //! ```math
-//! A_i = \frac{2^{n+1} * n! * \sqrt{\pi}}{H_{n-1} (x_i)^2} \quad \quad i = 1,...,n
+//! A_i = \frac{2^{n+1} * n! * \sqrt{\pi}}{H_{n-1} (x_i)^2} \quad \text{for} \quad i = 1,...,n
 //! ```
 
 use std::f64::consts::PI;

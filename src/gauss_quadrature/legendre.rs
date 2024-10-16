@@ -6,7 +6,7 @@
 //! Let $\int_{a}^{b} f(x) dx$  denote the integral of $f(x)$ from $a$ to $b$. After making the change of variable $t = \frac{2(x-a)}{b-a} - 1$, then
 //!
 //! ```math
-//! \int_{a}^{b} f(x) dx = \frac{b-a}{2} \int_{-1}^{1} f( \frac{t(b-a) + (b+a)}{2} ) dt
+//! \int_{a}^{b} f(x) dx = \frac{b-a}{2} \int_{-1}^{1} f \left( \frac{t(b-a) + (b+a)}{2} \right) dt
 //! ```
 //!
 //! with respect to the inner product
