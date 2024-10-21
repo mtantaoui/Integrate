@@ -188,7 +188,7 @@ fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
 ///
 /// # Examples
 /// ```
-/// use integrator::gauss_quadrature::hermite::gauss_hermite_rule;
+/// use integrate::gauss_quadrature::hermite::gauss_hermite_rule;
 ///
 /// fn f(x: f64) -> f64 {
 ///     1.0

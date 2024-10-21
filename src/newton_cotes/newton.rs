@@ -123,7 +123,7 @@ use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterato
 ///
 /// # Examples
 /// ```
-/// use integrator::newton_cotes::newton::newton_rule;
+/// use integrate::newton_cotes::newton::newton_rule;
 ///
 ///
 /// fn square(x: f64) -> f64 {

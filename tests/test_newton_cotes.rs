@@ -4,7 +4,7 @@ use std::iter::Sum;
 
 use num::Float;
 
-use integrator::newton_cotes::{
+use integrate::newton_cotes::{
     newton::newton_rule, rectangle::rectangle_rule, simpson::simpson_rule,
     trapezoidal::trapezoidal_rule,
 };

@@ -6137,7 +6137,7 @@ fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(l: U, k: U) -
 /// Descriptive of the example here.
 ///
 /// ```
-/// use integrator::gauss_quadrature::legendre::legendre_rule;
+/// use integrate::gauss_quadrature::legendre::legendre_rule;
 ///
 ///
 /// fn square(x: f64) -> f64 {

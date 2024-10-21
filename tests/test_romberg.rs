@@ -4,7 +4,7 @@ const N: usize = 20;
 
 use std::iter::Sum;
 
-use integrator::romberg::romberg_method;
+use integrate::romberg::romberg_method;
 use num::Float;
 use problems::{
     problem01, problem02, problem03, problem04, problem05, problem06, problem07, problem08,

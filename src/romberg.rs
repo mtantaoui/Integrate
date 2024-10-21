@@ -123,7 +123,7 @@ fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Syn
 ///
 /// # Examples
 /// ```
-/// use integrator::romberg::romberg_method;
+/// use integrate::romberg::romberg_method;
 ///
 ///
 /// fn square(x: f64) -> f64 {

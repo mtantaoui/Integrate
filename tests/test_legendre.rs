@@ -4,7 +4,7 @@ const N: usize = 100_000;
 
 use std::iter::Sum;
 
-use integrator::gauss_quadrature::legendre::legendre_rule;
+use integrate::gauss_quadrature::legendre::legendre_rule;
 use num::Float;
 use problems::{
     problem01, problem02, problem03, problem04, problem05, problem06, problem07, problem08,

@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use integrator::{
+use integrate::{
     adaptive_quadrature::simpson::adaptive_simpson_method,
     gauss_quadrature::{
         chebyshev::{gauss_first_kind_chebyshev_rule, gauss_second_kind_chebyshev_rule},

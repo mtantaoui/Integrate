@@ -96,7 +96,7 @@ use super::utils::check_newton_method_args;
 ///
 /// # Examples
 /// ```
-/// use integrator::newton_cotes::trapezoidal::trapezoidal_rule;
+/// use integrate::newton_cotes::trapezoidal::trapezoidal_rule;
 ///
 ///
 /// fn square(x: f64) -> f64 {

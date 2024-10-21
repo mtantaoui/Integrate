@@ -144,7 +144,7 @@ fn roots_second_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
 /// using the $n$ point Gauss-Chebyshev first kind integral approximation formula.
 /// # Examples
 /// ```
-/// use integrator::gauss_quadrature::chebyshev::gauss_first_kind_chebyshev_rule;
+/// use integrate::gauss_quadrature::chebyshev::gauss_first_kind_chebyshev_rule;
 ///
 /// fn f(x: f64) -> f64 {
 ///     1.0
@@ -172,7 +172,7 @@ pub fn gauss_first_kind_chebyshev_rule<F: Float + Debug + Sync + Send + AddAssig
 /// using the $n$ point Gauss-Chebyshev second kind integral approximation formula.
 /// # Examples
 /// ```
-/// use integrator::gauss_quadrature::chebyshev::gauss_second_kind_chebyshev_rule;
+/// use integrate::gauss_quadrature::chebyshev::gauss_second_kind_chebyshev_rule;
 ///
 /// fn f(x: f64) -> f64 {
 ///     1.0

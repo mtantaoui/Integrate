@@ -60,7 +60,7 @@ impl fmt::Display for AdaptiveSimpsonError {
 ///
 /// # Examples
 /// ```
-/// use integrator::adaptive_quadrature::simpson::adaptive_simpson_method;
+/// use integrate::adaptive_quadrature::simpson::adaptive_simpson_method;
 ///
 ///
 /// fn f(x: f64) -> f64 {
