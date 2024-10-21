@@ -38,7 +38,7 @@ jobs:
           path: ~/.cargo/registry/index
           key: cargo-git-index
       - uses: dtolnay/rust-toolchain@1.63.0
-      - run: cargo check --verbose --locked
+      - run: cargo check --verbose
 
   test:
     name: Test (stable)

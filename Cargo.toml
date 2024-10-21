@@ -10,7 +10,7 @@ license = "MIT"
 repository = "https://github.com/mtantaoui/Integrate"
 documentation = "https://docs.rs/integrate/"
 readme = "README.md"
-keywords = ["math", "integral", "Gauss", "Chebyshev", "performance", "Laguerre", "Legendre", "Hermite", "Bessel", "Numerical integration"]
+keywords = ["math", "integral", "Gauss", "performance",  "Numerical integration"]
 
 
 [dependencies]
