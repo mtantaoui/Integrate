@@ -1,5 +1,10 @@
 # Integrate
 
+[![Integrate crate](https://img.shields.io/crates/v/integrate.svg)](https://crates.io/crates/integrate)
+[![Integrate documentation](https://img.shields.io/docsrs/integrate/latest)](https://docs.rs/integrate)
+![minimum rustc 1.63](https://img.shields.io/badge/rustc-1.63+-red.svg)
+[![build status](https://github.com/mtantaoui/Integrate/actions/workflows/main.yml/badge.svg)](https://github.com/mtantaoui/Integrate/actions)
+
 Integrate is a small, lightweight Rust library for performing numerical integration of real-valued functions. It is designed to integrate functions, providing a simple and efficient way to approximate definite integrals using various numerical methods.
 
 Numerical integration is concerned with developing algorithms to
