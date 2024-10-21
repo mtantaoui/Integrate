@@ -2,9 +2,9 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
@@ -24,9 +24,9 @@ jobs:
           toolchain: stable
           override: true
 
-      - run: cargo publish --token ${CRATES_TOKEN}
+      - run: cargo publish --token ${CRATE_TOKEN}
         env:
-          CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+          CRATE_TOKEN: ${{ secrets.CRATE_TOKEN }}
 
   check:
     name: Check (1.63.0)
@@ -38,7 +38,6 @@ jobs:
           path: ~/.cargo/registry/index
           key: cargo-git-index
       - uses: dtolnay/rust-toolchain@1.63.0
-      - run: cp ci/compat-Cargo.lock ./Cargo.lock
       - run: cargo check --verbose --locked
 
   test:
@@ -49,7 +48,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo build --verbose
       - run: cargo test --verbose
-
 
   fmt:
     name: Format
