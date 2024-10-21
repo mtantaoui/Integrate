@@ -1,5 +1,9 @@
 // #![feature(test)]
 
+//! Integrate is a small, lightweight Rust library for performing numerical integration of real-valued functions.
+//! It is designed to integrate functions, providing a simple and efficient way to
+//! approximate definite integrals using various numerical methods.
+//!
 //! Numerical integration is concerned with developing algorithms to
 //! approximate the integral of a function $f(x)$. The most commonly used algorithms
 //! are Newton-Cotes formulas, Romberg's method, Gaussian quadrature, and to
