@@ -3,7 +3,15 @@ name = "integrate"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Mahdi Tantaoui <mohamedalmahdi.tantaoui@gmail.com>"]
+description = " Small, lightweight Rust library for performing numerical integration."
+rust-version = "1.63"
+license = "MIT"
+repository = "https://github.com/mtantaoui/Integrate"
+documentation = "https://docs.rs/integrate/"
+readme = "README.md"
+keywords = ["math", "integral", "Gauss", "Chebyshev", "performance", "Laguerre", "Legendre", "Hermite", "Bessel", "Numerical integration"]
+
 
 [dependencies]
 itertools = "0.13.0"
