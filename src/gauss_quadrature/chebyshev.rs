@@ -142,6 +142,10 @@ fn roots_second_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
 
 /// Approximate the integral of $\frac{f(x)}{\sqrt{1 - x^2}}$ from -1 to 1
 /// using the $n$ point Gauss-Chebyshev first kind integral approximation formula.
+///
+/// * `func` - Integrand function of a single variable.
+/// * `n` -  order, number of points used in the rule.
+///
 /// # Examples
 /// ```
 /// use integrate::gauss_quadrature::chebyshev::gauss_first_kind_chebyshev_rule;
@@ -153,10 +157,13 @@ fn roots_second_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
 /// let n:usize = 100;
 ///
 /// let integral = gauss_first_kind_chebyshev_rule(f, n);
-pub fn gauss_first_kind_chebyshev_rule<F: Float + Debug + Sync + Send + AddAssign + Sum>(
-    f: fn(F) -> F,
+pub fn gauss_first_kind_chebyshev_rule<Func, F: Float + Debug + Sync + Send + AddAssign + Sum>(
+    func: Func,
     n: usize,
-) -> F {
+) -> F
+where
+    Func: Fn(F) -> F + Sync,
+{
     check_gauss_rule_args(n);
 
     let (zeros, weights) = roots_first_kind_chebyshev::<F>(n);
@@ -164,12 +171,16 @@ pub fn gauss_first_kind_chebyshev_rule<F: Float + Debug + Sync + Send + AddAssig
     weights
         .into_par_iter()
         .zip(zeros)
-        .map(|(w, x)| w * f(x))
+        .map(|(w, x)| w * func(x))
         .sum()
 }
 
 /// Approximate the integral of $f(x) * \sqrt{1 - x^2}$ from -1 to 1
 /// using the $n$ point Gauss-Chebyshev second kind integral approximation formula.
+///
+/// * `func` - Integrand function of a single variable.
+/// * `n` -  order, number of points used in the rule.
+///
 /// # Examples
 /// ```
 /// use integrate::gauss_quadrature::chebyshev::gauss_second_kind_chebyshev_rule;
@@ -181,10 +192,13 @@ pub fn gauss_first_kind_chebyshev_rule<F: Float + Debug + Sync + Send + AddAssig
 /// let n:usize = 100;
 ///
 /// let integral = gauss_second_kind_chebyshev_rule(f, n);
-pub fn gauss_second_kind_chebyshev_rule<F: Float + Debug + Sync + Send + AddAssign + Sum>(
-    f: fn(F) -> F,
+pub fn gauss_second_kind_chebyshev_rule<Func, F: Float + Debug + Sync + Send + AddAssign + Sum>(
+    f: Func,
     n: usize,
-) -> F {
+) -> F
+where
+    Func: Fn(F) -> F + Sync,
+{
     check_gauss_rule_args(n);
 
     let (zeros, weights) = roots_second_kind_chebyshev::<F>(n);
