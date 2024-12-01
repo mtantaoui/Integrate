@@ -101,10 +101,10 @@ use super::utils::check_newton_method_args;
 /// This function integrates $f(x)$ from $a$ to $a+nh$ using the rectangle
 /// rule by summing from the left end of the interval to the right end.
 ///
-/// * `f` - Integrand function of a single variable.
-/// * `a` - lower limit of the integration interval.
-/// * `b` - upper limit of the integration interval.
-/// * `n` - number of subintervals.
+/// * `func` - Integrand function of a single variable.
+/// * `lower_limit` - lower limit of the integration interval.
+/// * `upper_limit` - upper limit of the integration interval.
+/// * `n_intervals` - number of subintervals.
 ///
 /// # Examples
 /// ```
@@ -125,29 +125,36 @@ use super::utils::check_newton_method_args;
 ///
 /// # Resources
 /// [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
-pub fn rectangle_rule<F1: Float + Sync, F2: Float, U: Unsigned + ToPrimitive + Copy>(
-    f: fn(F1) -> F2,
-    a: F1,
-    b: F1,
-    n: U,
-) -> f64 {
+pub fn rectangle_rule<Func, F1: Float + Sync, F2: Float + Sync, U: Unsigned + ToPrimitive + Copy>(
+    func: Func,
+    lower_limit: F1,
+    upper_limit: F1,
+    n_intervals: U,
+) -> f64
+where
+    Func: Fn(F1) -> F2 + Sync,
+{
     // checking arguments
-    check_newton_method_args(a, b, n);
+    check_newton_method_args(lower_limit, upper_limit, n_intervals);
 
     // length of each subinterval
-    let h: F1 = (b - a) / F1::from(n).expect("failed to convert length of subinterval h");
+    let h: F1 = (upper_limit - lower_limit)
+        / F1::from(n_intervals).expect("failed to convert length of subinterval h");
 
-    let integral: f64 = (0..(n.to_usize().unwrap()))
+    let integral: f64 = (0..(n_intervals.to_usize().unwrap()))
         .into_par_iter()
         .map(|i| {
             // subinterval index (as real)
             let i = F1::from(i).expect("failed to convert subinterval index i");
 
             // subinterval midpoint
-            let x = a + i * h + (h / F1::from(2).expect("failed to compute subinterval midpoint"));
+            let x = lower_limit
+                + i * h
+                + (h / F1::from(2).expect("failed to compute subinterval midpoint"));
 
             // converting f(x) to primitive type f64
-            f(x).to_f64().expect("failed to convert f(x) to f64")
+            func(x).to_f64().expect("failed to convert f(x) to f64")
+            // 0.0
         })
         .sum();
     integral * h.to_f64().unwrap()

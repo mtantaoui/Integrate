@@ -89,10 +89,10 @@ use super::utils::check_newton_method_args;
 /// This function integrates $f(x)$ from $a$ to $a+nh$ using the Simpson's
 /// rule by summing from the left end of the interval to the right end.
 ///  
-/// * `f` - Integrand function of a single variable.
-/// * `a` - lower limit of the integration interval.
-/// * `b` - upper limit of the integration interval.
-/// * `n` - number of subintervals.
+/// * `func` - Integrand function of a single variable.
+/// * `lower_limit` - lower limit of the integration interval.
+/// * `upper_limit` - upper limit of the integration interval.
+/// * `n_intervals` - number of subintervals.
 ///
 /// # Examples
 /// ```
@@ -113,33 +113,42 @@ use super::utils::check_newton_method_args;
 ///
 /// # Resources
 /// [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
-pub fn trapezoidal_rule<F1: Float + Sync, F2: Float + Send, U: Unsigned + ToPrimitive + Copy>(
-    f: fn(F1) -> F2,
-    a: F1,
-    b: F1,
-    n: U,
-) -> f64 {
+pub fn trapezoidal_rule<
+    Func,
+    F1: Float + Sync,
+    F2: Float + Send,
+    U: Unsigned + ToPrimitive + Copy,
+>(
+    func: Func,
+    lower_limit: F1,
+    upper_limit: F1,
+    n_intervals: U,
+) -> f64
+where
+    Func: Fn(F1) -> F2 + Sync,
+{
     // checking arguments
-    check_newton_method_args(a, b, n);
+    check_newton_method_args(lower_limit, upper_limit, n_intervals);
 
     // length of each subinterval
-    let h: F1 = (b - a) / F1::from(n).expect("failed to convert length of subinterval h");
+    let h: F1 = (upper_limit - lower_limit)
+        / F1::from(n_intervals).expect("failed to convert length of subinterval h");
 
     // first term of the sum
-    let i_0 = f(a).to_f64().unwrap();
+    let i_0 = func(lower_limit).to_f64().unwrap();
 
-    let integral: f64 = (1..(n.to_usize().unwrap()))
+    let integral: f64 = (1..(n_intervals.to_usize().unwrap()))
         .into_par_iter()
         .map(|i| {
             // subinterval index (as real)
             let i = F1::from(i).expect("failed to convert subinterval index i");
-            f(a + i * h).to_f64().unwrap()
+            func(lower_limit + i * h).to_f64().unwrap()
         })
         .sum();
 
-    let n: F1 = F1::from(n).expect("failed to convert number of steps n");
+    let n: F1 = F1::from(n_intervals).expect("failed to convert number of steps n");
     // last term of the sum
-    let i_n = f(a + h * n).to_f64().unwrap();
+    let i_n = func(lower_limit + h * n).to_f64().unwrap();
 
     (0.5 * i_0 + integral + 0.5 * i_n) * h.to_f64().expect("failed to convert subintervql length")
 }
