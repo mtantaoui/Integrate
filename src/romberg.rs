@@ -77,33 +77,60 @@ use rayon::prelude::*;
 
 use crate::newton_cotes::trapezoidal::trapezoidal_rule;
 
+use std::collections::HashMap;
+
+use std::hash::Hash;
+
+use std::sync::Mutex;
+
 /// Computes elements of Romberg's matrix recursively given
 /// row's and column's index
 ///
 /// * n: Romberg's matrix requested element row index.
 /// * m: Romberg's matrix requested element column index.
-fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Sync>(
+/// * cache: Storing computed values (shared between threads)
+fn romberg<U, F>(
     n: U,
     m: U,
     trapezoids: &[F],
-) -> F {
+    cache: &Mutex<HashMap<(U, U), F>>, // Shared mutable cache
+) -> F
+where
+    U: Unsigned + ToPrimitive + Send + Copy + Sync + std::hash::Hash + Eq,
+    F: Float + Send + Sync,
+{
+    // Base case
     if m.is_zero() {
         let index = n.to_usize().unwrap();
         return trapezoids[index];
     }
 
+    // Check the cache
+    {
+        let cache_guard = cache.lock().unwrap();
+        if let Some(&value) = cache_guard.get(&(n, m)) {
+            return value;
+        }
+    }
+
     let one: U = num::one();
 
-    // R[i,j]: element of Romberg's matrix
-    // r_n_m_minus_1: R[n, m-1]
-    // r_n_1_m_1: R[n-1, m-1]
+    // Compute R[n, m] recursively
     let (r_n_m_minus_1, r_n_1_m_1) = rayon::join(
-        || romberg(n, m - one, trapezoids),
-        || romberg(n - one, m - one, trapezoids),
+        || romberg(n, m - one, trapezoids, cache),
+        || romberg(n - one, m - one, trapezoids, cache),
     );
 
     let [coef0, coef1]: [F; 2] = romberg_coefficients(m);
-    coef1 * r_n_m_minus_1 - coef0 * r_n_1_m_1
+    let result = coef1 * r_n_m_minus_1 - coef0 * r_n_1_m_1;
+
+    // Store in cache
+    {
+        let mut cache_guard = cache.lock().unwrap();
+        cache_guard.insert((n, m), result);
+    }
+
+    result
 }
 
 /// Approximates the integral of $f(x)$ on $\left[ a, b \right]$ using $T_h(f)$.
@@ -138,10 +165,10 @@ fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Syn
 /// let integral = romberg_method(square, a, b, num_steps);
 /// ```
 /// # Inputs
-/// * `f` - Integrand function of a single variable.
-/// * `a` - lower limit of the integration interval.
-/// * `b` - lower limit of the integration interval.
-/// * `n` - number of columns to be used in the Romberg method (columns of the Romberg Matrix).
+/// * `func` - Integrand function of a single variable.
+/// * `lower_limit` - lower limit of the integration interval.
+/// * `upper_limit` - upper limit of the integration interval.
+/// * `n_columns` - number of columns to be used in the Romberg method (columns of the Romberg Matrix).
 ///
 /// This corresponds to a minimum integration subintervals of of length $\dfrac{1}{2^n} * h$
 ///
@@ -150,30 +177,42 @@ fn romberg<U: Unsigned + ToPrimitive + Send + Copy + Sync, F: Float + Send + Syn
 /// * [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
 /// * [Romberg's method](https://en.wikipedia.org/wiki/Romberg%27s_method)
 pub fn romberg_method<
+    Func,
     F1: Float + Sync,
     F2: Float + Sync + Send,
-    U: Unsigned + ToPrimitive + Copy + Send + Sync,
+    U: Unsigned + ToPrimitive + Copy + Send + Sync + Hash + Eq,
 >(
-    f: fn(F1) -> F2,
-    a: F1,
-    b: F1,
-    n: U,
-) -> f64 {
+    func: Func,
+    lower_limit: F1,
+    upper_limit: F1,
+    n_columns: U,
+) -> f64
+where
+    Func: Fn(F1) -> F2 + Sync + Send + Copy,
+{
     // first columm of romberg table
     // calculated using trapezoid rule
-    let mut trapezoidals: Vec<F2> = Vec::with_capacity(n.to_usize().unwrap());
+    let mut trapezoidals: Vec<F2> = Vec::with_capacity(n_columns.to_usize().unwrap());
 
     // initializing first column of the romberg's matrix using trapezoid rule
-    (0..n.to_usize().unwrap())
+    (0..n_columns.to_usize().unwrap())
         .into_par_iter()
         .map(|i| {
             let pow_2 = 2_usize.pow(i.try_into().unwrap()); // 2 ** i
-            let trapezoidal = trapezoidal_rule(f, a, b, pow_2);
+            let trapezoidal = trapezoidal_rule(func, lower_limit, upper_limit, pow_2);
             F2::from(trapezoidal).unwrap()
         })
         .collect_into_vec(&mut trapezoidals);
 
-    let integral = romberg(n - num::one(), n - num::one(), trapezoidals.as_slice());
+    let cache: Mutex<HashMap<(U, U), F2>> = Mutex::new(HashMap::new());
+
+    let integral = romberg(
+        n_columns - num::one(),
+        n_columns - num::one(),
+        trapezoidals.as_slice(),
+        &cache,
+    );
+
     integral.to_f64().unwrap()
 }
 
