@@ -141,19 +141,20 @@ use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterato
 /// # Resources
 /// [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
 pub fn newton_rule<Func, F1: Float + Sync, F2: Float, U: Unsigned + ToPrimitive + Copy>(
-    f: Func,
-    a: F1,
-    b: F1,
-    n: U,
+    func: Func,
+    lower_limit: F1,
+    upper_limit: F1,
+    n_intervals: U,
 ) -> f64
 where
     Func: Fn(F1) -> F2 + Sync,
 {
     // checking arguments
-    check_newton_method_args(a, b, n);
+    check_newton_method_args(lower_limit, upper_limit, n_intervals);
 
     // length of each subinterval
-    let h: F1 = (b - a) / F1::from(n).expect("failed to convert length of subinterval h");
+    let h: F1 = (upper_limit - lower_limit)
+        / F1::from(n_intervals).expect("failed to convert length of subinterval h");
 
     // half the length of each subinterval h/3
     let h_over_3 = h / F1::from(3).unwrap();
@@ -162,10 +163,12 @@ where
     let h2_over_3 = F1::from(2).unwrap() * (h / F1::from(3).unwrap());
 
     // first term of the sum
-    let i_0 = f(a).to_f64().unwrap()
-        + 3.0 * (f(a + h_over_3).to_f64().unwrap() + f(a + h2_over_3).to_f64().unwrap());
+    let i_0 = func(lower_limit).to_f64().unwrap()
+        + 3.0
+            * (func(lower_limit + h_over_3).to_f64().unwrap()
+                + func(lower_limit + h2_over_3).to_f64().unwrap());
 
-    let integral: f64 = (3..(3 * n.to_usize().unwrap()))
+    let integral: f64 = (3..(3 * n_intervals.to_usize().unwrap()))
         .into_par_iter()
         .step_by(3)
         .map(|i| {
@@ -174,15 +177,15 @@ where
             let i_plus_2 = F1::from(i + 2).expect("failed to convert subinterval index (i+2)");
             let i = F1::from(i).expect("failed to convert subinterval index i");
 
-            2.0 * f(a + i * h_over_3).to_f64().unwrap()
+            2.0 * func(lower_limit + i * h_over_3).to_f64().unwrap()
                 + 3.0
-                    * (f(a + i_plus_1 * h_over_3).to_f64().unwrap()
-                        + f(a + i_plus_2 * h_over_3).to_f64().unwrap())
+                    * (func(lower_limit + i_plus_1 * h_over_3).to_f64().unwrap()
+                        + func(lower_limit + i_plus_2 * h_over_3).to_f64().unwrap())
         })
         .sum();
 
-    let n = F1::from(n).expect("failed to convert n");
-    let i_n = f(a + n * h_over_3).to_f64().unwrap();
+    let n = F1::from(n_intervals).expect("failed to convert n");
+    let i_n = func(lower_limit + n * h_over_3).to_f64().unwrap();
 
     (i_0 + integral + i_n) * h.to_f64().unwrap() * 1.0.div(8.0)
 }
