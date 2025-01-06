@@ -204,8 +204,7 @@ where
         })
         .collect_into_vec(&mut trapezoidals);
 
-
-        // Storing computed values (shared between threads)
+    // Storing computed values (shared between threads)
     let cache: Mutex<HashMap<(U, U), F2>> = Mutex::new(HashMap::new());
 
     let integral = romberg(
