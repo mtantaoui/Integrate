@@ -184,7 +184,12 @@ fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
 /// where $x_i$ is a zero of the n-th Hermite polynomial $H_n(x)$.
 ///
 /// Note that if $x$ is a zero of $H_n(x)$ then $-x$ is also a zero of $H_n(x)$ and the
-/// coefficients associated with $x$ and $-x$ are equal.     
+/// coefficients associated with $x$ and $-x$ are equal.
+///
+/// # Arguments
+///
+/// * `func` - Integrand function of a single variable.
+/// * `n` -  order, number of points used in the rule.  
 ///
 /// # Examples
 /// ```
@@ -198,10 +203,13 @@ fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
 ///
 /// let integral = gauss_hermite_rule(f, n);
 /// ```
-pub fn gauss_hermite_rule<F: Float + Debug + Sync + Send + AddAssign + Sum + ToBigInt>(
-    f: fn(F) -> F,
+pub fn gauss_hermite_rule<Func, F: Float + Debug + Sync + Send + AddAssign + Sum + ToBigInt>(
+    func: Func,
     n: usize,
-) -> F {
+) -> F
+where
+    Func: Fn(F) -> F + Sync,
+{
     check_gauss_rule_args(n);
 
     let (zeros, weights) = roots_hermite::<F>(n);
@@ -209,7 +217,7 @@ pub fn gauss_hermite_rule<F: Float + Debug + Sync + Send + AddAssign + Sum + ToB
     weights
         .into_par_iter()
         .zip(zeros)
-        .map(|(w, x)| w * f(x))
+        .map(|(w, x)| w * func(x))
         .sum()
 }
 

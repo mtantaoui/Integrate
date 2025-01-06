@@ -40,10 +40,11 @@ impl fmt::Display for AdaptiveSimpsonError {
 ///
 /// Integrate, using the Simpson-Simpson adaptive method, the user supplied function $f$ from $a$ to $b$.
 ///
-/// - `a` is the lower limit of integration.
-/// - `b` where $b > a$ is the upper limit of integration,
-/// - `tolerance` is the tolerance.
-/// - `min_h` is the minimum subinterval length to be used.
+/// * `func` - Integrand function of a single variable.
+/// * `lower_limit` is the lower limit of integration.
+/// * `upper_limit` where $b > a$ is the upper limit of integration,
+/// * `tolerance` is the tolerance.
+/// * `min_h` is the minimum subinterval length to be used.
 ///
 /// Starting at the left-end point, `a`, find the min power of 2, $m$,
 /// so that the difference between using Simpson's rule and the composite Simpson's
@@ -83,25 +84,34 @@ impl fmt::Display for AdaptiveSimpsonError {
 /// };
 ///
 /// ```
-pub fn adaptive_simpson_method<F: Float + MulAssign + AddAssign + fmt::Debug>(
-    f: fn(F) -> F,
-    a: F,
-    b: F,
+pub fn adaptive_simpson_method<Func, F: Float + MulAssign + AddAssign + fmt::Debug>(
+    func: Func,
+    lower_limit: F,
+    upper_limit: F,
     min_h: F,
     tolerance: F,
-) -> Result<F> {
+) -> Result<F>
+where
+    Func: Fn(F) -> F + Sync + Copy,
+{
     let two = F::one() + F::one();
 
     let mut integral: F = F::zero();
-    let epsilon_density = two * tolerance / (b - a);
+    let epsilon_density = two * tolerance / (upper_limit - lower_limit);
 
     // Create the initial level, with lower_limit = a, upper_limit = b,
     // and f(x) evaluated at a, b, and (a + b) / 2.
 
     let interval: SubInterval<F> = SubInterval {
-        upper_limit: b,
-        lower_limit: a,
-        function: [f(a), F::nan(), f((a + b) / two), F::nan(), f(b)],
+        upper_limit,
+        lower_limit,
+        function: [
+            func(lower_limit),
+            F::nan(),
+            func((lower_limit + upper_limit) / two),
+            F::nan(),
+            func(upper_limit),
+        ],
         interval: None,
     };
 
@@ -111,8 +121,8 @@ pub fn adaptive_simpson_method<F: Float + MulAssign + AddAssign + fmt::Debug>(
     // calculate the single subinterval Simpson rule,
     // and the two subintervals composite Simpson rule.
 
-    let mut epsilon = epsilon_density * (b - a);
-    let (mut s1, mut s2) = simpson_rule_update(f, &mut pinterval);
+    let mut epsilon = epsilon_density * (upper_limit - lower_limit);
+    let (mut s1, mut s2) = simpson_rule_update(func, &mut pinterval);
 
     let mut qinterval: SubInterval<F>;
 
@@ -166,16 +176,19 @@ pub fn adaptive_simpson_method<F: Float + MulAssign + AddAssign + fmt::Debug>(
         }
 
         // Update Simpson's rule for the new interval
-        (s1, s2) = simpson_rule_update(f, &mut pinterval);
+        (s1, s2) = simpson_rule_update(func, &mut pinterval);
         epsilon = epsilon_density * (pinterval.upper_limit - pinterval.lower_limit);
     }
     Err(AdaptiveSimpsonError)
 }
 
-fn simpson_rule_update<F: Float + MulAssign + fmt::Debug>(
-    f: fn(F) -> F,
+fn simpson_rule_update<Func, F: Float + MulAssign + fmt::Debug>(
+    func: Func,
     pinterval: &mut SubInterval<F>,
-) -> (F, F) {
+) -> (F, F)
+where
+    Func: Fn(F) -> F + Sync,
+{
     let two = F::one() + F::one();
     let four = two + two;
     let six = four + two;
@@ -183,8 +196,8 @@ fn simpson_rule_update<F: Float + MulAssign + fmt::Debug>(
     let h = pinterval.upper_limit - pinterval.lower_limit;
     let h4 = h / four;
 
-    pinterval.function[1] = f(pinterval.lower_limit + h4);
-    pinterval.function[3] = f(pinterval.upper_limit - h4);
+    pinterval.function[1] = func(pinterval.lower_limit + h4);
+    pinterval.function[3] = func(pinterval.upper_limit - h4);
 
     let mut s1 = pinterval.function[0] + four * pinterval.function[2] + pinterval.function[4];
     s1 *= h / six;

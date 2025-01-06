@@ -159,6 +159,9 @@ fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<
 /// Approximate the integral of $f(x) e^{-x}$ from 0 to infinity using the $n$
 /// point Gauss-Laguerre integral approximation formula.
 ///
+/// * `func` - Integrand function of a single variable.
+/// * `n` -  order, number of points used in the rule.  
+///
 /// # Examples
 /// ```
 /// use integrate::gauss_quadrature::laguerre::gauss_laguerre_rule;
@@ -171,17 +174,20 @@ fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<
 ///
 /// let integral = gauss_laguerre_rule(f, n);
 /// ```
-pub fn gauss_laguerre_rule<F: Float + Debug + Sync + Send + AddAssign + Sum>(
-    f: fn(F) -> F,
+pub fn gauss_laguerre_rule<Func, F: Float + Debug + Sync + Send + AddAssign + Sum>(
+    func: Func,
     n: usize,
-) -> F {
+) -> F
+where
+    Func: Fn(F) -> F + Sync,
+{
     check_gauss_rule_args(n);
     let (zeros, weights) = roots_laguerre::<F>(n);
 
     weights
         .into_par_iter()
         .zip(zeros)
-        .map(|(w, x)| w * f(x))
+        .map(|(w, x)| w * func(x))
         .sum()
 }
 

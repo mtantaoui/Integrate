@@ -6152,15 +6152,19 @@ fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(l: U, k: U) -
 /// let integral = legendre_rule(square, a, b, num_steps);
 /// ```
 pub fn legendre_rule<
+    Func,
     F1: Float + Sync,
     F2: Float,
     U: Unsigned + ToPrimitive + Copy + PartialOrd + Sync,
 >(
-    f: fn(F1) -> F2,
+    func: Func,
     a: F1,
     b: F1,
     n: U,
-) -> f64 {
+) -> f64
+where
+    Func: Fn(F1) -> F2 + Sync,
+{
     let two = F1::one() + F1::one();
 
     let c = (b - a) / two;
@@ -6178,7 +6182,7 @@ pub fn legendre_rule<
             let x = F1::from(x).unwrap();
 
             // interval change formula
-            weight * f(c * x + d).to_f64().unwrap() * c.to_f64().unwrap()
+            weight * func(c * x + d).to_f64().unwrap() * c.to_f64().unwrap()
         })
         .sum();
     integral
