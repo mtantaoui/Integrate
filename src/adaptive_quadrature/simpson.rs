@@ -42,7 +42,7 @@ impl fmt::Display for AdaptiveSimpsonError {
 ///
 /// * `func` - Integrand function of a single variable.
 /// * `lower_limit` is the lower limit of integration.
-/// * `upper_limit` where $b > a$ is the upper limit of integration,
+/// * `upper_limit`  is the upper limit of integration where `upper_limit` > `lower_limit`.
 /// * `tolerance` is the tolerance.
 /// * `min_h` is the minimum subinterval length to be used.
 ///

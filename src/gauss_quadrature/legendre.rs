@@ -6128,8 +6128,8 @@ fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(l: U, k: U) -
 }
 
 /// Approximate the integral of $f(x)$ from $a$ to $b$ using the n point Gauss-Legendre integral approximation formula.
-/// * `a` - lower limit of integration.
-/// * `b` - upper limit of integration.
+/// * `lower_limit` - lower limit of integration.
+/// * `upper_limit` - upper limit of integration.
 /// * `n` - number of points to use for Gauss-Legendre integral approximation formula.
 ///
 /// # Examples
@@ -6158,8 +6158,8 @@ pub fn legendre_rule<
     U: Unsigned + ToPrimitive + Copy + PartialOrd + Sync,
 >(
     func: Func,
-    a: F1,
-    b: F1,
+    lower_limit: F1,
+    upper_limit: F1,
     n: U,
 ) -> f64
 where
@@ -6167,8 +6167,8 @@ where
 {
     let two = F1::one() + F1::one();
 
-    let c = (b - a) / two;
-    let d = (b + a) / two;
+    let c = (upper_limit - lower_limit) / two;
+    let d = (upper_limit + lower_limit) / two;
 
     let n = n.to_usize().unwrap();
 
