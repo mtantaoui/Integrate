@@ -150,9 +150,7 @@ fn roots_second_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
 /// ```
 /// use integrate::gauss_quadrature::chebyshev::gauss_first_kind_chebyshev_rule;
 ///
-/// fn f(x: f64) -> f64 {
-///     1.0
-/// }
+/// let f = |x: f64| 1.0;
 ///
 /// let n:usize = 100;
 ///

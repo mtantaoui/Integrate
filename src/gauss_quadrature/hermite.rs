@@ -195,9 +195,7 @@ fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
 /// ```
 /// use integrate::gauss_quadrature::hermite::gauss_hermite_rule;
 ///
-/// fn f(x: f64) -> f64 {
-///     1.0
-/// }
+/// let f = |x: f64| 1.0;
 ///
 /// let n:usize = 100;
 ///

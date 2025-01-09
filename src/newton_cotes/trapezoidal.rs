@@ -99,9 +99,7 @@ use super::utils::check_newton_method_args;
 /// use integrate::newton_cotes::trapezoidal::trapezoidal_rule;
 ///
 ///
-/// fn square(x: f64) -> f64 {
-///     x.powi(2)
-/// }
+/// let square = |x: f64| x * x;
 ///
 /// let a = 0.0;
 /// let b = 1.0;

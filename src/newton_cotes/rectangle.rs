@@ -111,9 +111,7 @@ use super::utils::check_newton_method_args;
 /// use integrate::newton_cotes::rectangle::rectangle_rule;
 ///
 ///
-/// fn square(x: f64) -> f64 {
-///     x.powi(2)
-/// }
+/// let square = |x: f64| x * x;
 ///
 /// let a = 0.0;
 /// let b = 1.0;
@@ -223,9 +221,8 @@ mod tests {
     #[test]
     fn test_f32_to_f32() {
         // f32 to f32
-        fn square(x: f32) -> f32 {
-            x.powi(2)
-        }
+
+        let square = |x: f32| x * x;
 
         let a = 0.0;
         let b = 1.0;

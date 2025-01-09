@@ -64,9 +64,7 @@ impl fmt::Display for AdaptiveSimpsonError {
 /// use integrate::adaptive_quadrature::simpson::adaptive_simpson_method;
 ///
 ///
-/// fn f(x: f64) -> f64 {
-///     x.exp()
-/// }
+/// let f = |x: f64| x.exp();
 ///
 /// let a = 0.0;
 /// let b = 1.0;

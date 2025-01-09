@@ -6140,9 +6140,7 @@ fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(l: U, k: U) -
 /// use integrate::gauss_quadrature::legendre::legendre_rule;
 ///
 ///
-/// fn square(x: f64) -> f64 {
-///     x.powi(2)
-/// }
+/// let square = |x: f64| x * x;
 ///
 /// let a = 0.0;
 /// let b = 1.0;

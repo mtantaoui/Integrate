@@ -166,9 +166,7 @@ fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<
 /// ```
 /// use integrate::gauss_quadrature::laguerre::gauss_laguerre_rule;
 ///
-/// fn f(x: f64) -> f64 {
-///     1.0
-/// }
+/// let f = |x: f64| 1.0;
 ///
 /// let n:usize = 100;
 ///
