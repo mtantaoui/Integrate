@@ -1,0 +1,11 @@
+[book]
+authors = ["mtantaoui"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Numerical Integration in Rust"
+
+[output.html]
+mathjax-support = true
+katex = true
+

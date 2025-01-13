@@ -1,6 +1,6 @@
 # Integrate
 
-![Integrate Logo](./docs/Integrate.png)
+![Integrate Logo](./book/src/images/Integrate.png)
 
 <h3 style="text-align:center;">
 
