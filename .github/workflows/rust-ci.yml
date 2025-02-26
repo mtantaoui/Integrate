@@ -64,6 +64,7 @@ jobs:
         run: |
           cd ./book/book
           git init
+          git branch -M gh-pages
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
           git add .
