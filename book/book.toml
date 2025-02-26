@@ -3,9 +3,10 @@ authors = ["mtantaoui"]
 language = "en"
 multilingual = false
 src = "src"
-title = "Numerical Integration in Rust"
+title = "Integrate: Numerical Integration in Rust"
 
 [output.html]
+git-repository-url = "https://github.com/mtantaoui/Integrate"
 mathjax-support = true
 katex = true
 
