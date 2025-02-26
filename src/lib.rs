@@ -45,5 +45,6 @@
 pub mod adaptive_quadrature;
 pub mod gauss_quadrature;
 pub mod newton_cotes;
+pub mod prelude;
 pub mod romberg;
 mod utils;
