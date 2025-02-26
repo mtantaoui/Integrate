@@ -1,33 +1,77 @@
-name: Minimal mdBook
+name: Rust CI and Documentation
 
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup mdBook
-        uses: peaceiris/actions-mdbook@v1
-        with:
-          mdbook-version: "latest"
-
-      - name: List directories
-        run: ls -la
-
-      - name: Check for mdBook directories
+      # Since you can't use actions/checkout, you'll need an internal version or use git commands directly
+      - name: Checkout code
         run: |
+          git init
+          git remote add origin https://github.com/${{ github.repository }}.git
+          git fetch
+          git checkout -f ${{ github.sha }}
+
+      # Install Rust
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
+          rustup default stable
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      # Run tests
+      - name: Run tests
+        run: |
+          cargo build --verbose
+          cargo test --verbose
+
+      # Format code
+      - name: Format code
+        run: |
+          rustup component add rustfmt
+          cargo fmt --all --check
+
+      # Install mdBook manually
+      - name: Install mdBook
+        run: |
+          cargo install mdbook
+
+      # Build documentation
+      - name: Build mdBook
+        run: |
+          # Detect the mdBook directory
           if [ -d "book" ]; then
-            echo "Found 'book' directory"
+            mdbook build book
+            echo "PUBLISH_DIR=./book/book" >> $GITHUB_ENV
+          elif [ -d "docs" ]; then
+            mdbook build docs
+            echo "PUBLISH_DIR=./docs/book" >> $GITHUB_ENV
+          elif [ -d "user_guide" ]; then
+            mdbook build user_guide
+            echo "PUBLISH_DIR=./user_guide/book" >> $GITHUB_ENV
+          else
+            echo "ERROR: Could not find mdBook directory"
+            ls -la
+            exit 1
           fi
-          if [ -d "docs" ]; then
-            echo "Found 'docs' directory"
-          fi
-          if [ -d "user_guide" ]; then
-            echo "Found 'user_guide' directory"
-          fi
+
+      # Deploy to GitHub Pages without using third-party actions
+      - name: Deploy to GitHub Pages
+        run: |
+          cd ${{ env.PUBLISH_DIR || './book/book' }}
+          git init
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git add .
+          git commit -m "Deploy documentation from GitHub Actions"
+          git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:gh-pages
