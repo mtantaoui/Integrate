@@ -53,12 +53,6 @@ jobs:
           if [ -d "book" ]; then
             mdbook build book
             echo "PUBLISH_DIR=./book/book" >> $GITHUB_ENV
-          elif [ -d "docs" ]; then
-            mdbook build docs
-            echo "PUBLISH_DIR=./docs/book" >> $GITHUB_ENV
-          elif [ -d "user_guide" ]; then
-            mdbook build user_guide
-            echo "PUBLISH_DIR=./user_guide/book" >> $GITHUB_ENV
           else
             echo "ERROR: Could not find mdBook directory"
             ls -la
@@ -68,7 +62,7 @@ jobs:
       # Deploy to GitHub Pages without using third-party actions
       - name: Deploy to GitHub Pages
         run: |
-          cd ${{ env.PUBLISH_DIR || './book/book' }}
+          cd ./book/book
           git init
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
