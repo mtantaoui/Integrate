@@ -69,16 +69,6 @@ jobs:
           git commit --allow-empty -m "Initialize gh-pages branch" || true
           git push origin gh-pages || true
 
-      - name: Clean old deployment (gh-pages branch)
-        run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git fetch origin gh-pages || echo "No gh-pages branch yet"
-          git checkout --orphan gh-pages-clean
-          git rm -rf . || true
-          git commit --allow-empty -m "Clean old deployment"
-          git push origin gh-pages --force
-
       # Deploy to GitHub Pages without using third-party actions
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
