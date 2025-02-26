@@ -1,41 +1,13 @@
-//! Gauss-Laguerre quadrature
-//!
-//!
-//! Gauss-Laguerre quadrature formulas are used to integrate functions $f(x) e^{-x}$ over the positive $x$-axis.
-//!
-//! With respect to the inner product
-//!
-//! ```math
-//!  \langle f,g \rangle = \int_{0}^{+\infty} f(x) * g(x) * w(x) dx
-//! ```
-//!
-//! the Laguerre polynomials $L_n(x) = e^x \dfrac{\partial^{n} x^n e^{-x}}{\partial x^n}$ for $n > 0$, and $L_0(x) = 1$ form an orthogonal
-//! family of polynomials with weight function $w(x) = e^{-x}$ on the positive $x$-axis.
-//!
-//! The $n$-point Gauss-Laguerre quadrature formula, $GL_n ( f(x) )$, for approximating the integral of $f(x) e^{-x}$ over $\left[0, \infty \right[$,
-//! is given by
-//!
-//! $$ GL_n ( f(x) ) = A_1 f(x_1) + ··· + A_n f(x_n) $$
-//!
-//! where $xi$ , $i = 1,...,n$, are the zeros of $L_n$ and
-//!
-//! ```math
-//! A_i = \dfrac{n!^2}{ x_i  L_{n-1} (x_i)^2} \quad \text{for} \quad i = 1,...,n
-//! ```
-//!
-
-use std::{fmt::Debug, iter::Sum, marker::PhantomData, ops::AddAssign};
+use std::{fmt::Debug, marker::PhantomData, ops::AddAssign};
 
 use num::{one, Float, One, Zero};
 use rayon::iter::{
     IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelIterator,
 };
 
-use crate::utils::{
+use super::{
     matrix::TridiagonalSymmetricFloatMatrix, orthogonal_polynomials::OrthogonalPolynomial,
 };
-
-use super::utils::check_gauss_rule_args;
 
 #[derive(Clone, Debug)]
 struct Laguerre<F: Float> {
@@ -122,7 +94,7 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Lag
     }
 }
 
-fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<F>, Vec<F>) {
+pub fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<F>, Vec<F>) {
     let l_n: Laguerre<F> = Laguerre::new(n);
     let l_n_plus_1: Laguerre<F> = Laguerre::new(n + 1);
 
@@ -156,45 +128,11 @@ fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<
     (zeros, weights)
 }
 
-/// Approximate the integral of $f(x) e^{-x}$ from 0 to infinity using the $n$
-/// point Gauss-Laguerre integral approximation formula.
-///
-/// * `func` - Integrand function of a single variable.
-/// * `n` -  order, number of points used in the rule.  
-///
-/// # Examples
-/// ```
-/// use integrate::gauss_quadrature::laguerre::gauss_laguerre_rule;
-///
-/// let f = |x: f64| 1.0;
-///
-/// let n:usize = 100;
-///
-/// let integral = gauss_laguerre_rule(f, n);
-/// ```
-pub fn gauss_laguerre_rule<Func, F: Float + Debug + Sync + Send + AddAssign + Sum>(
-    func: Func,
-    n: usize,
-) -> F
-where
-    Func: Fn(F) -> F + Sync,
-{
-    check_gauss_rule_args(n);
-    let (zeros, weights) = roots_laguerre::<F>(n);
-
-    weights
-        .into_par_iter()
-        .zip(zeros)
-        .map(|(w, x)| w * func(x))
-        .sum()
-}
-
 #[cfg(test)]
-mod tests {
-    use rayon::iter::IndexedParallelIterator;
+mod laguerre_tests {
+    use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
     use super::*;
-    // use test::Bencher;
 
     const EPSILON: f64 = 10e-10;
 
@@ -492,26 +430,4 @@ mod tests {
             assert!(is_close)
         }
     }
-
-    // #[test]
-    // fn test_eval_laguerre_derivative() {
-    //     for ((&dln_test, &n), &x) in L_N_X_DERIV.iter().zip(N_VALUES).zip(X_VALUES) {
-    //         let lag: LaguerrePolynomial<f64> = LaguerrePolynomial::new(n);
-
-    //         let dln = lag.eval_derivative(x);
-
-    //         let is_close = (dln - dln_test).abs() < EPSILON;
-
-    //         assert!(is_close)
-    //     }
-    // }
-
-    // #[bench]
-    // fn bench_roots_laguerre(bencher: &mut Bencher) {
-    //     let n: usize = 1_000;
-
-    //     bencher.iter(|| {
-    //         roots_laguerre::<f64>(n);
-    //     })
-    // }
 }

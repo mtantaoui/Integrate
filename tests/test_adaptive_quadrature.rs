@@ -2,7 +2,7 @@ mod problems;
 
 use std::iter::Sum;
 
-use integrate::adaptive_quadrature::simpson::adaptive_simpson_method;
+use integrate::adaptive_quadrature::adaptive_simpson_method;
 use num::Float;
 
 use problems::{
