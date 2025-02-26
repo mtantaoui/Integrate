@@ -61,12 +61,8 @@ jobs:
 
       # Deploy to GitHub Pages without using third-party actions
       - name: Deploy to GitHub Pages
-        run: |
-          cd ./book/book
-          git init
-          git branch -M gh-pages
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git add .
-          git commit -m "Deploy documentation from GitHub Actions"
-          git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./book/book
+          publish_branch: gh-pages
