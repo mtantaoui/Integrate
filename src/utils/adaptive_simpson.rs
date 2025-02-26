@@ -10,7 +10,6 @@ pub struct SubInterval<F: Float> {
     pub interval: Option<Box<SubInterval<F>>>,
 }
 
-
 #[derive(Debug, Clone)]
 pub struct AdaptiveSimpsonError;
 
