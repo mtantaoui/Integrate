@@ -59,6 +59,14 @@ jobs:
             exit 1
           fi
 
+      - name: Clean old deployment (gh-pages branch)
+        run: |
+          git fetch origin gh-pages || echo "No gh-pages branch yet"
+          git checkout --orphan gh-pages-clean
+          git rm -rf . || true
+          git commit --allow-empty -m "Clean old deployment"
+          git push origin gh-pages --force
+
       # Deploy to GitHub Pages without using third-party actions
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
