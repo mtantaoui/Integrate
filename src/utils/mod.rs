@@ -1,2 +1,9 @@
+pub mod adaptive_simpson;
+pub mod bessel;
+pub mod chebyshev;
+pub mod checkers;
+pub mod hermite;
+pub mod laguerre;
+pub mod legendre;
 pub mod matrix;
 pub mod orthogonal_polynomials;

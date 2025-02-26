@@ -1,101 +1,6 @@
-//! Gauss-Legendre quadrature
-//!
-//!
-//! Gauss-Legendre quadrature formulas are used to integrate functions $f(x)$ over a closed and bounded interval $\[a, b\]$.
-//!
-//! Let $\int_{a}^{b} f(x) dx$  denote the integral of $f(x)$ from $a$ to $b$. After making the change of variable $t = \frac{2(x-a)}{b-a} - 1$, then
-//!
-//! ```math
-//! \int_{a}^{b} f(x) dx = \frac{b-a}{2} \int_{-1}^{1} f \left( \frac{t(b-a) + (b+a)}{2} \right) dt
-//! ```
-//!
-//! with respect to the inner product
-//!
-//! ```math
-//!  \langle f,g \rangle = \int_{-1}^{1} f(x) * g(x) * w(x) dx
-//! ```
-//!
-//! The Legendre polynomials are defined by
-//!
-//! ```math
-//! P_n(x) = \frac{1}{2^n n! }    \frac{\partial^{n} (x^2 - 1)^n}{\partial x^n} \quad \text{for} \quad n>0
-//! ```
-//!
-//! and $P_0(x) = 1$, form an orthogonal family of polynomials with weight function $w(x) = 1$ on the interval $\[-1,1\]$.
-//!
-//!
-//! The $n$-point Gauss-Legendre quadrature formula, $GL_n ( f )$, for approximating the integral of $f(x)$ over $\[-1,1\]$, is given by
-//!
-//! ```math
-//! GL_n ( f ) = A_1 f(x_1) + ··· + A_n f(x_n)
-//! ```
-//!
-//! where $x_i$ , $i = 1,...,n$, are the zeros of $P_n$ and
-//!
-//! ```math
-//! A_i = 2 * \frac{1 - x_i^2}{n^2 P_{n-1} (x_i)^2} \quad for \quad i = 1,...,n
-//! ```
-//!
-//! The truncation error is
-//!
-//! ```math
-//! \int_{-1}^{1} f(x) dx - GL_n(f) = K * \frac{ f^{(2n)}(c) }{2n!}
-//! ```
-//!
-//! where $K$ is a constant, and $c$ is some unknown number that verifies $-1 < c < 1$. The constant $K$ is easily determined from
-//!
-//! ```math
-//! K = \int_{-1}^{1}  x^{2n}  dx - GL_n (x^{2n} )
-//! ```
-//!
-//! Generalizing, in order to integrate $f(x)$ over $\[a,b\]$, the $n$-point Gauss-Legendre quadrature formula, $GL_n ( f(x), a, b )$, is given by
-//!
-//! ```math
-//! GL_n ( f(x), a, b ) = A_1^\prime f(x_1^\prime) + ··· + A_n^\prime f(x_n^\prime) \quad \text{where} \quad x_i^\prime = \frac{b-a}{2} * x_i + \frac{b+a}{2}
-//! ```
-//!
-//! $x_i$, $i = 1,...,n$, are the zeros of $P_n$ and
-//!
-//! ```math
-//! A_i^\prime = (b-a) \frac{1 - x_i^2}{n^2 P_{n-1}(x_i)^2} =  \frac{b-a}{2} * A_i, \quad i = 1,...,n
-//! ```
-//!
-//! The truncation error is
-//!
-//! ```math
-//! \int_{a}^{b} f(x) dx - GL_n(f, a, b) = K * \frac{ f^{(2n)}(c) }{2n!}
-//! ```
-//!
-//! where $K$ is a constant, and $c$ is some unknown number that verifies $a < c < b$.
-//!
-//! ## References:
-//!
-//! Original C++ code implemented by **Ignace Bogaert**.
-//!
-//! The main features of this software are:
-//! - Speed: due to the simple formulas and the $O(1)$ complexity computation of
-//!   individual Gauss-Legendre quadrature nodes and weights.
-//!   This makes it compatible with parallel computing paradigms.
-//!
-//! - Accuracy: the error on the nodes and weights is within a few ulps.
-//!
-//! ### Ignace Bogaert's Paper:
-//!
-//! ```math
-//! [1]: \text{Ignace Bogaert,}
-//! \textit{ Iteration-free computation of Gauss-Legendre quadrature nodes and weights,} \newline
-//! \text{ SIAM Journal on Scientific Computing, Volume 36, Number 3, 2014, pages A1008-1026.}
-//! ```
-//! for more details, here is a [link](https://www.cfm.brown.edu/faculty/gk/APMA2560/Handouts/GL_quad_Bogaert_2014.pdf) to the article.
-//!
-
-// The required theta values for the Legendre nodes for l <= 100
-// extern crate test;
-
 use std::{cmp::Ordering, f64::consts::PI};
 
-use num::{one, zero, Float, Integer, ToPrimitive, Unsigned};
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use num::{one, zero, Integer, ToPrimitive, Unsigned};
 
 use super::bessel::{bessel_j0_zeros, bessel_j1_squared};
 
@@ -5914,7 +5819,7 @@ const CL: [f64; 101] = [
 ///
 /// $\theta$ values of the zeros are in $\[0,\pi\]$, and monotonically increasing.
 ///
-fn glpair<U: Unsigned + PartialOrd + ToPrimitive + Copy>(n: U, k: U) -> (f64, f64, f64) {
+pub fn glpair<U: Unsigned + PartialOrd + ToPrimitive + Copy>(n: U, k: U) -> (f64, f64, f64) {
     assert!(k <= n);
     assert!(zero::<U>() < k);
 
@@ -6127,112 +6032,15 @@ fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(l: U, k: U) -
     (theta, weight, x)
 }
 
-/// Approximate the integral of $f(x)$ from $a$ to $b$ using the n point Gauss-Legendre integral approximation formula.
-/// * `lower_limit` - lower limit of integration.
-/// * `upper_limit` - upper limit of integration.
-/// * `n` - number of points to use for Gauss-Legendre integral approximation formula.
-///
-/// # Examples
-///
-/// Descriptive of the example here.
-///
-/// ```
-/// use integrate::gauss_quadrature::legendre::legendre_rule;
-///
-///
-/// let square = |x: f64| x * x;
-///
-/// let a = 0.0;
-/// let b = 1.0;
-///
-/// let num_steps: usize = 1_000_000;
-///
-/// let integral = legendre_rule(square, a, b, num_steps);
-/// ```
-pub fn legendre_rule<
-    Func,
-    F1: Float + Sync,
-    F2: Float,
-    U: Unsigned + ToPrimitive + Copy + PartialOrd + Sync,
->(
-    func: Func,
-    lower_limit: F1,
-    upper_limit: F1,
-    n: U,
-) -> f64
-where
-    Func: Fn(F1) -> F2 + Sync,
-{
-    let two = F1::one() + F1::one();
-
-    let c = (upper_limit - lower_limit) / two;
-    let d = (upper_limit + lower_limit) / two;
-
-    let n = n.to_usize().unwrap();
-
-    let integral: f64 = (1..=n)
-        .into_par_iter()
-        .map(|k| {
-            // getting gauss-legendre weights and nodes
-            let (_, weight, x) = glpair(n, k);
-
-            // converting node to F1
-            let x = F1::from(x).unwrap();
-
-            // interval change formula
-            weight * func(c * x + d).to_f64().unwrap() * c.to_f64().unwrap()
-        })
-        .sum();
-    integral
-}
-
 #[cfg(test)]
 mod tests {
-
-    use std::ops::Div;
 
     use num::Float;
     use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
     use super::*;
-    // use test::{black_box, Bencher};
 
     const EPSILON: f64 = 10e-5;
-    const NUM_STEPS: usize = 1_000_000;
-
-    /// Test the numerical integration of ln(x) over the range ]0,1],
-    /// exact value of the numerical integration is -1.
-    /// Normally, one would not use Gauss-Legendre quadrature for this,
-    /// but for the sake of having an example with l > 100, this is included.
-    #[test]
-    fn test_legendre_rule() {
-        fn square(x: f64) -> f64 {
-            x.powi(2)
-        }
-
-        let a = 0.0;
-        let b = 1.0;
-
-        let integral = legendre_rule(square, a, b, NUM_STEPS);
-
-        let analytic_result: f64 = 1.0.div(3.0);
-
-        assert!((integral - analytic_result).abs() < EPSILON);
-    }
-
-    // #[bench]
-    // fn bench_integral_value(bencher: &mut Bencher) {
-    //     fn f1(x: f64) -> f64 {
-    //         x.powi(2)
-    //     }
-
-    //     let a = 0.0;
-    //     let b = 1.0;
-
-    //     bencher.iter(|| {
-    //         legendre_rule(f1, a, b, NUM_STEPS);
-    //     })
-    // }
 
     /// Test the numerical integration of ln(x) over the range ]0,1],
     /// exact value of the numerical integration is -1.
@@ -6266,28 +6074,6 @@ mod tests {
             l *= 10;
         }
     }
-
-    // #[bench]
-    // fn bench_glpair(bencher: &mut Bencher) {
-    //     // number of nodes used in Gauss-Legendre integral computation
-    //     let l: usize = 1_000;
-    //     let exact = -1.0;
-
-    //     println!("Integral Exact Value: {}", exact);
-
-    //     bencher.iter(|| {
-    //         black_box(
-    //             // Gauss-Legendre rule using glpair function
-    //             (1..=l)
-    //                 .into_par_iter()
-    //                 .map(|k| {
-    //                     let (_, weight, x) = glpair(l, k);
-    //                     0.5 * weight * (0.5 * (x + 1.0)).ln()
-    //                 })
-    //                 .sum::<f64>(),
-    //         );
-    //     })
-    // }
 
     // Test the numerical integration of cos(1000 x) over the range [-1,1]
     // for varying number of Gauss-Legendre quadrature nodes l.
