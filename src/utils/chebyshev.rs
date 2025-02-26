@@ -1,65 +1,9 @@
-//! Gauss-Chebyshev quadrature
-//!
-//!
-//! Gauss-Chebyshev quadrature formulas are used to integrate functions like $\frac{f(x)}{\sqrt{1- x^2}}$ and
-//! $f(x) * \sqrt{1- x^2}$ from -1 to 1.
-//!
-//!
-//! # Chebyshev polynomials of the first kind
-//!
-//!  With respect to the inner product
-//!
-//! ```math
-//!  \langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) * g(x) * w(x) dx
-//! ```
-//! the Chebyshev polynomials
-//! ```math
-//! T_n(x) = \cos(n * \arccos(x)) \quad \text{for} \quad n>0
-//! ```
-//!
-//! and $T_0(x)=1$ form an orthogonal family of polynomials with weight function $w(x)=\frac{1}{\sqrt{1 - x^2}}$ on $\[-1, 1\]$.
-//!
-//!
-//! The $n$-point Gauss-Chebyshev quadrature formula, $GC_n(f(x))$, for approximating the integral of $\frac{f(x)}{\sqrt{1 - x^2}}$ over $\[-1, 1\]$,
-//! is given by
-//! $$ GC_n ( f(x) ) = A_1 f(x_1) + ··· + A_n f(x_n) $$
-//! where $x_i$ , $i = 1,...,n$, are the zeros of $T_n$ and $A_i = \frac{\pi}{n}$, $i = 1,...,n$.
-//!
-//!
-//!
-//!
-//! # Chebyshev polynomials of the second kind
-//!
-//!  With respect to the inner product
-//!
-//! ```math
-//!  \langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) * g(x) * w(x) dx
-//! ```
-//! the Chebyshev polynomials
-//! ```math
-//! U_n(x) * \sin(\arccos(x)) = \sin((n+1) * \arccos(x)) \quad \text{for} \quad n>0
-//! ```
-//!
-//! and $U_0(x)=1$ form an orthogonal family of polynomials with weight function $w(x)=\sqrt{1 - x^2}$ on $\[-1, 1\]$.
-//!
-//!
-//! The $n$-point Gauss-Chebyshev quadrature formula, $GC_n(f(x))$, for approximating the integral of $f(x) * \sqrt{1 - x^2}$ over $\[-1, 1\]$,
-//! is given by
-//! $$ GC_n ( f(x) ) = A_1 f(x_1) + ··· + A_n f(x_n) $$
-//! where $x_i$ , $i = 1,...,n$, are the zeros of $U_n$ and
-//! $$A_i = \frac{\pi}{n + 1} * \sin^2(\frac{i*\pi}{n + 1} ) \quad \text{for} \quad i = 1,...,n.$$
-use std::iter::Sum;
-use std::{f64::consts::PI, marker::PhantomData};
-
-use std::fmt::Debug;
-use std::ops::AddAssign;
+use std::{f64::consts::PI, fmt::Debug, marker::PhantomData, ops::AddAssign};
 
 use num::{one, Float, Zero};
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
-use crate::utils::orthogonal_polynomials::OrthogonalPolynomial;
-
-use super::utils::check_gauss_rule_args;
+use super::orthogonal_polynomials::OrthogonalPolynomial;
 
 #[derive(Clone, Debug)]
 struct ChebyshevFirstKind<F: Float> {
@@ -73,7 +17,7 @@ struct ChebyshevSecondKind<F: Float> {
     _x: PhantomData<F>,
 }
 
-fn roots_first_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
+pub fn roots_first_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
     n: usize,
 ) -> (Vec<F>, Vec<F>) {
     let t_n: ChebyshevFirstKind<F> = ChebyshevFirstKind::new(n);
@@ -99,7 +43,7 @@ fn roots_first_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
     (zeros, weights)
 }
 
-fn roots_second_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
+pub fn roots_second_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
     n: usize,
 ) -> (Vec<F>, Vec<F>) {
     let u_n: ChebyshevSecondKind<F> = ChebyshevSecondKind::new(n);
@@ -138,74 +82,6 @@ fn roots_second_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
     }
 
     (zeros, weights)
-}
-
-/// Approximate the integral of $\frac{f(x)}{\sqrt{1 - x^2}}$ from -1 to 1
-/// using the $n$ point Gauss-Chebyshev first kind integral approximation formula.
-///
-/// * `func` - Integrand function of a single variable.
-/// * `n` -  order, number of points used in the rule.
-///
-/// # Examples
-/// ```
-/// use integrate::gauss_quadrature::chebyshev::gauss_first_kind_chebyshev_rule;
-///
-/// let f = |x: f64| 1.0;
-///
-/// let n:usize = 100;
-///
-/// let integral = gauss_first_kind_chebyshev_rule(f, n);
-pub fn gauss_first_kind_chebyshev_rule<Func, F: Float + Debug + Sync + Send + AddAssign + Sum>(
-    func: Func,
-    n: usize,
-) -> F
-where
-    Func: Fn(F) -> F + Sync,
-{
-    check_gauss_rule_args(n);
-
-    let (zeros, weights) = roots_first_kind_chebyshev::<F>(n);
-
-    weights
-        .into_par_iter()
-        .zip(zeros)
-        .map(|(w, x)| w * func(x))
-        .sum()
-}
-
-/// Approximate the integral of $f(x) * \sqrt{1 - x^2}$ from -1 to 1
-/// using the $n$ point Gauss-Chebyshev second kind integral approximation formula.
-///
-/// * `func` - Integrand function of a single variable.
-/// * `n` -  order, number of points used in the rule.
-///
-/// # Examples
-/// ```
-/// use integrate::gauss_quadrature::chebyshev::gauss_second_kind_chebyshev_rule;
-///
-/// fn f(x: f64) -> f64 {
-///     1.0
-/// }
-///
-/// let n:usize = 100;
-///
-/// let integral = gauss_second_kind_chebyshev_rule(f, n);
-pub fn gauss_second_kind_chebyshev_rule<Func, F: Float + Debug + Sync + Send + AddAssign + Sum>(
-    f: Func,
-    n: usize,
-) -> F
-where
-    Func: Fn(F) -> F + Sync,
-{
-    check_gauss_rule_args(n);
-
-    let (zeros, weights) = roots_second_kind_chebyshev::<F>(n);
-
-    weights
-        .into_par_iter()
-        .zip(zeros)
-        .map(|(w, x)| w * f(x))
-        .sum()
 }
 
 impl<F: Float + Debug + AddAssign + Send + Sync> OrthogonalPolynomial<F> for ChebyshevFirstKind<F> {
@@ -300,13 +176,12 @@ impl<F: Float + Debug + AddAssign + Send + Sync> OrthogonalPolynomial<F>
 mod tests {
     use std::f64::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_8, PI};
 
-    use crate::{
-        gauss_quadrature::chebyshev::{
-            gauss_first_kind_chebyshev_rule, gauss_second_kind_chebyshev_rule,
+    use crate::utils::{
+        chebyshev::{
             roots_first_kind_chebyshev, roots_second_kind_chebyshev, ChebyshevFirstKind,
             ChebyshevSecondKind,
         },
-        utils::orthogonal_polynomials::OrthogonalPolynomial,
+        orthogonal_polynomials::OrthogonalPolynomial,
     };
 
     const EPSILON: f64 = 10e-6;
@@ -666,62 +541,6 @@ mod tests {
             let computed = u_n.eval(0.8);
 
             assert!((computed - test_value).abs() < EPSILON)
-        }
-    }
-
-    // Test the numerical integration of cos(1000 x) over the range [-1,1]
-    // for varying number of Gauss-Chebyshev First Kind quadrature nodes l.
-    // exact value of the numerical integration is 0.002 * sin(1000)
-    // The fact that only twelve digits of accuracy are obtained is due to the
-    // condition number of the summation.
-    #[test]
-    fn test_chebyshev_first_kind_rule() {
-        let exact: f64 = 0.002 * (1000.0_f64).sin();
-
-        fn f(x: f64) -> f64 {
-            (1000.0 * x).cos() * (1.0 - x.powi(2)).sqrt()
-        }
-
-        println!("Integral Exact Value: {}", exact);
-
-        for l in (540..=700_usize).step_by(20) {
-            // Gauss-Legendre rule using glpair function
-            let integral: f64 = gauss_first_kind_chebyshev_rule(f, l);
-
-            println!(
-                "number of nodes: {} \t Gauss-Chebyshev First Kind Integral: {}",
-                l, integral
-            );
-
-            assert!(integral - exact < EPSILON);
-        }
-    }
-
-    // Test the numerical integration of cos(1000 x) over the range [-1,1]
-    // for varying number of Gauss-Chebyshev Second Kind quadrature nodes l.
-    // exact value of the numerical integration is 0.002 * sin(1000)
-    // The fact that only twelve digits of accuracy are obtained is due to the
-    // condition number of the summation.
-    #[test]
-    fn test_chebyshev_second_kind_rule() {
-        let exact: f64 = 0.002 * (1000.0_f64).sin();
-
-        fn f(x: f64) -> f64 {
-            (1000.0 * x).cos() / (1.0 - x.powi(2)).sqrt()
-        }
-
-        println!("Integral Exact Value: {}", exact);
-
-        for l in (540..=700_usize).step_by(20) {
-            // Gauss-Legendre rule using glpair function
-            let integral: f64 = gauss_second_kind_chebyshev_rule(f, l);
-
-            println!(
-                "number of nodes: {} \t Gauss-Chebyshev Second Kind Integral: {}",
-                l, integral
-            );
-
-            assert!((integral - exact).abs() < EPSILON);
         }
     }
 }

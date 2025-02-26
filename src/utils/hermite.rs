@@ -1,51 +1,19 @@
-//! Gauss-Hermite quadrature
-//!
-//!
-//! Gauss-Hermite quadrature formulas are used to integrate functions $f(x) e^{x^2}$ from $-\infty$ to $+\infty$.
-//!
-//! With respect to the inner product
-//!
-//! ```math
-//!  \langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) * g(x) * w(x) dx
-//! ```
-//!  the Hermite polynomials
-//!
-//! ```math
-//! H_n(x) = (-1)^n * e^{x^2}* \frac{\partial^{n} e^{-x^2}}{\partial x^n} \quad \text{for} \quad n > 0
-//! ```
-//!
-//! and $H_0(x) = 1$ form an orthogonal family of polynomials with weight function $w(x) = e^{-x^2}$ on the entire $x$-axis.
-//!
-//!
-//!  The $n$-point Gauss-Hermite quadrature formula, $GH_n ( f(x) )$, for approximating the integral of $f(x) e^{-x^2}$ over the entire $x$-axis, is given by
-//!
-//! ```math
-//! GH_n ( f(x) ) = A_1 f(x_1) + ··· + A_n f(x_n)
-//! ```
-//!
-//!  where $x_i$ , $i = 1,...,n$, are the zeros of $H_n$ and
-//! ```math
-//! A_i = \frac{2^{n+1} * n! * \sqrt{\pi}}{H_{n-1} (x_i)^2} \quad \text{for} \quad i = 1,...,n
-//! ```
+use std::{
+    f64::consts::PI,
+    fmt::Debug,
+    marker::PhantomData,
+    ops::{AddAssign, Mul},
+};
 
-use std::f64::consts::PI;
-use std::fmt::Debug;
-use std::iter::Sum;
-use std::ops::Mul;
-
-use std::{marker::PhantomData, ops::AddAssign};
-
-use num::bigint::ToBigInt;
-use num::{BigRational, BigUint, Float, One, Zero};
+use num::{bigint::ToBigInt, BigRational, BigUint, Float, One, Zero};
 use rayon::iter::{
     IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelExtend,
     ParallelIterator,
 };
 
-use crate::utils::matrix::TridiagonalSymmetricFloatMatrix;
-use crate::utils::orthogonal_polynomials::OrthogonalPolynomial;
-
-use super::utils::check_gauss_rule_args;
+use super::{
+    matrix::TridiagonalSymmetricFloatMatrix, orthogonal_polynomials::OrthogonalPolynomial,
+};
 
 #[derive(Clone, Debug)]
 struct Hermite<F: Float> {
@@ -113,7 +81,7 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Her
 }
 
 // weights formula : https://wikimedia.org/api/rest_v1/media/math/render/svg/2e6f152a1e9ecd4ab8ddf912aaa69bb8d0e66a3c
-fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
+pub fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
     n: usize,
 ) -> (Vec<F>, Vec<F>) {
     let h_n: Hermite<F> = Hermite::new(n); // H_n
@@ -169,56 +137,6 @@ fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
     (zeros, weights)
 }
 
-/// Approximate the integral of $f(x) e^{-x^2}$ from $-\infty$ to $+\infty$
-/// using the $n$ point Gauss-Hermite integral approximation formula.
-///
-/// The n-th Hermite polynomial is
-///
-/// $$ H_n(x) = (-1)^n * e^{x^2}* \frac{\partial^{n} e^{-x^2}}{\partial x^n} $$
-///            
-/// For the n point Gauss-Hermite integral approximation formula the           
-/// coefficients are:
-///
-/// $$A_i = \frac{2^{n+1} * n! * \sqrt{\pi}}{H_{n-1} (x_i)^2} $$
-///
-/// where $x_i$ is a zero of the n-th Hermite polynomial $H_n(x)$.
-///
-/// Note that if $x$ is a zero of $H_n(x)$ then $-x$ is also a zero of $H_n(x)$ and the
-/// coefficients associated with $x$ and $-x$ are equal.
-///
-/// # Arguments
-///
-/// * `func` - Integrand function of a single variable.
-/// * `n` -  order, number of points used in the rule.  
-///
-/// # Examples
-/// ```
-/// use integrate::gauss_quadrature::hermite::gauss_hermite_rule;
-///
-/// let f = |x: f64| 1.0;
-///
-/// let n:usize = 100;
-///
-/// let integral = gauss_hermite_rule(f, n);
-/// ```
-pub fn gauss_hermite_rule<Func, F: Float + Debug + Sync + Send + AddAssign + Sum + ToBigInt>(
-    func: Func,
-    n: usize,
-) -> F
-where
-    Func: Fn(F) -> F + Sync,
-{
-    check_gauss_rule_args(n);
-
-    let (zeros, weights) = roots_hermite::<F>(n);
-
-    weights
-        .into_par_iter()
-        .zip(zeros)
-        .map(|(w, x)| w * func(x))
-        .sum()
-}
-
 fn factorial(n: usize) -> BigUint {
     (1..n + 1)
         .into_par_iter()
@@ -232,9 +150,7 @@ fn factorial(n: usize) -> BigUint {
 mod tests {
     use std::f64::consts::FRAC_1_SQRT_2;
 
-    use crate::{
-        gauss_quadrature::hermite::Hermite, utils::orthogonal_polynomials::OrthogonalPolynomial,
-    };
+    use crate::utils::{hermite::Hermite, orthogonal_polynomials::OrthogonalPolynomial};
 
     const EPSILON: f64 = 10e-7;
 

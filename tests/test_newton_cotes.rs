@@ -2,12 +2,8 @@ mod problems;
 
 use std::iter::Sum;
 
+use integrate::newton_cotes::{newton_rule, rectangle_rule, simpson_rule, trapezoidal_rule};
 use num::Float;
-
-use integrate::newton_cotes::{
-    newton::newton_rule, rectangle::rectangle_rule, simpson::simpson_rule,
-    trapezoidal::trapezoidal_rule,
-};
 
 use itertools::Itertools;
 use problems::{

@@ -1,41 +1,14 @@
-//! Adaptive Quadrature
-//!
-//! If an integrand is poorly behaved in a small interval about a point,
-//! then an attempt to integrate the function over an interval which contains
-//! the poorly behaved interval either requires that small subintervals
-//! are chosen for composite quadratures or the interval is decomposed into three intervals,
-//! two on which the function is well-behaved and relatively large subintervals
-//! can be chosen for the composite quadrature technique and one in which smaller subintervals need to be chosen.
-//!
-//! Adaptive techniques are attempts to automatically detect and control the length of subintervals.
-//!
-//! The technique for which the link to the listing is given below uses Simpson's rule
-//! for integrating a function $f(x)$ on a closed and bounded interval $\[a,b\]$.
+use std::{
+    fmt,
+    ops::{AddAssign, MulAssign},
+};
 
 use num::Float;
-use std::fmt;
 
-use std::ops::{AddAssign, MulAssign};
-
-#[derive(Clone, Debug)]
-struct SubInterval<F: Float> {
-    upper_limit: F,
-    lower_limit: F,
-    function: [F; 5],
-    interval: Option<Box<SubInterval<F>>>,
-}
+use crate::utils::adaptive_simpson::{simpson_rule_update, AdaptiveSimpsonError, SubInterval};
 
 type Result<T> = std::result::Result<T, AdaptiveSimpsonError>;
 
-#[derive(Debug, Clone)]
-pub struct AdaptiveSimpsonError;
-
-impl fmt::Display for AdaptiveSimpsonError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let msg = "No subinterval of length > min_h was found for which the estimated error was less that the pro-rated tolerance";
-        write!(f, "{}", msg)
-    }
-}
 /// Simpson-Simpson adaptive method
 ///
 /// Integrate, using the Simpson-Simpson adaptive method, the user supplied function $f$ from $a$ to $b$.
@@ -61,7 +34,7 @@ impl fmt::Display for AdaptiveSimpsonError {
 ///
 /// # Examples
 /// ```
-/// use integrate::adaptive_quadrature::simpson::adaptive_simpson_method;
+/// use integrate::adaptive_quadrature::adaptive_simpson_method;
 ///
 ///
 /// let f = |x: f64| x.exp();
@@ -178,36 +151,6 @@ where
         epsilon = epsilon_density * (pinterval.upper_limit - pinterval.lower_limit);
     }
     Err(AdaptiveSimpsonError)
-}
-
-fn simpson_rule_update<Func, F: Float + MulAssign + fmt::Debug>(
-    func: Func,
-    pinterval: &mut SubInterval<F>,
-) -> (F, F)
-where
-    Func: Fn(F) -> F + Sync,
-{
-    let two = F::one() + F::one();
-    let four = two + two;
-    let six = four + two;
-
-    let h = pinterval.upper_limit - pinterval.lower_limit;
-    let h4 = h / four;
-
-    pinterval.function[1] = func(pinterval.lower_limit + h4);
-    pinterval.function[3] = func(pinterval.upper_limit - h4);
-
-    let mut s1 = pinterval.function[0] + four * pinterval.function[2] + pinterval.function[4];
-    s1 *= h / six;
-
-    let mut s2 = pinterval.function[0]
-        + four * pinterval.function[1]
-        + two * pinterval.function[2]
-        + four * pinterval.function[3]
-        + pinterval.function[4];
-    s2 *= h / (six * two);
-
-    (s1, s2)
 }
 
 // tests in tests/test_adaptive_quadrature.rs
