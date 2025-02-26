@@ -1,0 +1,736 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Integrate: Numerical Integration in Rust</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Integrate: Numerical Integration in Rust</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/mtantaoui/Integrate" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <p><img src="images/Integrate.png" alt="Logo" /></p>
+<p>Integrate is a small, lightweight Rust library for performing numerical integration of real-valued functions.
+It is designed to integrate functions, providing a simple and efficient way to
+approximate definite integrals using various numerical methods.
+Numerical integration is concerned with developing algorithms to
+approximate the integral of a function $f(x)$. The most commonly used algorithms
+are Newton-Cotes formulas, Romberg's method, Gaussian quadrature, and to
+lesser extents Hermite's formulas and certain adaptive techniques.</p>
+<h1 id="caveats"><a class="header" href="#caveats">Caveats</a></h1>
+<p>All of the numerical integration techniques listed above assume that
+the integrand is continuous on the interval of integration. The error
+estimates generally require that the integrands are differentiable of
+whatever order is required so that the formula for the error estimate
+makes sense. Below is a check list which one should verify before using
+any of the numerical algorithms.</p>
+<h3 id="integrand-check-list"><a class="header" href="#integrand-check-list">Integrand check list</a></h3>
+<ul>
+<li>
+<p>Are there any singularities of the integrand in the interval of integration?</p>
+</li>
+<li>
+<p>If there are, then can they be removed?</p>
+</li>
+<li>
+<p>A function which has jump discontinuities can be integrated by splitting
+the interval of integration into subintervals on which the function is continuous,
+and then numerically integrate over each subinterval and add the results.</p>
+</li>
+<li>
+<p>Using integration by parts certain types of singular integrals can be
+expressed as the sum of a function and a non-singular integral.</p>
+</li>
+<li>
+<p>In other cases, an approximation of the integral in a small neighborhood of
+the singularity can be obtained by hand and the interval of integration can be
+split into three intervals in which numerical integration can be used on
+two of them.</p>
+</li>
+<li>
+<p>Does the function oscillate over the region of integration? If it does,
+then make sure that the step size is chosen to be smaller than the wave length
+of the function. The interval of integration can also be split into subintervals
+in which each subinterval is half a wave length and the algorithm is applied
+to each subinterval.</p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="newton-cotes-methods"><a class="header" href="#newton-cotes-methods">Newton-Cotes methods</a></h1>
+<p>Newton-Cotes methods approximate the integral of a function by summing a weighted
+combination of the function evaluated at equally-spaced points and nodes. If the
+endpoints of the interval of integration are excluded from the sum, the method
+is called an open Newton-Cotes method and if the endpoints are included the
+method is called a closed Newton-Cotes method.</p>
+<ul>
+<li><a href="newton_cotes/rectangle_rule.html">Rectangle Rule</a></li>
+<li><a href="newton_cotes/trapezoidal_rule.html">Trapezoidal Rule</a></li>
+<li><a href="newton_cotes/simpson_rule.html">Simpson's Rule</a></li>
+<li><a href="newton_cotes/newton_rule.html">Newton's 3/8 Rule</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="rectangle-rule"><a class="header" href="#rectangle-rule">Rectangle rule</a></h1>
+<p>The rectangle rule approximates the integral of a function \(f(x)\) on the
+closed and bounded interval \([a, a+h]\) of length \(h &gt; 0\) by the (signed) area
+of the rectangle with length \(h\) and height the value of the function \(f(x)\)
+evaluated at the midpoint of the interval, \(f(a + \frac{h}{2} )\).</p>
+<p>The composite rectangle rule is used to approximate the integral of a function
+\(f(x)\) over a closed and bounded interval \([a, b]\) where \(a &lt; b\), by decomposing
+the interval \([a, b]\) into \(n &gt; 1\) subintervals of equal length \(h = \frac{b-a}{n}\)
+and adding the results of applying the rectangle rule to each subinterval.</p>
+<p>By abuse of language both the composite rectangle rule and the rectangle rule sometimes
+are referred to simply as the rectangle rule.</p>
+<p>Let \(\int_{a}^{b} f(x) dx\) be the integral of \(f(x)\) over the closed and bounded interval \([a ,b ]\),
+and let \(R_h(f)\) be the result of applying the rectangle rule with \(n\) subintervals of length \(h\), i.e.</p>
+<p>\[
+R_h(f)=h \left[ f\left( a+\frac{h}{2} \right) + f\left(a+\frac{3h}{2}\right) + ··· + f\left(b-\frac{h}{2}\right) \right]
+\]</p>
+<p>An immediate consequence of the Euler-Maclaurin summation formula yields the following equation
+relating \(\int_{a}^{b} f(x) dx\) and \(R_h(f)\):</p>
+<p>\begin{align}
+R_h(f) &amp; = \int_{a}^{b} f(x) dx - \frac{h^2}{24} \left[ f^\prime (b) - f^\prime (a) \right] + \frac{7h^4}{5760} \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \\
+&amp; ··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+\end{align}</p>
+<p>where \(f'\), \(f^{(3)}\), and \(f^{(2p-3)}\) are the first, third and \((2p-3)^{rd}\) derivatives of \(f\) and \(K\) is a constant.</p>
+<p>The last term, \(O(h^{2p})\) is important. Given an infinitely differentiable function
+in which the first \(2p-3\) derivatives vanish at both endpoints of the interval of integration,
+it is not true that \(R_{h}(f) = \int_{a}^{b} f(x) dx\), but rather what the theorem says is that</p>
+<p>\[
+\lim_{h \to 0} \left| \dfrac{R_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \right| &lt; M
+\]</p>
+<p>where \(M&gt;0\).</p>
+<p>If \(f\) is at least twice differentiable on the interval \([a,b]\), then applying the mean-value
+theorem to</p>
+<p>\begin{align} R_h(f) - \int_{a}^{b} f(x) dx &amp; = -\frac{h^2}{24} \left[ f^\prime (b) - f^\prime (a) \right] + \frac{7h^4}{5760} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\ &amp; + ··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})\end{align}</p>
+<p>yields the standard truncation error expression</p>
+<p>\[
+R_h(f) - \int_{a}^{b} f(x) dx = -\frac{h^2}{24} (b - a) f^{\prime\prime}(c)
+\]</p>
+<p>for some point \(c\) where \(a ≤ c ≤ b\).</p>
+<p>A corollary of which is that if \(f''(x) = 0\) for all \(x\) in \([a,b]\),
+i.e. if \(f(x)\) is linear, then the rectangle rule is exact.</p>
+<p>The Euler-Maclaurin summation formula also shows that usually \(n\) should be chosen large enough
+so that \(h = \frac{b-a}{n} &lt; 1\). For example, if \(h = 0.1\) then</p>
+<p>\begin{split} R_{0.1}(f) &amp;= \int_{a}^{b} f(x) dx - 0.00042 \left[ f'(b) - f'(a) \right] \\ &amp; + 0.00000012 \left[f^{(3)}(b) - f^{(3)}(a) \right] + ... \end{split}</p>
+<p>and if \(h = 0.01\) then</p>
+<p>\begin{split} R_{0.01}(f) &amp;= \int_{a}^{b} f(x) dx - 0.0000042 \left[ f^\prime(b) - f^\prime(a) \right] \\ &amp;+ 0.000000000012 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + ... \end{split}</p>
+<p>while if \(h=10\) then</p>
+<p>\begin{split} R_{10}(f) &amp;= \int_{a}^{b} f(x) dx - 4.1667 \left[ f^\prime(b) - f^\prime(a)\right] \\ &amp;+ 12.15 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + ... \end{split}</p>
+<p>However, if the function \(f(x)\) is linear, then \(n\) may be chosen to be \(1\).</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="trapezoidal-rule"><a class="header" href="#trapezoidal-rule">Trapezoidal rule</a></h1>
+<p>The trapezoidal rule approximates the integral of a function \(f(x)\) on the closed and bounded interval \([a, a+h]\)
+of length \(h &gt; 0\) by the (signed) area of the trapezoid formed by the line segments joining \((a, 0)\) to \((a+h, 0)\),
+\((a+h, 0)\) to \((a+h, f(a+h))\),\((a+h, f(a+h))\) to \((a, f(a))\) and \((a, f(a))\) to \((a, 0)\).</p>
+<p>The composite trapezoidal rule is used to approximate the integral of a function \(f(x)\) over a closed and bounded interval
+\([a, b]\) where \(a &lt; b\), by decomposing the interval \([a, b]\) into \(n &gt; 1\) subintervals of equal length \(h = \dfrac{b-a}{n}\), then adding the results of applying the trapezoidal rule to each subinterval.</p>
+<p>By abuse of language both the composite trapezoidal rule and the trapezoidal rule sometimes are referred to simply as
+the trapezoidal rule.</p>
+<p>Let \(\int_{a}^{b} f(x) dx\) be the integral of \(f(x)\) over the closed and bounded interval \([a,b]\), and
+let \(T_h(f)\) be the result of applying the trapezoidal rule with \(n\) subintervals of length \(h\), i.e.</p>
+<p>\[
+T_h(f) = h \left[ \frac{f(a)}{2} + f(a+h) + ··· + f(b-h) + \frac{f(b)}{2} \right]
+\]</p>
+<p>The Euler-Maclaurin summation formula relates \(\int_{a}^{b} f(x) dx\) and \(T_h (f)\)</p>
+<p>\[
+\begin{align}
+T_h(f) &amp;= \int_{a}^{b} f(x) dx + \frac{h^2}{12} \left[f'(b) - f'(a)\right] - \frac{h^4}{720} \left[f^{(3)}(b) - f^{(3)}(a) \right] \\
+&amp;+ ... + K h^{2p-2} \left[f^{(2p-3)}(b) - f^{(2p-3)(a)}\right] + O(h^{2p})
+\end{align}
+\]</p>
+<p>where \(f^\prime\), \(f^{(3)}\), and \(f^{(2p-3)}\) are the first, third and \((p-3)^{th}\) derivatives
+of \(f\) and \(K\) is a constant.</p>
+<p>The last term, \(O(h^{2p})\) is important. Given an infinitely differentiable function
+in which the first \((2p-3)\) derivatives vanish at both endpoints of the interval of integration,
+it is not true that \(T_h (f) = \int_{a}^{b} f(x) dx\), but rather what the theorem says is that</p>
+<p>\[
+\lim_{h \to 0} \left| \frac{T_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \right| &lt; M
+\]</p>
+<p>where \(M&gt;0\).</p>
+<p>If \(f\) is at least twice differentiable on the interval \([a,b]\), then applying the mean-value theorem to</p>
+<p>\[
+\begin{align}
+T_h(f) - \int_{a}^{b} f(x) dx &amp;= \frac{h^2}{12} \left[f^\prime(b) - f^\prime(a) \right] - \frac{h^4}{720} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\
+&amp;+ ... + K h^{2p-2} \left[f^{(2p-3)}(b) - f^{(2p-3)(a)} \right] + O(h^{2p})
+\end{align}
+\]</p>
+<p>yields the standard truncation error expression
+\[
+R_h(f) - \int_{a}^{b} f(x) dx = -\frac{h^2}{12} (b - a) f^{\prime\prime}(c)
+\]</p>
+<p>for some point \(c\) where \(a ≤ c ≤ b\).</p>
+<p>A corollary of which is that if \(f^{\prime\prime}(x) = 0\) for all \(x\) in \([a,b]\), i.e. if \(f(x)\) is linear,
+then the trapezoidal rule is exact.</p>
+<p>The Euler-Maclaurin summation formula also shows that usually \(n\) should be chosen large enough so that</p>
+<p>\[
+h = \frac{b-a}{n} &lt; 1
+\]</p>
+<p>For example, if \(h = 0.1\) then
+\[
+T_{0.1}(f) = \int_{a}^{b} f(x) dx - 0.00083 \left[f^\prime(b) - f^\prime(a) \right] + 0.00000014 \left[f^{(3)}(b) - f^{(3)}(a) \right] + ...
+\]
+and if \(h = 0.01\) then
+\[
+T_{0.01}(f) = \int_{a}^{b} f(x) dx - 0.0000083 \left[ f^\prime(b) - f^\prime(a) \right] + 0.000000000014 \left[f^{(3)}(b) - f^{(3)}(a)\right] + ...
+\]</p>
+<p>while if \(h=10\) then
+\[
+T_{10}(f) = \int_{a}^{b} f(x) dx - 8.3333 \left[ f^\prime(b) - f^\prime(a) \right] + 13.89 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + ...
+\]</p>
+<p>However, if the function \(f(x)\) is linear, then \(n\) may be chosen to be \(1\).</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="simpsons-rule"><a class="header" href="#simpsons-rule">Simpson's rule</a></h1>
+<p>Simpson's rule approximates the integral of a function \(f(x)\) on the closed and bounded interval
+\([a, a+h]\) of length \(h &gt; 0\) by the integral on \([a, a+h]\) of the quadratic passing through the
+points \(\left(a, f(a)\right)\), \(\left(a+\dfrac{h}{2}, f\left(a+\dfrac{h}{2}\right)\right)\) and \(\left(a+h, f(a+h)\right)\).</p>
+<p>The composite Simpson's rule is used to approximate the integral of a function \(f(x)\) over a closed and bounded interval \([a, b]\) where \(a &lt; b\),
+by decomposing the interval \([a, b]\) into \(n &gt; 1\) subintervals of equal length \(h = \dfrac{b-a}{n}\),
+then adding the results of applying the Simpson's rule to each subinterval. By abuse of
+language both the composite Simpson's rule and Simpson's rule sometimes are referred to simply as
+Simpson's rule. Let \(\int_{a}^{b} f(x) dx\) be the integral of \(f(x)\) over the closed and bounded interval
+\([a,b]\), and let \(S_h(f)\) be the result of applying the Simpson's rule with \(n\) subintervals of length h, i.e.</p>
+<p>\[
+\begin{align}
+S_h(f) &amp;= \frac{h}{6} \left[ f(a) + 4f(a+\frac{h}{2}) + 2f(a+h) \right. \\
+&amp; + \left. ··· + 2f(b-h) + 4f(b-\frac{h}{2}) + f(b) \right]
+\end{align}
+\]</p>
+<p>An immediate consequence of the Euler-Maclaurin summation formula relates \(\int_{a}^{b} f(x) dx\) and \(S_h(f)\):</p>
+<p>\[
+\begin{align}
+S_h(f) &amp; = \int_{a}^{b} f(x) dx + \frac{h^4}{2880} \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \frac{h^6}{96768} \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\
+&amp; + ··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+\end{align}
+\]</p>
+<p>where \(f^{(3)}\), \(f^{(5)}\), and \(f^{(2p-3)}\) are the third, fifth and \((p-3)^{th}\) derivatives of \(f\) and \(K\) is a constant.</p>
+<p>The last term, \(O(h^{2p})\) is important. Given an infinitely differentiable function in which the first
+\(2p-3\) derivatives vanish at both endpoints of the interval of integration, it is not true that</p>
+<p>\[
+S_h(f) = \int_{a}^{b}f( x ) dx
+\]</p>
+<p>but rather what the theorem says is that</p>
+<p>\[
+\lim_{h \to 0} \left| \frac{S_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \right| &lt; M
+\]</p>
+<p>where \(M &gt; 0\).</p>
+<p>If \(f\) is at least four times differentiable on the interval \([a,b]\), then applying the mean-value theorem to</p>
+<p>\[
+\begin{align}
+S_h(f) - \int_{a}^{b}f( x ) dx &amp;= \frac{h^4}{2880} \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \frac{h^6}{96768} \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\
+&amp;+ ··· + K h^{(2p - 2)} \left[f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+\end{align}
+\]</p>
+<p>yields the standard truncation error expression</p>
+<p>\[
+S_h(f) - \int_{a}^{b} f( x ) dx = \frac{h^4}{2880} (b-a) f^{(4)}(c)
+\]</p>
+<p>for some point \(c\) where \(a ≤ c ≤ b\).</p>
+<p>A corollary of which is that if \(f^{(4)}(x) = 0\) for all \(x\) in \([a,b]\), i.e. if \(f(x)\) is a cubic,
+then Simpson's rule is exact.</p>
+<p>The Euler-Maclaurin summation formula also shows that usually $n$ should be chosen large enough so that \(h = \frac{b-a}{n} &lt; 1\).</p>
+<p>For example, if \(h = 0.1\) then
+\[
+\begin{align}
+S_{0.1}(f) &amp; = \int_{a}^{b} f(x) dx + 3.5 · 10^{-8} \left[ f^{3}(b) - f^{3}(a) \right] \\
+&amp; - 1.033 · 10^{-11} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+\end{align}
+\]</p>
+<p>and if \(h = 0.01\) then</p>
+<p>\[
+\begin{split}
+S_{0.01}(f) &amp; = \int_{a}^{b} f(x) dx + 3.5 · 10^{-12} \left[ f^{3}(b) - f^{3}(a) \right] \\
+&amp; - 1.033 · 10^{-17} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+\end{split}
+\]</p>
+<p>while if \(h = 10\) then
+\[
+\begin{align}
+S_{0.01}(f) &amp; = \int_{a}^{b} f(x) dx + 3.47 \left[ f^{3}(b) - f^{3}(a) \right] \\
+&amp; - 10.33 \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+\end{align}
+\]</p>
+<p>However, if the function \[f(x)\] is a cubic, then \[n\] may be chosen to be \[1\].</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="newtons-38-rule"><a class="header" href="#newtons-38-rule">Newton's 3/8 rule</a></h1>
+<p>Newton's \(3/8\) rule approximates the integral of a function \(f(x)\) on the closed and bounded
+interval \([a, a+h]\) of length \(h &gt; 0\) by the integral on \([a, a+h]\) of the cubic passing
+through the points \((a, f(a))\), \((a+\frac{h}{3}, f(a+\frac{h}{3}))\), \((a+\frac{2h}{3}, f(a+\frac{2h}{3}))\) and \((a+h, f(a+h))\).</p>
+<p>The composite Newton's 3/8 rule is used to approximate the integral of a function \(f(x)\)
+over a closed and bounded interval \([a, b]\) where \(a &lt; b\), by decomposing the interval
+\([a, b]\) into \(n &gt; 1\) subintervals of equal length \(h = \dfrac{b-a}{n}\), then adding the
+results of applying the Newton's 3/8 rule to each subinterval.</p>
+<p>By abuse of language both the composite Newton's 3/8 rule and Newton's 3/8
+rule are referred to simply as Newton's 3/8 rule. Let \(\int_{a}^{b} f(x)dx\) be the
+integral of \(f(x)\) over the closed and bounded interval \([a, b]\), and let \(N_h(f)\)
+be the result of applying the Newton's 3/8 rule with \(n\) subintervals of length \(h\), i.e.</p>
+<p>\[
+\begin{align}
+N_h(f) &amp;= \frac{h}{8} \left[ f(a) + 3 f\left(a+ \frac{h}{3} \right) + 3f\left(a+ \frac{2h}{3} \right) + 2 f(a + h) \right.\\
+&amp; \left. + ··· + 2f(b-h) + 3f \left( b-\frac{2h}{3} \right) + 3f \left( b - \frac{h}{3} \right) + f(b) \right]
+\end{align}
+\]</p>
+<p>An immediate consequence of the Euler-Maclaurin summation formula relates \(\int_{a}^{b} f(x)dx\) and \(N_h(f)\)</p>
+<p>\[
+\begin{align}
+N_h(f) &amp;= \int_{a}^{b} f(x)dx + \frac{h^4}{6480} \left[ f^{3}(b) - f^{3}(a) \right] - \frac{h^6}{244944} \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\
+&amp; + ··· + K h^{2p-2} \left[ f^{(2p - 3)}(b) - f^{(2p - 3)}(a) \right] + O(h^{2p})
+\end{align}
+\]</p>
+<p>where \(f^{(3)}\), \(f^{(5)}\), and \(f^{(2p-3)}\) are the third, fifth and \((p-3)rd\) derivatives
+of \(f\) and \(K\) is a constant.</p>
+<p>The last term, \(O(h^{2p})\) is important. Given an infinitely differentiable function in which the
+first \(2p-3\) derivatives vanish at both endpoints of the interval of integration, it is not true that</p>
+<p>\begin{align}
+N_h(f) = \int_{a}^{b} f(x) dx
+\end{align}</p>
+<p>but rather what the theorem says is that</p>
+<p>\[
+\begin{align}
+\lim_{h \to 0} \mid \frac{N_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \mid &lt; M
+\end{align}
+\]</p>
+<p>where \(M &gt; 0\).</p>
+<p>If \(f\) is at least four times differentiable on the interval \([a,b]\), then applying the
+mean-value theorem to</p>
+<p>\[
+\begin{align}
+N_h(f) - \int_{a}^{b} f(x)dx &amp;= \frac{h^4}{6480} \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \frac{h^6}{244944} \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\
+&amp; + ··· + K h^{2p - 2} \left[ f^{(2p - 3)}(b) - f^{(2p - 3)}(a) \right] + O(h^{2p})
+\end{align}
+\]</p>
+<p>yields the standard truncation error expression</p>
+<p>\[
+N_h(f) - \int_{a}^{b} f(x)dx = \frac{h^4}{6480} (b-a) f^{(4)}(c)
+\]</p>
+<p>for some point $c$ where \(a ≤ c ≤ b\).</p>
+<p>A corollary of which is that if \(f^{(4)}(x) = 0\) for all \(x\) in \([a,b]\), i.e. if \(f(x)\) is a cubic,
+then Newton's 3/8 rule is exact.</p>
+<p>The Euler-Maclaurin summation formula also shows that usually \(n\) should be chosen large enough so that \(h = \dfrac{b-a}{n}&lt; 1\).</p>
+<p>For example, if \(h = 0.1\) then</p>
+<p>\[
+\begin{align}
+N_{0.1}(f) &amp;= \int_{a}^{b} f(x)dx + 1.5·10^{-8} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\
+&amp;- 4.1 · 10^{-12} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+\end{align}
+\]</p>
+<p>and if \(h = 0.01\) then</p>
+<p>\[
+\begin{align}
+N_{0.01}(f) &amp;= \int_{a}^{b} f(x)dx + 1.5·10^{-12} [ f^{3}(b) - f^{3}(a) ] \\
+&amp;- 4.1·10^{-18} [ f^{(5)}(b) - f^{(5)}(a) ] + ···
+\end{align}
+\]</p>
+<p>while if \(h = 10\) then</p>
+<p>\begin{align}
+N_{10}(f) &amp;= \int_{a}^{b} f(x)dx + 1.54 \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\
+&amp;- 4.08 \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+\end{align}</p>
+<p>However, if the function \(f(x)\) is a cubic, then \(n\) may be chosen to be \(1\).</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="gaussian-quadrature"><a class="header" href="#gaussian-quadrature">Gaussian quadrature</a></h1>
+<p>Instead of evaluating the integrand at equally spaced nodes as in Newton-Cotes methods,
+Gaussian quadrature methods make a judicious choice of nodes so as to maximize the precision
+of the numerical integration relative to the number of integrand evaluations.</p>
+<p>The common Gaussian quadrature methods are:</p>
+<ul>
+<li><a href="gauss_quadrature/gauss_legendre.html">Gauss-Legendre</a> used to integrate a function \(f(x)\) over a closed and bounded interval \([a,b]\).</li>
+<li><a href="gauss_quadrature/gauss_laguerre.html">Gauss-Laguerre</a> used to integrate a function of the form \(f(x) e^{-x}\) over the positive x-axis \(\lbrace x \in \mathbb{R} : x &gt; 0 \rbrace\).</li>
+<li><a href="gauss_quadrature/gauss_hermite.html">Gauss-Hermite</a> used to integrate a function of the form \(f(x) e^{-x^2}\) over the entire x-axis, \(\lbrace x \in \mathbb{R} : -\infty &lt; x &lt; \infty \rbrace\).</li>
+<li><a href="gauss_quadrature/gauss_chebyshev.html">Gauss-Chebyshev</a> First Kind used to integrate a function of the form \(\frac{f(x)}{\sqrt( 1-x^2 )}\) over the interval \([-1,1]\).</li>
+<li><a href="gauss_quadrature/gauss_chebyshev.html">Gauss-Chebyshev</a> Second Kind used to integrate a function of the form \(f(x) * \sqrt{ 1-x^2 }\) over the interval \([-1,1]\).</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="gauss-legendre"><a class="header" href="#gauss-legendre">Gauss-Legendre</a></h1>
+<p>Gauss-Legendre quadrature formulas are used to integrate functions \(f(x)\) over a closed and bounded interval \([a, b]\).</p>
+<p>Let \(\int_{a}^{b} f(x) dx\) denote the integral of \(f(x)\) from \(a\) to \(b\). After making the change of variable \(t = \dfrac{2(x-a)}{b-a} - 1\), then</p>
+<p>\[
+\int_{a}^{b} f(x) dx = \frac{b-a}{2} \int_{-1}^{1} f \left( \frac{t(b-a) + (b+a)}{2} \right) dt
+\]</p>
+<p>with respect to the inner product</p>
+<p>\[
+\langle f,g \rangle = \int_{-1}^{1} f(x) \cdot g(x) \cdot w(x) dx
+\]</p>
+<p>The Legendre polynomials are defined by</p>
+<p>\[
+P_n(x) = \frac{1}{2^n n! } \frac{\partial^{n} (x^2 - 1)^n}{\partial x^n} \quad \text{for} \quad n&gt;0
+\]</p>
+<p>and \(P_0(x) = 1\), form an orthogonal family of polynomials with weight function \(w(x) = 1\) on the interval \([-1,1]\).</p>
+<p>The \(n\)-point Gauss-Legendre quadrature formula, \(GL_n ( f )\), for approximating the integral of \(f(x)\) over \([-1,1]\), is given by</p>
+<p>\[
+GL_n ( f ) = A_1 f(x_1) + \cdots + A_n f(x_n)
+\]</p>
+<p>where \(x_i\), \(i = 1,\dots,n\), are the zeros of \(P_n\) and</p>
+<p>\[
+A_i = 2 \cdot \frac{1 - x_i^2}{n^2 P_{n-1} (x_i)^2} \quad \text{for} \quad i = 1,\dots,n
+\]</p>
+<p>The truncation error is</p>
+<p>\[
+\int_{-1}^{1} f(x) dx - GL_n(f) = K \cdot \frac{ f^{(2n)}(c) }{2n!}
+\]</p>
+<p>where \(K\) is a constant, and \(c\) is some unknown number that verifies \(-1 &lt; c &lt; 1\). The constant \(K\) is easily determined from</p>
+<p>\[
+K = \int_{-1}^{1} x^{2n} dx - GL_n (x^{2n} )
+\]</p>
+<p>Generalizing, in order to integrate \(f(x)\) over \([a,b]\), the \(n\)-point Gauss-Legendre quadrature formula, \(GL_n ( f(x), a, b )\), is given by</p>
+<p>\[
+GL_n ( f(x), a, b ) = A_1' f(x_1') + \cdots + A_n' f(x_n') \quad \text{where} \quad x_i' = \frac{b-a}{2} \cdot x_i + \frac{b+a}{2}
+\]</p>
+<p>\(x_i\), \(i = 1,\dots,n\), are the zeros of \(P_n\) and</p>
+<p>\[
+A_i' = (b-a) \frac{1 - x_i^2}{n^2 P_{n-1}(x_i)^2} = \frac{b-a}{2} \cdot A_i, \quad i = 1,\dots,n
+\]</p>
+<p>The truncation error is</p>
+<p>\[
+\int_{a}^{b} f(x) dx - GL_n(f, a, b) = K \cdot \frac{ f^{(2n)}(c) }{2n!}
+\]</p>
+<p>where \(K\) is a constant, and \(c\) is some unknown number that verifies \(a &lt; c &lt; b\).</p>
+<h2 id="references"><a class="header" href="#references">References:</a></h2>
+<p>Original C++ code implemented by <strong>Ignace Bogaert</strong>.</p>
+<p>The main features of this software are:</p>
+<ul>
+<li><strong>Speed</strong>: due to the simple formulas and the \(O(1)\) complexity computation of
+individual Gauss-Legendre quadrature nodes and weights.
+This makes it compatible with parallel computing paradigms.</li>
+<li><strong>Accuracy</strong>: the error on the nodes and weights is within a few ulps.</li>
+</ul>
+<h3 id="ignace-bogaerts-paper"><a class="header" href="#ignace-bogaerts-paper">Ignace Bogaert's Paper:</a></h3>
+<p>\[
+[1]: \text{Ignace Bogaert,}
+\textit{ Iteration-free computation of Gauss-Legendre quadrature nodes and weights,} \\
+\text{ SIAM Journal on Scientific Computing, Volume 36, Number 3, 2014, pages A1008-1026.}
+\]</p>
+<p>For more details, here is a <a href="https://www.cfm.brown.edu/faculty/gk/APMA2560/Handouts/GL_quad_Bogaert_2014.pdf">link</a> to the article.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="gauss-chebyshev-quadrature"><a class="header" href="#gauss-chebyshev-quadrature">Gauss-Chebyshev Quadrature</a></h1>
+<p>Gauss-Chebyshev quadrature formulas are used to integrate functions like \(\frac{f(x)}{\sqrt{1- x^2}}\) and \(f(x) \cdot \sqrt{1- x^2}\) from \(-1\) to \(1\).</p>
+<h2 id="chebyshev-polynomials-of-the-first-kind"><a class="header" href="#chebyshev-polynomials-of-the-first-kind">Chebyshev Polynomials of the First Kind</a></h2>
+<p>With respect to the inner product</p>
+<p>\[
+\langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) \cdot g(x) \cdot w(x) dx
+\]</p>
+<p>the Chebyshev polynomials are defined by</p>
+<p>\[
+T_n(x) = \cos(n \cdot \arccos(x)) \quad \text{for} \quad n&gt;0
+\]</p>
+<p>and \(T_0(x)=1\) form an orthogonal family of polynomials with weight function \(w(x)=\frac{1}{\sqrt{1 - x^2}}\) on \([-1, 1]\).</p>
+<p>The \(n\)-point Gauss-Chebyshev quadrature formula, \(GC_n(f(x))\), for approximating the integral of \(\frac{f(x)}{\sqrt{1 - x^2}}\) over \([-1, 1]\), is given by</p>
+<p>\[
+GC_n ( f(x) ) = A_1 f(x_1) + \cdots + A_n f(x_n)
+\]</p>
+<p>where \(x_i\), \(i = 1,\dots,n\), are the zeros of \(T_n\) and \(A_i = \frac{\pi}{n}\), \(i = 1,\dots,n\).</p>
+<h2 id="chebyshev-polynomials-of-the-second-kind"><a class="header" href="#chebyshev-polynomials-of-the-second-kind">Chebyshev Polynomials of the Second Kind</a></h2>
+<p>With respect to the inner product</p>
+<p>\[
+\langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) \cdot g(x) \cdot w(x) dx
+\]</p>
+<p>the Chebyshev polynomials are defined by</p>
+<p>\[
+U_n(x) \cdot \sin(\arccos(x)) = \sin((n+1) \cdot \arccos(x)) \quad \text{for} \quad n&gt;0
+\]</p>
+<p>and \(U_0(x)=1\) form an orthogonal family of polynomials with weight function \(w(x)=\sqrt{1 - x^2}\) on \([-1, 1]\).</p>
+<p>The \(n\)-point Gauss-Chebyshev quadrature formula, \(GC_n(f(x))\), for approximating the integral of \(f(x) \cdot \sqrt{1 - x^2}\) over \([-1, 1]\), is given by</p>
+<p>\[
+GC_n ( f(x) ) = A_1 f(x_1) + \cdots + A_n f(x_n)
+\]</p>
+<p>where \(x_i\), \(i = 1,\dots,n\), are the zeros of \(U_n\) and</p>
+<p>\[
+A_i = \frac{\pi}{n + 1} \cdot \sin^2\left(\frac{i\pi}{n + 1} \right) \quad \text{for} \quad i = 1,\dots,n.
+\]</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="gauss-laguerre"><a class="header" href="#gauss-laguerre">Gauss-Laguerre</a></h1>
+<p>Gauss-Laguerre quadrature formulas are used to integrate functions \(f(x) e^{-x}\) over the positive \(x\)-axis.</p>
+<p>With respect to the inner product</p>
+<p>\[
+\langle f,g \rangle = \int_{0}^{+\infty} f(x) \cdot g(x) \cdot w(x) dx
+\]</p>
+<p>the Laguerre polynomials are defined by</p>
+<p>\[
+L_n(x) = e^x \dfrac{\partial^{n} x^n e^{-x}}{\partial x^n}, \quad \text{for} \quad n &gt; 0
+\]</p>
+<p>and \(L_0(x) = 1\) form an orthogonal family of polynomials with weight function \(w(x) = e^{-x}\) on the positive \(x\)-axis.</p>
+<p>The \(n\)-point Gauss-Laguerre quadrature formula, \(GL_n ( f(x) )\), for approximating the integral of \(f(x) e^{-x}\) over \(\left[0, \infty \right[\), is given by</p>
+<p>\[
+GL_n ( f(x) ) = A_1 f(x_1) + \cdots + A_n f(x_n)
+\]</p>
+<p>where \(x_i\), \(i = 1,\dots,n\), are the zeros of \(L_n\) and</p>
+<p>\[
+A_i = \dfrac{n!^2}{ x_i L_{n-1} (x_i)^2} \quad \text{for} \quad i = 1,\dots,n
+\]</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="gauss-hermite"><a class="header" href="#gauss-hermite">Gauss Hermite</a></h1>
+<p>Gauss-Hermite quadrature formulas are used to integrate functions \(f(x) e^{x^2}\) from \(-\infty\) to \(+\infty\).</p>
+<p>With respect to the inner product</p>
+<p>\[
+\langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) * g(x) * w(x) dx
+\]</p>
+<p>the Hermite polynomials</p>
+<p>\[
+H_n(x) = (-1)^n * e^{x^2}* \frac{\partial^{n} e^{-x^2}}{\partial x^n} \quad \text{for} \quad n &gt; 0
+\]</p>
+<p>and \(H_0(x) = 1\) form an orthogonal family of polynomials with weight function \(w(x) = e^{-x^2}\) on the entire \(x\)-axis.</p>
+<p>The \(n\)-point Gauss-Hermite quadrature formula, \(GH_n ( f(x) )\), for approximating the integral of \(f(x) e^{-x^2}\) over the entire \(x\)-axis, is given by</p>
+<p>\[
+GH_n ( f(x) ) = A_1 f(x_1) + ··· + A_n f(x_n)
+\]</p>
+<p>where \(x_i\) , for \(i = 1,...,n\), are the zeros of \(H_n\) and</p>
+<p>\[
+A_i = \frac{2^{n+1} * n! * \sqrt{\pi}}{H_{n-1} (x_i)^2} \quad \text{for} \quad i = 1,...,n
+\]</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="adaptive-methods"><a class="header" href="#adaptive-methods">Adaptive Methods</a></h1>
+<p>Adaptive methods are used to estimate the integral of a function on a closed and
+bounded interval. The basic idea is to take smaller subintervals in regions where the
+function changes significantly and larger subintervals in regions where the function
+doesn't change significantly. What is significant depends on the quadrature technique
+involved, for Simpson's rule, if the function is nearly cubic (or quadratic, or linear, or
+constant) then the function doesn't change significantly from being cubic and a large
+interval can be used.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="adaptive-simpson"><a class="header" href="#adaptive-simpson">Adaptive Simpson</a></h1>
+<p>If an integrand is poorly behaved in a small interval about a point,
+then an attempt to integrate the function over an interval which contains
+the poorly behaved interval either requires that small subintervals
+are chosen for composite quadratures or the interval is decomposed into three intervals,
+two on which the function is well-behaved and relatively large subintervals
+can be chosen for the composite quadrature technique and one in which smaller subintervals need to be chosen.</p>
+<p>Adaptive techniques are attempts to automatically detect and control the length of subintervals.</p>
+<p>The technique for which the link to the listing is given below uses Simpson's rule
+for integrating a function \(f(x)\) on a closed and bounded interval \([a,b]\).</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="rombergs-method"><a class="header" href="#rombergs-method">Romberg's method</a></h1>
+<p>Romberg's method is used to estimate the integral of a function on a closed and bounded interval.</p>
+<p>Classically, the method consists of successively applying the composite trapezoidal rule, each time
+halving the length of the subintervals, and using a linear combination of the resulting sequence of
+estimates to estimate the integral, by successively deleting the low order error terms in
+the Euler-Maclaurin summation formula.</p>
+<p>The process terminates when the change of the estimate is within a preassigned tolerance, within
+a preassigned number of successive estimates.</p>
+<p>The Euler-Maclaurin summation formula relates the integral of a function \(f(x)\) over
+a closed and bounded interval \([a,b]\) , \(\int_{a}^{b} f(x) dx\), and the composite trapezoidal rule,</p>
+<p>\[
+T_h (f) = h \left[ \frac{f(a)}{2} + f(a+h) + ··· + f(b-h) + \frac{f(b)}{2} \right]
+\]</p>
+<p>by</p>
+<p>\[
+\begin{split}
+T_h(f) &amp;= \int_{a}^{b} f(x) dx + \left(\frac{h^2}{12}\right) \left[f^\prime(b) - f^\prime(a)\right] - \left(\frac{h^4}{720}\right) \left[f^{(3)}(b) - f^{(3)}(a) \right] \\
+&amp;+ ... + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)(a)} \right] + O(h^{2p})
+\end{split}
+\]</p>
+<p>where \(f^\prime\), \(f^{(3)}\), and \(f^{(2p-3)}\) are the first, third and \((p-3)rd\) derivatives
+of \(f\) and \(K\) is a constant.</p>
+<p>If the subinterval length is halved, then</p>
+<p>\[
+\begin{split}
+T_{\frac{h}{2}}(f) &amp;= \int_{a}^{b} f(x) dx + \frac{h^2}{4·12} \left[ f^\prime(b) - f^\prime(a) \right] - \left( \frac{h^4}{16·720} \right) \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\
+&amp;+ ... + K \left( \frac{h}{2} \right)^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)(a)} \right] + O(h^{2p})
+\end{split}
+\]</p>
+<p>So that</p>
+<p>\[
+\begin{split}
+\frac{4 T_{\frac{h}{2}}(f) - T_{h}(f)}{3} &amp;= \int_{a}^{b} f(x) dx + \left( \frac{h^4}{2880} \right) \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \left( \frac{h^6}{96768} \right) \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\
+&amp;+ ... + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)(a)} \right] + O(h^{2p})
+\end{split}
+\]</p>
+<p>The \(h^2\) term has vanished. This process can be continued, each halving of the subinterval
+length results in a new composite trapezoidal rule estimate of the integral, which can be
+combined with previous estimates to yield an estimate, in which the lowest order term
+involving \(h\) vanishes.</p>
+<p>The easiest way to combine all the estimates from applications
+of the trapezoidal rule by halving the length of the subintervals is to arrange the estimates
+in a column, from the coarsest estimate to the finest estimate. To form the second,
+column take two adjacent values from the first column, subtract the finer estimate
+from the coarser estimate divide by 3 and add to the finer estimate.</p>
+<p>The second column is automatically arranged from the coarsest estimate to the finest
+with one less element. Continue, form the third column by taking two adjacent values
+from the second column, subtract the finer estimate from the coarser estimate,
+divide by 15 and add to the finer estimate.</p>
+<p>The third column is automatically arranged from the coarsest to the finest estimate with one fewer element than in the
+second column.</p>
+<p>This process is continued until there is only one element in the last column, this
+is the estimate of the integral.</p>
+<p>The numbers which are used the divide the difference of two adjacent elements in the \(i^{th}\) column is \(4^i - 1\).</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            MathJax.Hub.Register.StartupHook('End', function() {
+                window.setTimeout(window.print, 100);
+            });
+        });
+        </script>
+
+    </div>
+    </body>
+</html>
