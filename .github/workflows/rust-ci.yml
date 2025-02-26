@@ -61,6 +61,8 @@ jobs:
 
       - name: Ensure gh-pages Branch Exists
         run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
           git fetch origin gh-pages || git checkout --orphan gh-pages
           git reset --hard
           git clean -fd
