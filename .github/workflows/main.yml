@@ -1,14 +1,11 @@
 name: Rust
-
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
-
 env:
   CARGO_TERM_COLOR: always
-
 jobs:
   publish:
     name: Publish
@@ -16,18 +13,15 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
-
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-
       - run: cargo publish --token ${CRATE_TOKEN}
         env:
           CRATE_TOKEN: ${{ secrets.CRATE_TOKEN }}
-
   check:
     name: Check (1.63.0)
     runs-on: ubuntu-latest
@@ -39,7 +33,6 @@ jobs:
           key: cargo-git-index
       - uses: dtolnay/rust-toolchain@1.63.0
       - run: cargo check --verbose
-
   test:
     name: Test (stable)
     runs-on: ubuntu-latest
@@ -48,7 +41,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo build --verbose
       - run: cargo test --verbose
-
   fmt:
     name: Format
     runs-on: ubuntu-latest
@@ -58,7 +50,6 @@ jobs:
         with:
           components: rustfmt
       - run: cargo fmt --all --check
-
   # One job that "summarizes" the success state of this pipeline. This can then be added to branch
   # protection, rather than having to add each job separately.
   success:
@@ -73,22 +64,18 @@ jobs:
       # Manually check the status of all dependencies. `if: failure()` does not work.
       - name: check if any dependency failed
         run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
-
   deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v3
-
       - name: Setup mdBook
         uses: peaceiris/actions-mdbook@v1
         with:
           mdbook-version: "latest"
-
       - name: Build mdBook
         run: mdbook build book
-
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
