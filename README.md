@@ -7,7 +7,7 @@
 [![Integrate crate](https://img.shields.io/crates/v/integrate.svg)](https://crates.io/crates/integrate)
 [![Integrate documentation](https://img.shields.io/docsrs/integrate/latest)](https://docs.rs/integrate)
 ![minimum rustc 1.63](https://img.shields.io/badge/rustc-1.63+-red.svg)
-[![build status](https://github.com/mtantaoui/Integrate/actions/workflows/main.yml/badge.svg)](https://github.com/mtantaoui/Integrate/actions)
+[![build status](https://github.com/mtantaoui/Integrate/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/mtantaoui/Integrate/actions)
 
 </h3>
 
