@@ -1,5 +1,31 @@
 # Adaptive Simpson
 
+## Example
+
+```rust, editable
+use integrate::adaptive_quadrature::adaptive_simpson_method;
+
+
+let f = |x: f64| x.exp();
+
+let a = 0.0;
+let b = 1.0;
+
+let tolerance = 10.0e-6;
+let min_h = 10.0e-3;
+
+
+let result = adaptive_simpson_method(f, a, b, min_h, tolerance);
+
+
+match result{
+    Ok(res)=>{println!("{}", res)}
+    Err(err)=>{println!("{}", err)}
+};
+```
+
+## Understanding adaptive Simpson method
+
 If an integrand is poorly behaved in a small interval about a point,
 then an attempt to integrate the function over an interval which contains
 the poorly behaved interval either requires that small subintervals
