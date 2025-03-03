@@ -1,5 +1,20 @@
 # Gauss-Laguerre
 
+## Example
+
+```rust,editable
+use integrate::gauss_quadrature::gauss_laguerre_rule;
+
+let f = |x: f64| 1.0;
+
+let n:usize = 100;
+
+let integral = gauss_laguerre_rule(f, n);
+println!("{}",integral);
+```
+
+## Understanding Gauss-Laguerre rule
+
 Gauss-Laguerre quadrature formulas are used to integrate functions \\(f(x) e^{-x}\\) over the positive \\(x\\)-axis.
 
 With respect to the inner product

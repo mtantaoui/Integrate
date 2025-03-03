@@ -4,6 +4,21 @@ Gauss-Chebyshev quadrature formulas are used to integrate functions like \\(\fra
 
 ## Chebyshev Polynomials of the First Kind
 
+### Example
+
+```rust, editable
+use integrate::gauss_quadrature::gauss_first_kind_chebyshev_rule;
+
+let f = |x: f64| 1.0;
+
+let n:usize = 100;
+
+let integral = gauss_first_kind_chebyshev_rule(f, n);
+println!("{}",integral);
+```
+
+### Understanding Chebyshev Polynomials of the First Kind
+
 With respect to the inner product
 
 \\[
@@ -27,6 +42,23 @@ GC_n ( f(x) ) = A_1 f(x_1) + \cdots + A_n f(x_n)
 where \\(x_i\\), \\(i = 1,\dots,n\\), are the zeros of \\(T_n\\) and \\(A_i = \frac{\pi}{n}\\), \\(i = 1,\dots,n\\).
 
 ## Chebyshev Polynomials of the Second Kind
+
+### Example
+
+```rust, editable
+use integrate::gauss_quadrature::gauss_second_kind_chebyshev_rule;
+
+fn f(x: f64) -> f64 {
+    1.0
+}
+
+let n:usize = 100;
+
+let integral = gauss_second_kind_chebyshev_rule(f, n);
+println!("{}",integral);
+```
+
+### Understanding Chebyshev Polynomials of the Second Kind
 
 With respect to the inner product
 
@@ -53,3 +85,7 @@ where \\(x_i\\), \\(i = 1,\dots,n\\), are the zeros of \\(U_n\\) and
 \\[
 A_i = \frac{\pi}{n + 1} \cdot \sin^2\left(\frac{i\pi}{n + 1} \right) \quad \text{for} \quad i = 1,\dots,n.
 \\]
+
+```
+
+```

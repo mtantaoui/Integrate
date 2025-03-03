@@ -10,3 +10,5 @@ git-repository-url = "https://github.com/mtantaoui/Integrate"
 mathjax-support = true
 katex = true
 
+[output.html.playground]
+runnable = false

@@ -1,5 +1,23 @@
 # Newton's 3/8 rule
 
+## Example
+
+```rust, editable
+use integrate::newton_cotes::newton_rule;
+
+
+let square = |x: f64| x * x;
+
+let a = 0.0;
+let b = 1.0;
+
+let num_steps: usize = 1_000_000;
+
+let integral = newton_rule(square, a, b, num_steps);
+```
+
+## Understanding Newton'3/8 rule
+
 Newton's \\(3/8\\) rule approximates the integral of a function \\(f(x)\\) on the closed and bounded
 interval \\(\[a, a+h\]\\) of length \\(h > 0\\) by the integral on \\(\[a, a+h\]\\) of the cubic passing
 through the points \\((a, f(a))\\), \\((a+\frac{h}{3}, f(a+\frac{h}{3}))\\), \\((a+\frac{2h}{3}, f(a+\frac{2h}{3}))\\) and \\((a+h, f(a+h))\\).

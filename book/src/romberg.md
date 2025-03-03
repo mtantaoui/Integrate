@@ -1,5 +1,26 @@
 # Romberg's method
 
+## Example
+
+```rust,editable
+use integrate::romberg::romberg_method;
+
+
+fn square(x: f64) -> f64 {
+    x.powi(2)
+}
+
+let a = 0.0;
+let b = 1.0;
+
+let num_steps: usize = 10;
+
+let integral = romberg_method(square, a, b, num_steps);
+println!("{}",integral);
+```
+
+## Understanding Romberg's method
+
 Romberg's method is used to estimate the integral of a function on a closed and bounded interval.
 
 Classically, the method consists of successively applying the composite trapezoidal rule, each time

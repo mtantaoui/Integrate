@@ -1,5 +1,24 @@
 # Trapezoidal rule
 
+## Example
+
+```rust,editable
+use integrate::newton_cotes::trapezoidal_rule;
+
+
+let square = |x: f64| x * x;
+
+let a = 0.0;
+let b = 1.0;
+
+let num_steps: usize = 1_000_000;
+
+let integral = trapezoidal_rule(square, a, b, num_steps);
+println!("{}", integral);
+```
+
+## Understanding the trapezoidal rule
+
 The trapezoidal rule approximates the integral of a function \\(f(x)\\) on the closed and bounded interval \\(\[a, a+h\]\\)
 of length \\(h > 0\\) by the (signed) area of the trapezoid formed by the line segments joining \\((a, 0)\\) to \\((a+h, 0)\\),
 \\((a+h, 0)\\) to \\((a+h, f(a+h))\\),\\((a+h, f(a+h))\\) to \\((a, f(a))\\) and \\((a, f(a))\\) to \\((a, 0)\\).
