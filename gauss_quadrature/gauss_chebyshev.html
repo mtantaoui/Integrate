@@ -160,6 +160,16 @@
                         <h1 id="gauss-chebyshev-quadrature"><a class="header" href="#gauss-chebyshev-quadrature">Gauss-Chebyshev Quadrature</a></h1>
 <p>Gauss-Chebyshev quadrature formulas are used to integrate functions like \(\frac{f(x)}{\sqrt{1- x^2}}\) and \(f(x) \cdot \sqrt{1- x^2}\) from \(-1\) to \(1\).</p>
 <h2 id="chebyshev-polynomials-of-the-first-kind"><a class="header" href="#chebyshev-polynomials-of-the-first-kind">Chebyshev Polynomials of the First Kind</a></h2>
+<h3 id="example"><a class="header" href="#example">Example</a></h3>
+<pre><code class="language-rust  editable">use integrate::gauss_quadrature::gauss_first_kind_chebyshev_rule;
+
+let f = |x: f64| 1.0;
+
+let n:usize = 100;
+
+let integral = gauss_first_kind_chebyshev_rule(f, n);
+println!("{}",integral);</code></pre>
+<h3 id="understanding-chebyshev-polynomials-of-the-first-kind"><a class="header" href="#understanding-chebyshev-polynomials-of-the-first-kind">Understanding Chebyshev Polynomials of the First Kind</a></h3>
 <p>With respect to the inner product</p>
 <p>\[
 \langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) \cdot g(x) \cdot w(x) dx
@@ -175,6 +185,18 @@ GC_n ( f(x) ) = A_1 f(x_1) + \cdots + A_n f(x_n)
 \]</p>
 <p>where \(x_i\), \(i = 1,\dots,n\), are the zeros of \(T_n\) and \(A_i = \frac{\pi}{n}\), \(i = 1,\dots,n\).</p>
 <h2 id="chebyshev-polynomials-of-the-second-kind"><a class="header" href="#chebyshev-polynomials-of-the-second-kind">Chebyshev Polynomials of the Second Kind</a></h2>
+<h3 id="example-1"><a class="header" href="#example-1">Example</a></h3>
+<pre><code class="language-rust  editable">use integrate::gauss_quadrature::gauss_second_kind_chebyshev_rule;
+
+fn f(x: f64) -&gt; f64 {
+    1.0
+}
+
+let n:usize = 100;
+
+let integral = gauss_second_kind_chebyshev_rule(f, n);
+println!("{}",integral);</code></pre>
+<h3 id="understanding-chebyshev-polynomials-of-the-second-kind"><a class="header" href="#understanding-chebyshev-polynomials-of-the-second-kind">Understanding Chebyshev Polynomials of the Second Kind</a></h3>
 <p>With respect to the inner product</p>
 <p>\[
 \langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) \cdot g(x) \cdot w(x) dx
@@ -192,6 +214,8 @@ GC_n ( f(x) ) = A_1 f(x_1) + \cdots + A_n f(x_n)
 <p>\[
 A_i = \frac{\pi}{n + 1} \cdot \sin^2\left(\frac{i\pi}{n + 1} \right) \quad \text{for} \quad i = 1,\dots,n.
 \]</p>
+<pre><code>
+</code></pre>
 
                     </main>
 

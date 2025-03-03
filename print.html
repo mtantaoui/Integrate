@@ -217,6 +217,21 @@ method is called a closed Newton-Cotes method.</p>
 <li><a href="newton_cotes/newton_rule.html">Newton's 3/8 Rule</a></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="rectangle-rule"><a class="header" href="#rectangle-rule">Rectangle rule</a></h1>
+<h2 id="example"><a class="header" href="#example">Example</a></h2>
+<pre><code class="language-rust editable">use integrate::newton_cotes::rectangle_rule;
+
+
+let square = |x: f64| x * x;
+
+let a = 0.0;
+let b = 1.0;
+
+let num_steps: usize = 1_000_000;
+
+let integral = rectangle_rule(square, a, b, num_steps);
+
+println!("{}",integral);</code></pre>
+<h2 id="understanding-the-rectangle-rule"><a class="header" href="#understanding-the-rectangle-rule">Understanding the Rectangle rule</a></h2>
 <p>The rectangle rule approximates the integral of a function \(f(x)\) on the
 closed and bounded interval \([a, a+h]\) of length \(h &gt; 0\) by the (signed) area
 of the rectangle with length \(h\) and height the value of the function \(f(x)\)
@@ -265,6 +280,20 @@ so that \(h = \frac{b-a}{n} &lt; 1\). For example, if \(h = 0.1\) then</p>
 <p>\begin{split} R_{10}(f) &amp;= \int_{a}^{b} f(x) dx - 4.1667 \left[ f^\prime(b) - f^\prime(a)\right] \\ &amp;+ 12.15 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + ... \end{split}</p>
 <p>However, if the function \(f(x)\) is linear, then \(n\) may be chosen to be \(1\).</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="trapezoidal-rule"><a class="header" href="#trapezoidal-rule">Trapezoidal rule</a></h1>
+<h2 id="example-1"><a class="header" href="#example-1">Example</a></h2>
+<pre><code class="language-rust editable">use integrate::newton_cotes::trapezoidal_rule;
+
+
+let square = |x: f64| x * x;
+
+let a = 0.0;
+let b = 1.0;
+
+let num_steps: usize = 1_000_000;
+
+let integral = trapezoidal_rule(square, a, b, num_steps);
+println!("{}", integral);</code></pre>
+<h2 id="understanding-the-trapezoidal-rule"><a class="header" href="#understanding-the-trapezoidal-rule">Understanding the trapezoidal rule</a></h2>
 <p>The trapezoidal rule approximates the integral of a function \(f(x)\) on the closed and bounded interval \([a, a+h]\)
 of length \(h &gt; 0\) by the (signed) area of the trapezoid formed by the line segments joining \((a, 0)\) to \((a+h, 0)\),
 \((a+h, 0)\) to \((a+h, f(a+h))\),\((a+h, f(a+h))\) to \((a, f(a))\) and \((a, f(a))\) to \((a, 0)\).</p>
@@ -325,6 +354,21 @@ T_{10}(f) = \int_{a}^{b} f(x) dx - 8.3333 \left[ f^\prime(b) - f^\prime(a) \righ
 \]</p>
 <p>However, if the function \(f(x)\) is linear, then \(n\) may be chosen to be \(1\).</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="simpsons-rule"><a class="header" href="#simpsons-rule">Simpson's rule</a></h1>
+<h2 id="example-2"><a class="header" href="#example-2">Example</a></h2>
+<pre><code class="language-rust  editable">use integrate::newton_cotes::simpson_rule;
+
+
+let square = |x: f64| x * x;
+
+let a = 0.0;
+let b = 1.0;
+
+let num_steps: usize = 1_000_000;
+
+let integral = simpson_rule(square, a, b, num_steps);
+
+println!("{}", integral);</code></pre>
+<h2 id="understanding-simpsons-rule"><a class="header" href="#understanding-simpsons-rule">Understanding Simpson's rule</a></h2>
 <p>Simpson's rule approximates the integral of a function \(f(x)\) on the closed and bounded interval
 \([a, a+h]\) of length \(h &gt; 0\) by the integral on \([a, a+h]\) of the quadratic passing through the
 points \(\left(a, f(a)\right)\), \(\left(a+\dfrac{h}{2}, f\left(a+\dfrac{h}{2}\right)\right)\) and \(\left(a+h, f(a+h)\right)\).</p>
@@ -396,6 +440,19 @@ S_{0.01}(f) &amp; = \int_{a}^{b} f(x) dx + 3.47 \left[ f^{3}(b) - f^{3}(a) \righ
 \]</p>
 <p>However, if the function \[f(x)\] is a cubic, then \[n\] may be chosen to be \[1\].</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="newtons-38-rule"><a class="header" href="#newtons-38-rule">Newton's 3/8 rule</a></h1>
+<h2 id="example-3"><a class="header" href="#example-3">Example</a></h2>
+<pre><code class="language-rust  editable">use integrate::newton_cotes::newton_rule;
+
+
+let square = |x: f64| x * x;
+
+let a = 0.0;
+let b = 1.0;
+
+let num_steps: usize = 1_000_000;
+
+let integral = newton_rule(square, a, b, num_steps);</code></pre>
+<h2 id="understanding-newton38-rule"><a class="header" href="#understanding-newton38-rule">Understanding Newton'3/8 rule</a></h2>
 <p>Newton's \(3/8\) rule approximates the integral of a function \(f(x)\) on the closed and bounded
 interval \([a, a+h]\) of length \(h &gt; 0\) by the integral on \([a, a+h]\) of the cubic passing
 through the points \((a, f(a))\), \((a+\frac{h}{3}, f(a+\frac{h}{3}))\), \((a+\frac{2h}{3}, f(a+\frac{2h}{3}))\) and \((a+h, f(a+h))\).</p>
@@ -483,6 +540,19 @@ of the numerical integration relative to the number of integrand evaluations.</p
 <li><a href="gauss_quadrature/gauss_chebyshev.html">Gauss-Chebyshev</a> Second Kind used to integrate a function of the form \(f(x) * \sqrt{ 1-x^2 }\) over the interval \([-1,1]\).</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="gauss-legendre"><a class="header" href="#gauss-legendre">Gauss-Legendre</a></h1>
+<h2 id="example-4"><a class="header" href="#example-4">Example</a></h2>
+<pre><code class="language-rust editable">use integrate::gauss_quadrature::legendre_rule;
+
+let square = |x: f64| x * x;
+
+let a = 0.0;
+let b = 1.0;
+
+let num_steps: usize = 1_000_000;
+
+let integral = legendre_rule(square, a, b, num_steps);
+println!("{}",integral);</code></pre>
+<h2 id="understanding-gauss-legendre-rule"><a class="header" href="#understanding-gauss-legendre-rule">Understanding Gauss-Legendre rule</a></h2>
 <p>Gauss-Legendre quadrature formulas are used to integrate functions \(f(x)\) over a closed and bounded interval \([a, b]\).</p>
 <p>Let \(\int_{a}^{b} f(x) dx\) denote the integral of \(f(x)\) from \(a\) to \(b\). After making the change of variable \(t = \dfrac{2(x-a)}{b-a} - 1\), then</p>
 <p>\[
@@ -545,6 +615,16 @@ This makes it compatible with parallel computing paradigms.</li>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="gauss-chebyshev-quadrature"><a class="header" href="#gauss-chebyshev-quadrature">Gauss-Chebyshev Quadrature</a></h1>
 <p>Gauss-Chebyshev quadrature formulas are used to integrate functions like \(\frac{f(x)}{\sqrt{1- x^2}}\) and \(f(x) \cdot \sqrt{1- x^2}\) from \(-1\) to \(1\).</p>
 <h2 id="chebyshev-polynomials-of-the-first-kind"><a class="header" href="#chebyshev-polynomials-of-the-first-kind">Chebyshev Polynomials of the First Kind</a></h2>
+<h3 id="example-5"><a class="header" href="#example-5">Example</a></h3>
+<pre><code class="language-rust  editable">use integrate::gauss_quadrature::gauss_first_kind_chebyshev_rule;
+
+let f = |x: f64| 1.0;
+
+let n:usize = 100;
+
+let integral = gauss_first_kind_chebyshev_rule(f, n);
+println!("{}",integral);</code></pre>
+<h3 id="understanding-chebyshev-polynomials-of-the-first-kind"><a class="header" href="#understanding-chebyshev-polynomials-of-the-first-kind">Understanding Chebyshev Polynomials of the First Kind</a></h3>
 <p>With respect to the inner product</p>
 <p>\[
 \langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) \cdot g(x) \cdot w(x) dx
@@ -560,6 +640,18 @@ GC_n ( f(x) ) = A_1 f(x_1) + \cdots + A_n f(x_n)
 \]</p>
 <p>where \(x_i\), \(i = 1,\dots,n\), are the zeros of \(T_n\) and \(A_i = \frac{\pi}{n}\), \(i = 1,\dots,n\).</p>
 <h2 id="chebyshev-polynomials-of-the-second-kind"><a class="header" href="#chebyshev-polynomials-of-the-second-kind">Chebyshev Polynomials of the Second Kind</a></h2>
+<h3 id="example-6"><a class="header" href="#example-6">Example</a></h3>
+<pre><code class="language-rust  editable">use integrate::gauss_quadrature::gauss_second_kind_chebyshev_rule;
+
+fn f(x: f64) -&gt; f64 {
+    1.0
+}
+
+let n:usize = 100;
+
+let integral = gauss_second_kind_chebyshev_rule(f, n);
+println!("{}",integral);</code></pre>
+<h3 id="understanding-chebyshev-polynomials-of-the-second-kind"><a class="header" href="#understanding-chebyshev-polynomials-of-the-second-kind">Understanding Chebyshev Polynomials of the Second Kind</a></h3>
 <p>With respect to the inner product</p>
 <p>\[
 \langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) \cdot g(x) \cdot w(x) dx
@@ -577,7 +669,19 @@ GC_n ( f(x) ) = A_1 f(x_1) + \cdots + A_n f(x_n)
 <p>\[
 A_i = \frac{\pi}{n + 1} \cdot \sin^2\left(\frac{i\pi}{n + 1} \right) \quad \text{for} \quad i = 1,\dots,n.
 \]</p>
+<pre><code>
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="gauss-laguerre"><a class="header" href="#gauss-laguerre">Gauss-Laguerre</a></h1>
+<h2 id="example-7"><a class="header" href="#example-7">Example</a></h2>
+<pre><code class="language-rust editable">use integrate::gauss_quadrature::gauss_laguerre_rule;
+
+let f = |x: f64| 1.0;
+
+let n:usize = 100;
+
+let integral = gauss_laguerre_rule(f, n);
+println!("{}",integral);</code></pre>
+<h2 id="understanding-gauss-laguerre-rule"><a class="header" href="#understanding-gauss-laguerre-rule">Understanding Gauss-Laguerre rule</a></h2>
 <p>Gauss-Laguerre quadrature formulas are used to integrate functions \(f(x) e^{-x}\) over the positive \(x\)-axis.</p>
 <p>With respect to the inner product</p>
 <p>\[
@@ -597,6 +701,16 @@ GL_n ( f(x) ) = A_1 f(x_1) + \cdots + A_n f(x_n)
 A_i = \dfrac{n!^2}{ x_i L_{n-1} (x_i)^2} \quad \text{for} \quad i = 1,\dots,n
 \]</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="gauss-hermite"><a class="header" href="#gauss-hermite">Gauss Hermite</a></h1>
+<h2 id="example-8"><a class="header" href="#example-8">Example</a></h2>
+<pre><code class="language-rust editable">use integrate::gauss_quadrature::gauss_hermite_rule;
+
+let f = |x: f64| 1.0;
+
+let n:usize = 100;
+
+let integral = gauss_hermite_rule(f, n);
+println!("{}",integral);</code></pre>
+<h2 id="understanding-gauss-hermite-rule"><a class="header" href="#understanding-gauss-hermite-rule">Understanding Gauss-Hermite rule</a></h2>
 <p>Gauss-Hermite quadrature formulas are used to integrate functions \(f(x) e^{x^2}\) from \(-\infty\) to \(+\infty\).</p>
 <p>With respect to the inner product</p>
 <p>\[
@@ -624,6 +738,27 @@ involved, for Simpson's rule, if the function is nearly cubic (or quadratic, or 
 constant) then the function doesn't change significantly from being cubic and a large
 interval can be used.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="adaptive-simpson"><a class="header" href="#adaptive-simpson">Adaptive Simpson</a></h1>
+<h2 id="example-9"><a class="header" href="#example-9">Example</a></h2>
+<pre><code class="language-rust  editable">use integrate::adaptive_quadrature::adaptive_simpson_method;
+
+
+let f = |x: f64| x.exp();
+
+let a = 0.0;
+let b = 1.0;
+
+let tolerance = 10.0e-6;
+let min_h = 10.0e-3;
+
+
+let result = adaptive_simpson_method(f, a, b, min_h, tolerance);
+
+
+match result{
+    Ok(res)=&gt;{println!("{}", res)}
+    Err(err)=&gt;{println!("{}", err)}
+};</code></pre>
+<h2 id="understanding-adaptive-simpson-method"><a class="header" href="#understanding-adaptive-simpson-method">Understanding adaptive Simpson method</a></h2>
 <p>If an integrand is poorly behaved in a small interval about a point,
 then an attempt to integrate the function over an interval which contains
 the poorly behaved interval either requires that small subintervals
@@ -634,6 +769,22 @@ can be chosen for the composite quadrature technique and one in which smaller su
 <p>The technique for which the link to the listing is given below uses Simpson's rule
 for integrating a function \(f(x)\) on a closed and bounded interval \([a,b]\).</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="rombergs-method"><a class="header" href="#rombergs-method">Romberg's method</a></h1>
+<h2 id="example-10"><a class="header" href="#example-10">Example</a></h2>
+<pre><code class="language-rust editable">use integrate::romberg::romberg_method;
+
+
+fn square(x: f64) -&gt; f64 {
+    x.powi(2)
+}
+
+let a = 0.0;
+let b = 1.0;
+
+let num_steps: usize = 10;
+
+let integral = romberg_method(square, a, b, num_steps);
+println!("{}",integral);</code></pre>
+<h2 id="understanding-rombergs-method"><a class="header" href="#understanding-rombergs-method">Understanding Romberg's method</a></h2>
 <p>Romberg's method is used to estimate the integral of a function on a closed and bounded interval.</p>
 <p>Classically, the method consists of successively applying the composite trapezoidal rule, each time
 halving the length of the subintervals, and using a linear combination of the resulting sequence of
