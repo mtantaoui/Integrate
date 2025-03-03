@@ -1,5 +1,23 @@
 # Gauss-Legendre
 
+## Example
+
+```rust,editable
+use integrate::gauss_quadrature::legendre_rule;
+
+let square = |x: f64| x * x;
+
+let a = 0.0;
+let b = 1.0;
+
+let num_steps: usize = 1_000_000;
+
+let integral = legendre_rule(square, a, b, num_steps);
+println!("{}",integral);
+```
+
+## Understanding Gauss-Legendre rule
+
 Gauss-Legendre quadrature formulas are used to integrate functions \\(f(x)\\) over a closed and bounded interval \\(\[a, b\]\\).
 
 Let \\(\int\_{a}^{b} f(x) dx\\) denote the integral of \\(f(x)\\) from \\(a\\) to \\(b\\). After making the change of variable \\(t = \dfrac{2(x-a)}{b-a} - 1\\), then

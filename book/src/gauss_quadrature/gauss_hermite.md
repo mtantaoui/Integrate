@@ -1,5 +1,20 @@
 # Gauss Hermite
 
+## Example
+
+```rust,editable
+use integrate::gauss_quadrature::gauss_hermite_rule;
+
+let f = |x: f64| 1.0;
+
+let n:usize = 100;
+
+let integral = gauss_hermite_rule(f, n);
+println!("{}",integral);
+```
+
+## Understanding Gauss-Hermite rule
+
 Gauss-Hermite quadrature formulas are used to integrate functions \\(f(x) e^{x^2}\\) from \\(-\infty\\) to \\(+\infty\\).
 
 With respect to the inner product
