@@ -14,6 +14,7 @@ let f = |x: f64| 1.0;
 let n:usize = 100;
 
 let integral = gauss_first_kind_chebyshev_rule(f, n);
+println!("{}",integral);
 ```
 
 ### Understanding Chebyshev Polynomials of the First Kind
@@ -54,6 +55,7 @@ fn f(x: f64) -> f64 {
 let n:usize = 100;
 
 let integral = gauss_second_kind_chebyshev_rule(f, n);
+println!("{}",integral);
 ```
 
 ### Understanding Chebyshev Polynomials of the Second Kind
