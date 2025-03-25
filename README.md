@@ -9,6 +9,7 @@
 ![minimum rustc 1.63](https://img.shields.io/badge/rustc-1.63+-red.svg)
 [![build status](https://github.com/mtantaoui/Integrate/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/mtantaoui/Integrate/actions)
 ![Downloads](https://img.shields.io/crates/d/integrate)
+[![libs.tech recommends](https://libs.tech/project/780504452/badge.svg)](https://libs.tech/project/780504452/integrate)
 
 </h3>
 
