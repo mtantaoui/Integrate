@@ -83,7 +83,7 @@ To use the `Integrate` crate in your Rust project, add the following line to you
 
 ```toml
 [dependencies]
-integrate = "0.1.10"
+integrate = "0.1.11"
 ```
 
 ### Contribution
