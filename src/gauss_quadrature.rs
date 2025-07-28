@@ -55,7 +55,8 @@ where
     let n = n.to_usize().unwrap();
 
     let integral: f64 = (1..=n)
-        .into_par_iter()
+        // .into_par_iter()
+        .into_iter()
         .map(|k| {
             // getting gauss-legendre weights and nodes
             let (_, weight, x) = glpair(n, k);
