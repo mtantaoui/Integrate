@@ -1,15 +1,6 @@
-use std::{
-    f64::consts::PI,
-    fmt::Debug,
-    marker::PhantomData,
-    ops::{AddAssign, Mul},
-};
+use std::{f64::consts::PI, fmt::Debug, marker::PhantomData, ops::AddAssign};
 
 use num::{bigint::ToBigInt, BigRational, BigUint, Float, One, Zero};
-use rayon::iter::{
-    IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelExtend,
-    ParallelIterator,
-};
 
 use super::{
     matrix::TridiagonalSymmetricFloatMatrix, orthogonal_polynomials::OrthogonalPolynomial,
@@ -49,7 +40,8 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Her
         for k in 2..=self.degree {
             let k = F::from(k).unwrap();
 
-            h = two * x * h_k - two * (k - one) * h_k_1; // L_{k+1}
+            // Three-term recurrence: H_{k+1}(x) = 2x*H_k(x) - 2(k-1)*H_{k-1}(x)
+            h = two * x * h_k - two * (k - one) * h_k_1;
 
             h_k_1 = h_k;
             h_k = h;
@@ -66,10 +58,14 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Her
         let two = F::one() + F::one();
 
         // define the Jacobi matrix (tridiagonal symmetric matrix)
+        // diagonal entries: all zero (Hermite polynomials are symmetric)
+        // off-diagonal entries: e_i = sqrt((i+1)/2)  (i = 0, 1, ..., n-2)
+        // Eigenvalues of this matrix are the zeros of H_n(x).
         let diagonal = vec![F::zero(); self.degree];
 
+        // off-diagonal: e_i = sqrt((i+1)/2)
         let mut offdiagonal = vec![F::zero()];
-        offdiagonal.par_extend((0..self.degree - 1).into_par_iter().map(|i| {
+        offdiagonal.extend((0..self.degree - 1).map(|i| {
             let i = F::from(i).unwrap();
             ((i + F::one()) / two).sqrt()
         }));
@@ -80,7 +76,16 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Her
     }
 }
 
-// weights formula : https://wikimedia.org/api/rest_v1/media/math/render/svg/2e6f152a1e9ecd4ab8ddf912aaa69bb8d0e66a3c
+/// Returns `(zeros, weights)` for the $n$-point Gauss-Hermite quadrature rule.
+///
+/// The zeros are the roots of the Hermite polynomial $H_n(x)$ of degree $n$.
+/// The corresponding weights are
+/// $$w_i = \frac{2^{n-1}\\, n!\\, \sqrt{\pi}}{n^2 \\, H_{n-1}(x_i)^2}$$
+///
+/// For large $n$ the factorial and the power $2^{n-1}$ may overflow ordinary
+/// floating-point arithmetic, so the implementation switches to `BigInt`
+/// arithmetic when either the numerator or denominator becomes infinite.
+// weights formula: https://wikimedia.org/api/rest_v1/media/math/render/svg/2e6f152a1e9ecd4ab8ddf912aaa69bb8d0e66a3c
 pub fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
     n: usize,
 ) -> (Vec<F>, Vec<F>) {
@@ -101,10 +106,11 @@ pub fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
     let two_pow = two.powf(n - F::one());
 
     let weights: Vec<F> = zeros
-        .par_iter()
+        .iter()
         .map(|x_i| {
             let h_x = h.eval(*x_i); // H_{n-1}(x_i)
 
+            // Weight formula: w_i = 2^{n-1} * n! * sqrt(pi) / (n^2 * H_{n-1}(x_i)^2)
             let numerator = two_pow * n_fact * sqrt_pi;
 
             let denominator = n_squared * h_x * h_x;
@@ -124,7 +130,7 @@ pub fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
 
     let warn = zeros
         .as_slice()
-        .into_par_iter()
+        .iter()
         .zip(weights.as_slice())
         .any(|(zero, weight)| (*zero).is_nan() || (*weight).is_nan());
 
@@ -138,12 +144,7 @@ pub fn roots_hermite<F: Float + Debug + AddAssign + Sync + Send + ToBigInt>(
 }
 
 fn factorial(n: usize) -> BigUint {
-    (1..n + 1)
-        .into_par_iter()
-        // .with_min_len(64)
-        .fold_with(BigUint::from(1_usize), |acc, x| acc.mul(x))
-        .reduce_with(Mul::mul)
-        .unwrap()
+    (1..=n).fold(BigUint::from(1_usize), |acc, x| acc * x)
 }
 
 #[cfg(test)]

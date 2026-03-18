@@ -1,9 +1,6 @@
 use std::{fmt::Debug, marker::PhantomData, ops::AddAssign};
 
 use num::{one, Float, One, Zero};
-use rayon::iter::{
-    IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelIterator,
-};
 
 use super::{
     matrix::TridiagonalSymmetricFloatMatrix, orthogonal_polynomials::OrthogonalPolynomial,
@@ -42,7 +39,8 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Lag
             let b = F::from(k - 1).unwrap();
             let c = F::from(k).unwrap();
 
-            l = ((a - x) * l_k - b * l_k_1) / c; // L_{k+1}
+            // Three-term recurrence: L_{k+1}(x) = ((2k+1 - x)*L_k(x) - k*L_{k-1}(x)) / (k+1)
+            l = ((a - x) * l_k - b * l_k_1) / c;
 
             l_k_1 = l_k;
             l_k = l;
@@ -72,16 +70,15 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Lag
             return vec![];
         }
         // define the Jacobi matrix (tridiagonal symmetric matrix)
+        // diagonal entries: d_k = 2k + 1  (k = 0, 1, ..., n-1)
+        // off-diagonal entries: e_k = k   (k = 1, ..., n-1)
+        // Eigenvalues of this matrix are the zeros of L_n(x).
 
-        // we first define the sub-diagonal
-        let offdiagonal: Vec<F> = (0..self.degree)
-            .into_par_iter()
-            .map(|o| F::from(o).unwrap())
-            .collect();
+        // sub-diagonal: e_k = k
+        let offdiagonal: Vec<F> = (0..self.degree).map(|o| F::from(o).unwrap()).collect();
 
-        // then the diagonal
+        // then the diagonal: d_k = 2k + 1
         let diagonal: Vec<F> = (0..self.degree)
-            .into_par_iter()
             .map(|i| {
                 let d = 2 * i + 1;
                 F::from(d).unwrap()
@@ -94,6 +91,15 @@ impl<F: Float + Sync + Send + AddAssign + Debug> OrthogonalPolynomial<F> for Lag
     }
 }
 
+/// Returns `(zeros, weights)` for the $n$-point Gauss-Laguerre quadrature rule.
+///
+/// The zeros are the roots of the Laguerre polynomial $L_n(x)$ of degree $n$.
+/// The corresponding weights are given by
+/// $$w_i = \frac{x_i}{(n+1)^2 \\, L_{n+1}(x_i)^2}$$
+/// where $x_i$ are the quadrature nodes.
+///
+/// Prints a warning to stderr if any computed zero or weight underflows (which
+/// can occur for very large $n$).
 pub fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (Vec<F>, Vec<F>) {
     let l_n: Laguerre<F> = Laguerre::new(n);
     let l_n_plus_1: Laguerre<F> = Laguerre::new(n + 1);
@@ -104,8 +110,9 @@ pub fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (
     let two = F::one() + F::one();
 
     let weights: Vec<F> = zeros
-        .par_iter()
+        .iter()
         .map(|x_i| {
+            // Weight formula: w_i = x_i / ((n+1)^2 * L_{n+1}(x_i)^2)
             let numerator = *x_i;
             let denominator = (n + one()).powf(two) * l_n_plus_1.eval(*x_i).powf(two);
 
@@ -115,7 +122,7 @@ pub fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (
 
     let warn = zeros
         .as_slice()
-        .into_par_iter()
+        .iter()
         .zip(weights.as_slice())
         .any(|(zero, weight)| (*zero).is_nan() || (*weight).is_nan());
 
@@ -130,7 +137,6 @@ pub fn roots_laguerre<F: Float + Debug + Sync + Send + AddAssign>(n: usize) -> (
 
 #[cfg(test)]
 mod laguerre_tests {
-    use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
     use super::*;
 
@@ -400,7 +406,7 @@ mod laguerre_tests {
         let lag_zeros = lag.zeros();
 
         FIRST_100_LAGUERRE_ROOTS
-            .into_par_iter()
+            .into_iter()
             .zip(lag_zeros)
             .for_each(|(test_zero, zero)| assert!((test_zero - zero).abs() < EPSILON))
     }
@@ -413,7 +419,7 @@ mod laguerre_tests {
         let (_, weights) = roots_laguerre::<f64>(n);
 
         FIRST_100_LAGUERRE_WEIGHTS
-            .into_par_iter()
+            .into_iter()
             .zip(weights)
             .for_each(|(test_weight, weight)| assert!((test_weight - weight).abs() < EPSILON))
     }
