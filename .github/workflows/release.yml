@@ -1,0 +1,26 @@
+name: Release
+
+# Triggered when a version tag is pushed (e.g. v0.2.0).
+# Create a release with: git tag v0.2.0 && git push --tags
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  publish:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Publish
+        run: cargo publish --token ${{ secrets.CRATE_TOKEN }}
