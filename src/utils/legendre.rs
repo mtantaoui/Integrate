@@ -6036,7 +6036,6 @@ fn glpair_tabulated<U: Unsigned + ToPrimitive + PartialOrd + Copy>(l: U, k: U) -
 mod tests {
 
     use num::Float;
-    use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
     use super::*;
 
@@ -6057,7 +6056,7 @@ mod tests {
         for _ in 0..=6 {
             // Gauss-Legendre rule using glpair function
             let integral: f64 = (1..=l)
-                .into_par_iter()
+                .into_iter()
                 .map(|k| {
                     let (_, weight, x) = glpair(l, k);
                     0.5 * weight * (0.5 * (x + 1.0)).ln()
@@ -6089,7 +6088,7 @@ mod tests {
         for l in (540..=700_usize).step_by(20) {
             // Gauss-Legendre rule using glpair function
             let integral: f64 = (1..=l)
-                .into_par_iter()
+                .into_iter()
                 .map(|k| {
                     let (_, weight, x) = glpairs(l, k);
                     weight * (1000.0 * x).cos()
@@ -6116,7 +6115,7 @@ mod tests {
         for l in 3..=9_usize {
             // Gauss-Legendre rule using glpair function
             let integral: f64 = (1..=l)
-                .into_par_iter()
+                .into_iter()
                 .map(|k| {
                     let (_, weight, x) = glpair_tabulated(l, k);
                     weight * x.exp()
