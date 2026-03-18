@@ -1,5 +1,9 @@
 # Romberg's method
 
+## Motivation
+
+Romberg's method combines Richardson extrapolation with the composite trapezoidal rule to eliminate successive error terms from the Euler-Maclaurin expansion, achieving high-order accuracy without evaluating higher derivatives. It is an excellent choice when high precision is required for smooth integrands on finite intervals.
+
 ## Example
 
 ```rust,editable
@@ -35,7 +39,7 @@ The Euler-Maclaurin summation formula relates the integral of a function \\(f(x)
 a closed and bounded interval \\(\[a,b\]\\) , \\(\int\_{a}^{b} f(x) dx\\), and the composite trapezoidal rule,
 
 \\[
-T_h (f) = h \left[ \frac{f(a)}{2} + f(a+h) + ··· + f(b-h) + \frac{f(b)}{2} \right]
+T_h (f) = h \left[ \frac{f(a)}{2} + f(a+h) + \cdots + f(b-h) + \frac{f(b)}{2} \right]
 \\]
 
 by
@@ -43,7 +47,7 @@ by
 \\[
 \begin{split}
 T_h(f) &= \int\_{a}^{b} f(x) dx + \left(\frac{h^2}{12}\right) \left[f^\prime(b) - f^\prime(a)\right] - \left(\frac{h^4}{720}\right) \left[f^{(3)}(b) - f^{(3)}(a) \right] \\\\
-&+ ... + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)(a)} \right] + O(h^{2p})
+&+ \cdots + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
 \end{split}
 \\]
 
@@ -55,7 +59,7 @@ If the subinterval length is halved, then
 \\[
 \begin{split}
 T\_{\frac{h}{2}}(f) &= \int\_{a}^{b} f(x) dx + \frac{h^2}{4·12} \left[ f^\prime(b) - f^\prime(a) \right] - \left( \frac{h^4}{16·720} \right) \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\\\
-&+ ... + K \left( \frac{h}{2} \right)^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)(a)} \right] + O(h^{2p})
+&+ \cdots + K \left( \frac{h}{2} \right)^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
 \end{split}
 \\]
 
@@ -64,7 +68,7 @@ So that
 \\[
 \begin{split}
 \frac{4 T\_{\frac{h}{2}}(f) - T\_{h}(f)}{3} &= \int\_{a}^{b} f(x) dx + \left( \frac{h^4}{2880} \right) \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \left( \frac{h^6}{96768} \right) \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\\\
-&+ ... + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)(a)} \right] + O(h^{2p})
+&+ \cdots + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
 \end{split}
 \\]
 
@@ -91,3 +95,7 @@ This process is continued until there is only one element in the last column, th
 is the estimate of the integral.
 
 The numbers which are used the divide the difference of two adjacent elements in the \\(i^{th}\\) column is \\(4^i - 1\\).
+
+## Limitations
+
+Romberg's method requires the integrand to be infinitely differentiable on \\([a, b]\\) for the Euler-Maclaurin expansion to hold. It is not appropriate for functions with singularities, discontinuities, or even kinks (non-differentiable points) in the integration interval. For such functions, consider the adaptive Simpson method or splitting the interval.

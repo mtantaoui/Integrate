@@ -3,11 +3,14 @@ use std::f64::consts::PI;
 
 use num::{ToPrimitive, Unsigned};
 
-/// Computes the $k^{th}$ zero of the $J_0(x)$ Bessel function.
+/// Returns the $k$-th positive zero of the Bessel function $J_0(x)$.
 ///
-/// # Notes
+/// For $k \le 20$ the zero is read from a precomputed table of high-precision
+/// values.  For $k > 20$ the zero is approximated via McMahon's asymptotic
+/// expansion (see [`mcmahon_expansion`]).
 ///
-/// Note that the first 20 zeros are tabulated.  After that, they are computed using McMahon expansion
+/// This function is used internally to seed the node computation for
+/// Gauss-Legendre quadrature rules of large order.
 pub fn bessel_j0_zeros<U: Unsigned + ToPrimitive>(k: U) -> f64 {
     const J_Z: [f64; 20] = [
         2.404_825_557_695_773,
@@ -48,10 +51,13 @@ pub fn bessel_j0_zeros<U: Unsigned + ToPrimitive>(k: U) -> f64 {
     z
 }
 
-/// This functions is used to approximate the $k^{th}$ zero of the $J_0(x)$ Bessel function,
-/// for the case where $k$ is greater than 20.
+/// Applies McMahon's asymptotic expansion to refine the $k$-th zero of $J_0(x)$.
 ///
-/// Intended for internal use of this crate only, in this specific implementation of Gauss-Legendre's rule.
+/// The starting approximation is $z = \pi(k - \tfrac{1}{4})$; the expansion
+/// adds correction terms as a power series in $r = 1/z$ and $r^2$, improving
+/// accuracy for large $k$ (i.e. large zeros).
+///
+/// Intended for internal use within the Gauss-Legendre node computation.
 fn mcmahon_expansion(z: f64, r: f64, r2: f64) -> f64 {
     z + r
         * (0.125E+00
@@ -65,10 +71,14 @@ fn mcmahon_expansion(z: f64, r: f64, r2: f64) -> f64 {
                                         + r2 * 5.092_254_624_022_268E7))))))))
 }
 
-/// This function is used to approximate $J_1$ Bessel function,
-/// applied the $k$ zero of the $J_0(x)$ Bessel function, in the case where $k$ is greater than 21.
+/// Applies Hankel's asymptotic expansion to approximate $J_1(x_k)^2$, where
+/// $x_k$ is the $k$-th zero of $J_0$.
 ///
-/// Intended for internal use of this crate only, in this specific implementation of Gauss-Legendre's rule.
+/// The argument `x` is $1/(k - 1/4)$ (a small parameter for large $k$) and
+/// `x2 = x * x`.  The result is the squared value of $J_1$ evaluated at that
+/// zero, used as a weight denominator in Gauss-Legendre quadrature.
+///
+/// Intended for internal use within the Gauss-Legendre node computation.
 fn hankel_expansion(x: f64, x2: f64) -> f64 {
     x * (2.026_423_672_846_755_5E-1
         + x2 * x2

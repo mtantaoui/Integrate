@@ -22,7 +22,7 @@ println!("{}",integral);
 With respect to the inner product
 
 \\[
-\langle f,g \rangle = \int\_{-\infty}^{+\infty} f(x) \cdot g(x) \cdot w(x) dx
+\langle f,g \rangle = \int\_{-1}^{1} f(x) \cdot g(x) \cdot w(x) dx
 \\]
 
 the Chebyshev polynomials are defined by
@@ -63,7 +63,7 @@ println!("{}",integral);
 With respect to the inner product
 
 \\[
-\langle f,g \rangle = \int\_{-\infty}^{+\infty} f(x) \cdot g(x) \cdot w(x) dx
+\langle f,g \rangle = \int\_{-1}^{1} f(x) \cdot g(x) \cdot w(x) dx
 \\]
 
 the Chebyshev polynomials are defined by
@@ -86,6 +86,6 @@ where \\(x_i\\), \\(i = 1,\dots,n\\), are the zeros of \\(U_n\\) and
 A_i = \frac{\pi}{n + 1} \cdot \sin^2\left(\frac{i\pi}{n + 1} \right) \quad \text{for} \quad i = 1,\dots,n.
 \\]
 
-```
+## Limitations
 
-```
+Gauss-Chebyshev quadrature is only suitable when the integrand can be expressed in the weighted form \\(f(x)/\sqrt{1-x^2}\\) (first kind) or \\(f(x)\sqrt{1-x^2}\\) (second kind) on \\([-1, 1]\\). It is not appropriate for functions on other intervals or without the corresponding weight factor, as the accuracy guarantees rely on orthogonality with respect to that weight.

@@ -1,3 +1,8 @@
+//! Internal utilities for polynomial root-finding, quadrature node/weight
+//! computation, and input validation.
+//!
+//! This module is **not** part of the public API.
+
 pub mod adaptive_simpson;
 pub mod bessel;
 pub mod chebyshev;
