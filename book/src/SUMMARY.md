@@ -2,6 +2,8 @@
 
 [Overview](./overview.md)
 
+- [Getting Started](./getting_started.md)
+
 - [Newton-Cotes method](./newton-cotes.md)
 
   - [Rectangle rule](newton_cotes/rectangle_rule.md)
@@ -21,3 +23,5 @@
   - [Adaptive Simpson](adaptive_quadrature/adaptive_simpson.md)
 
 - [Romberg's method](./romberg.md)
+
+- [Python API](./python_api.md)

@@ -1,10 +1,16 @@
 use num::{Float, Unsigned, Zero};
 
-/// Checks integral arguments for Newton-Codes methods
+/// Validates arguments common to all Newton-Cotes integration methods.
 ///
 /// * `a` - lower limit of the integration interval.
-/// * `b` - lower limit of the integration interval.
-/// * `n` - number of steps.
+/// * `b` - upper limit of the integration interval.
+/// * `n` - number of steps (sub-intervals).
+///
+/// # Panics
+///
+/// - Panics if `n` is zero.
+/// - Panics if `a` or `b` is infinite.
+/// - Panics if `a > b` (the lower limit must not exceed the upper limit).
 pub fn check_newton_method_args<F: Float, U: Unsigned>(a: F, b: F, n: U) {
     if n.is_zero() {
         panic!("number of steps can't be zero");
@@ -19,9 +25,13 @@ pub fn check_newton_method_args<F: Float, U: Unsigned>(a: F, b: F, n: U) {
     }
 }
 
-/// Checks integral arguments for Gauss-Laguerre rule
+/// Validates the degree argument for Gaussian quadrature rules.
 ///
-/// * `n` - number of steps.
+/// * `n` - number of quadrature nodes (must be at least 1).
+///
+/// # Panics
+///
+/// - Panics if `n` is zero.
 pub fn check_gauss_rule_args(n: usize) {
     if n.is_zero() {
         panic!("number of steps can't be zero");

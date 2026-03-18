@@ -1,5 +1,9 @@
 # Trapezoidal rule
 
+## Motivation
+
+The trapezoidal rule approximates a definite integral by replacing the integrand with straight-line segments between adjacent sample points. It is a practical first choice for smooth functions and is the building block for Richardson extrapolation methods such as Romberg's method.
+
 ## Example
 
 ```rust,editable
@@ -33,7 +37,7 @@ Let \\(\int\_{a}^{b} f(x) dx\\) be the integral of \\(f(x)\\) over the closed an
 let \\(T_h(f)\\) be the result of applying the trapezoidal rule with \\(n\\) subintervals of length \\(h\\), i.e.
 
 \\[
-T_h(f) = h \left[ \frac{f(a)}{2} + f(a+h) + ··· + f(b-h) + \frac{f(b)}{2} \right]
+T_h(f) = h \left[ \frac{f(a)}{2} + f(a+h) + \cdots + f(b-h) + \frac{f(b)}{2} \right]
 \\]
 
 The Euler-Maclaurin summation formula relates \\(\int\_{a}^{b} f(x) dx\\) and \\(T_h (f)\\)
@@ -41,7 +45,7 @@ The Euler-Maclaurin summation formula relates \\(\int\_{a}^{b} f(x) dx\\) and \\
 \\[
 \begin{align}
 T_h(f) &= \int\_{a}^{b} f(x) dx + \frac{h^2}{12} \left[f'(b) - f'(a)\right] - \frac{h^4}{720} \left[f^{(3)}(b) - f^{(3)}(a) \right] \\\\
-&+ ... + K h^{2p-2} \left[f^{(2p-3)}(b) - f^{(2p-3)(a)}\right] + O(h^{2p})
+&+ \cdots + K h^{2p-2} \left[f^{(2p-3)}(b) - f^{(2p-3)}(a)\right] + O(h^{2p})
 \end{align}
 \\]
 
@@ -63,13 +67,13 @@ If \\(f\\) is at least twice differentiable on the interval \\(\[a,b\]\\), then 
 \\[
 \begin{align}
 T_h(f) - \int\_{a}^{b} f(x) dx &= \frac{h^2}{12} \left[f^\prime(b) - f^\prime(a) \right] - \frac{h^4}{720} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\\\
-&+ ... + K h^{2p-2} \left[f^{(2p-3)}(b) - f^{(2p-3)(a)} \right] + O(h^{2p})
+&+ \cdots + K h^{2p-2} \left[f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
 \end{align}
 \\]
 
 yields the standard truncation error expression
 \\[
-R\_h(f) - \int\_{a}^{b} f(x) dx = -\frac{h^2}{12} (b - a) f^{\prime\prime}(c)
+T\_h(f) - \int\_{a}^{b} f(x) dx = -\frac{h^2}{12} (b - a) f^{\prime\prime}(c)
 \\]
 
 for some point \\(c\\) where \\(a ≤ c ≤ b\\).
@@ -85,16 +89,20 @@ h = \frac{b-a}{n} < 1
 
 For example, if \\(h = 0.1\\) then
 \\[
-T\_{0.1}(f) = \int\_{a}^{b} f(x) dx - 0.00083 \left[f^\prime(b) - f^\prime(a) \right] + 0.00000014 \left[f^{(3)}(b) - f^{(3)}(a) \right] + ...
+T\_{0.1}(f) = \int\_{a}^{b} f(x) dx - 0.00083 \left[f^\prime(b) - f^\prime(a) \right] + 0.00000014 \left[f^{(3)}(b) - f^{(3)}(a) \right] + \cdots
 \\]
 and if \\(h = 0.01\\) then
 \\[
-T\_{0.01}(f) = \int\_{a}^{b} f(x) dx - 0.0000083 \left[ f^\prime(b) - f^\prime(a) \right] + 0.000000000014 \left[f^{(3)}(b) - f^{(3)}(a)\right] + ...
+T\_{0.01}(f) = \int\_{a}^{b} f(x) dx - 0.0000083 \left[ f^\prime(b) - f^\prime(a) \right] + 0.000000000014 \left[f^{(3)}(b) - f^{(3)}(a)\right] + \cdots
 \\]
 
 while if \\(h=10\\) then
 \\[
-T\_{10}(f) = \int\_{a}^{b} f(x) dx - 8.3333 \left[ f^\prime(b) - f^\prime(a) \right] + 13.89 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + ...
+T\_{10}(f) = \int\_{a}^{b} f(x) dx - 8.3333 \left[ f^\prime(b) - f^\prime(a) \right] + 13.89 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \cdots
 \\]
 
 However, if the function \\(f(x)\\) is linear, then \\(n\\) may be chosen to be \\(1\\).
+
+## Limitations
+
+The trapezoidal rule converges as \\(O(h^2)\\) for general smooth functions. While more accurate than the rectangle rule, it is outperformed by Simpson's rule for smooth integrands. It should not be used for functions with discontinuities or singularities in \\([a, b]\\) without splitting the interval first.

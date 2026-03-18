@@ -1,5 +1,9 @@
 # Simpson's rule
 
+## Motivation
+
+Simpson's rule fits a quadratic polynomial through each pair of subintervals and integrates it exactly, yielding fourth-order convergence for smooth functions. It is one of the most widely used Newton-Cotes formulas and is exact for polynomials of degree three or less.
+
 ## Example
 
 ```rust, editable
@@ -34,7 +38,7 @@ Simpson's rule. Let \\(\int\_{a}^{b} f(x) dx\\) be the integral of \\(f(x)\\) ov
 \\[
 \begin{align}
 S_h(f) &= \frac{h}{6} \left[ f(a) + 4f(a+\frac{h}{2}) + 2f(a+h) \right. \\\\
-& + \left. ··· + 2f(b-h) + 4f(b-\frac{h}{2}) + f(b) \right]
+& + \left. \cdots + 2f(b-h) + 4f(b-\frac{h}{2}) + f(b) \right]
 \end{align}
 \\]
 
@@ -43,7 +47,7 @@ An immediate consequence of the Euler-Maclaurin summation formula relates \\(\in
 \\[
 \begin{align}
 S_h(f) & = \int\_{a}^{b} f(x) dx + \frac{h^4}{2880} \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \frac{h^6}{96768} \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\\\
-& + ··· + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+& + \cdots + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
 \end{align}
 \\]
 
@@ -69,7 +73,7 @@ If \\(f\\) is at least four times differentiable on the interval \\(\[a,b\]\\), 
 \\[
 \begin{align}
 S_h(f) - \int\_{a}^{b}f( x ) dx &= \frac{h^4}{2880} \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \frac{h^6}{96768} \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\\\
-&+ ··· + K h^{(2p - 2)} \left[f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+&+ \cdots + K h^{(2p - 2)} \left[f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
 \end{align}
 \\]
 
@@ -89,8 +93,8 @@ The Euler-Maclaurin summation formula also shows that usually $n$ should be chos
 For example, if \\(h = 0.1\\) then
 \\[
 \begin{align}
-S\_{0.1}(f) & = \int\_{a}^{b} f(x) dx + 3.5 · 10^{-8} \left[ f^{3}(b) - f^{3}(a) \right] \\\\
-& - 1.033 · 10^{-11} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+S\_{0.1}(f) & = \int\_{a}^{b} f(x) dx + 3.5 \cdot 10^{-8} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\\\
+& - 1.033 \cdot 10^{-11} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + \cdots
 \end{align}
 \\]
 
@@ -98,17 +102,21 @@ and if \\(h = 0.01\\) then
 
 \\[
 \begin{split}
-S\_{0.01}(f) & = \int\_{a}^{b} f(x) dx + 3.5 · 10^{-12} \left[ f^{3}(b) - f^{3}(a) \right] \\\\
-& - 1.033 · 10^{-17} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+S\_{0.01}(f) & = \int\_{a}^{b} f(x) dx + 3.5 \cdot 10^{-12} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\\\
+& - 1.033 \cdot 10^{-17} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + \cdots
 \end{split}
 \\]
 
 while if \\(h = 10\\) then
 \\[
 \begin{align}
-S\_{0.01}(f) & = \int\_{a}^{b} f(x) dx + 3.47 \left[ f^{3}(b) - f^{3}(a) \right] \\\\
-& - 10.33 \left[ f^{(5)}(b) - f^{(5)}(a) \right] + ···
+S\_{0.01}(f) & = \int\_{a}^{b} f(x) dx + 3.47 \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\\\
+& - 10.33 \left[ f^{(5)}(b) - f^{(5)}(a) \right] + \cdots
 \end{align}
 \\]
 
-However, if the function \\[f(x)\\] is a cubic, then \\[n\\] may be chosen to be \\[1\\].
+However, if the function \\(f(x)\\) is a cubic, then \\(n\\) may be chosen to be \\(1\\).
+
+## Limitations
+
+Simpson's rule converges as \\(O(h^4)\\) and requires at least twice-differentiable integrands for its error estimate to apply. It is not suitable for functions with discontinuities or singularities without splitting the interval. For functions with highly variable smoothness, prefer the adaptive Simpson method.
