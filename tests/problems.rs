@@ -1,7 +1,6 @@
 use std::{f64::consts::PI, iter::Sum};
 
 use num::Float;
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 const EPSILON: f64 = 10e-4;
 const NUM_STEPS: usize = 100_000;
@@ -464,7 +463,6 @@ pub fn problem24<F: Float + Send + Sum + Sync>() -> Problem<F> {
         let n: i32 = 40;
 
         let sum: F = (1..n)
-            .into_par_iter()
             .map(|i| two.powi(-i) * (seven.powi(i) * pi * x).cos())
             .sum();
 

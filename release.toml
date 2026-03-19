@@ -1,0 +1,30 @@
+# cargo-release configuration
+# Install: cargo install cargo-release
+#
+# Usage:
+#   cargo release patch   # 0.1.11 -> 0.1.12
+#   cargo release minor   # 0.1.11 -> 0.2.0
+#   cargo release major   # 0.1.11 -> 1.0.0
+#
+# Add --execute to actually perform the release (default is dry-run).
+# Example: cargo release patch --execute
+
+# Commit the version bump with this message template.
+commit-message = "chore: release {{crate_name}} v{{version}}"
+
+# Create an annotated tag (e.g. v0.2.0).
+tag = true
+tag-message = "Release v{{version}}"
+
+# Push the commit and tag to origin/main after tagging.
+push = true
+
+# Do not publish directly from cargo-release — let the CI release.yml
+# handle publishing when it detects the v* tag. This keeps the local
+# release step clean and lets CI act as the gatekeeper.
+publish = false
+
+# Update the version field in Cargo.toml.
+pre-release-replacements = [
+  { file = "CHANGELOG.md", search = "## \\[Unreleased\\]", replace = "## [Unreleased]\n\n## [{{version}}] - {{date}}" },
+]

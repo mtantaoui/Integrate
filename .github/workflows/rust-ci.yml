@@ -1,96 +1,115 @@
-name: Rust CI and Documentation
+name: CI
 
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  # Allow release.yml to reuse this workflow as a CI gate before publishing.
+  workflow_call:
+
+# Cancel in-progress runs for the same branch/PR when a new commit is pushed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-and-deploy:
+  # ── Test matrix ────────────────────────────────────────────────────────────
+  test:
+    name: Test (${{ matrix.os }} / ${{ matrix.toolchain }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        toolchain: [stable]
+        include:
+          # MSRV: keep in sync with rust-version in Cargo.toml
+          - os: ubuntu-latest
+            toolchain: "1.74"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust ${{ matrix.toolchain }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Test
+        run: cargo test --verbose
+
+  # ── Lint ───────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
-      # Since you can't use actions/checkout, you'll need an internal version or use git commands directly
-      - name: Checkout code
-        run: |
-          git init
-          git remote add origin https://github.com/${{ github.repository }}.git
-          git fetch
-          git checkout -f ${{ github.sha }}
+      - uses: actions/checkout@v4
 
-      # Install Rust
-      - name: Install Rust
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          source $HOME/.cargo/env
-          rustup default stable
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      # Run tests
-      - name: Run tests
-        run: |
-          cargo build --verbose
-          cargo test --verbose
-
-      # Format code
-      - name: Format code
-        run: |
-          rustup component add rustfmt
-          cargo fmt --all --check
-
-      # Install mdBook manually
-      - name: Install mdBook
-        run: |
-          cargo install mdbook
-
-      # Build documentation
-      - name: Build mdBook
-        run: |
-          # Detect the mdBook directory
-          if [ -d "book" ]; then
-            mdbook build book
-            echo "PUBLISH_DIR=./book/book" >> $GITHUB_ENV
-          else
-            echo "ERROR: Could not find mdBook directory"
-            ls -la
-            exit 1
-          fi
-
-      - name: Ensure gh-pages Branch Exists
-        run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git fetch origin gh-pages || git checkout --orphan gh-pages
-          git reset --hard
-          git clean -fd
-          git commit --allow-empty -m "Initialize gh-pages branch" || true
-          git push origin gh-pages || true
-
-      # Deploy to GitHub Pages without using third-party actions
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Install Rust stable (rustfmt + clippy)
+        uses: dtolnay/rust-toolchain@stable
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./book/book
-          publish_branch: gh-pages
+          components: rustfmt, clippy
 
-  publish:
-    name: Publish
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+  # ── Python bindings ────────────────────────────────────────────────────────
+  test-python:
+    name: Test Python bindings
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+      - name: Install Rust stable
+        if: hashFiles('python/Cargo.toml') != ''
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        if: hashFiles('python/Cargo.toml') != ''
+
+      - name: Set up Python
+        if: hashFiles('python/Cargo.toml') != ''
+        uses: actions/setup-python@v5
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
+          python-version: "3.12"
 
-      - run: cargo publish --token ${CRATE_TOKEN}
-        env:
-          CRATE_TOKEN: ${{ secrets.CRATE_TOKEN }}
+      - name: Install Python dependencies
+        if: hashFiles('python/Cargo.toml') != ''
+        run: pip install maturin pytest pytest-benchmark scipy numpy
+
+      - name: Build and install integrate-py
+        if: hashFiles('python/Cargo.toml') != ''
+        working-directory: python
+        run: maturin develop
+
+      - name: Run correctness tests
+        if: hashFiles('python/Cargo.toml') != ''
+        run: pytest python/tests/test_integrate.py -v -k "not bench"
+
+  # ── Docs ───────────────────────────────────────────────────────────────────
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build rustdoc
+        run: cargo doc --no-deps

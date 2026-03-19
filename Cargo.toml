@@ -5,7 +5,7 @@ edition = "2021"
 
 authors = ["Mahdi Tantaoui <mohamedalmahdi.tantaoui@gmail.com>"]
 description = " Small, lightweight Rust library for performing numerical integration."
-rust-version = "1.63"
+rust-version = "1.74"
 license = "MIT"
 repository = "https://github.com/mtantaoui/Integrate"
 documentation = "https://docs.rs/integrate/"
@@ -17,10 +17,7 @@ keywords = ["math", "integral", "Gauss", "performance",  "Numerical"]
 itertools = "0.13.0"
 num = "0.4.1"
 num-traits = "0.2.18"
-rayon = "1.10.0"
 
-[dev-dependencies]
-time-graph = { version = "0.3.1", features = ["json", "table"] }
 
 
 [package.metadata.docs.rs]

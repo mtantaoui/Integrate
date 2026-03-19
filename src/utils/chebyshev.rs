@@ -1,7 +1,6 @@
 use std::{f64::consts::PI, fmt::Debug, marker::PhantomData, ops::AddAssign};
 
 use num::{one, Float, Zero};
-use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
 use super::orthogonal_polynomials::OrthogonalPolynomial;
 
@@ -17,6 +16,11 @@ struct ChebyshevSecondKind<F: Float> {
     _x: PhantomData<F>,
 }
 
+/// Returns `(zeros, weights)` for the $n$-point Gauss-Chebyshev quadrature
+/// rule of the **first kind** (weight function $w(x) = 1/\sqrt{1-x^2}$).
+///
+/// The zeros are the roots of $T_n(x)$ and the weights are all equal:
+/// $$w_k = \frac{\pi}{n}, \quad k = 1, \ldots, n$$
 pub fn roots_first_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
     n: usize,
 ) -> (Vec<F>, Vec<F>) {
@@ -30,7 +34,7 @@ pub fn roots_first_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
 
     let warn = zeros
         .as_slice()
-        .into_par_iter()
+        .iter()
         .zip(weights.as_slice())
         .any(|(zero, weight)| (*zero).is_nan() || (*weight).is_nan());
 
@@ -43,6 +47,11 @@ pub fn roots_first_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
     (zeros, weights)
 }
 
+/// Returns `(zeros, weights)` for the $n$-point Gauss-Chebyshev quadrature
+/// rule of the **second kind** (weight function $w(x) = \sqrt{1-x^2}$).
+///
+/// The zeros are the roots of $U_n(x)$ and the weights are
+/// $$w_k = \frac{\pi}{n+1} \sin^2\left(\frac{k\pi}{n+1}\right), \quad k = 1, \ldots, n$$
 pub fn roots_second_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
     n: usize,
 ) -> (Vec<F>, Vec<F>) {
@@ -53,7 +62,6 @@ pub fn roots_second_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
     let pi = F::from(PI).unwrap();
 
     let weights: Vec<F> = (1..=u_n.degree)
-        .into_par_iter()
         .map(|i| {
             let i = F::from(i).unwrap();
 
@@ -71,7 +79,7 @@ pub fn roots_second_kind_chebyshev<F: Float + Debug + Sync + Send + AddAssign>(
 
     let warn = zeros
         .as_slice()
-        .into_par_iter()
+        .iter()
         .zip(weights.as_slice())
         .any(|(zero, weight)| (*zero).is_nan() || (*weight).is_nan());
 
@@ -93,6 +101,7 @@ impl<F: Float + Debug + AddAssign + Send + Sync> OrthogonalPolynomial<F> for Che
     }
 
     fn eval(&self, x: F) -> F {
+        // T_n(x) = cos(n * arccos(x))
         let theta = x.acos();
         let n = F::from(self.degree).unwrap();
 
@@ -108,8 +117,8 @@ impl<F: Float + Debug + AddAssign + Send + Sync> OrthogonalPolynomial<F> for Che
         let pi = F::from(PI).unwrap();
         let two = F::one() + F::one();
 
+        // x_k = cos((2k-1)*pi / (2n)),  k = 1, ..., n
         let zeros: Vec<F> = (1..=self.degree)
-            .into_par_iter()
             .map(|i| {
                 let i = F::from(i).unwrap();
 
@@ -137,6 +146,7 @@ impl<F: Float + Debug + AddAssign + Send + Sync> OrthogonalPolynomial<F>
     }
 
     fn eval(&self, x: F) -> F {
+        // U_n(x) = sin((n+1)*arccos(x)) / sin(arccos(x))
         let theta = x.acos();
         let n = F::from(self.degree).unwrap();
 
@@ -154,8 +164,8 @@ impl<F: Float + Debug + AddAssign + Send + Sync> OrthogonalPolynomial<F>
         let n = F::from(self.degree).unwrap();
         let pi = F::from(PI).unwrap();
 
+        // x_k = cos(k*pi / (n+1)),  k = 1, ..., n
         let zeros: Vec<F> = (1..=self.degree)
-            .into_par_iter()
             .map(|i| {
                 let i = F::from(i).unwrap();
 

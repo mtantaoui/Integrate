@@ -1,79 +1,43 @@
+//! Romberg's method for numerical integration via Richardson extrapolation.
+//!
+//! Builds a triangular table of trapezoidal estimates at successively halved
+//! step sizes, then applies Richardson extrapolation column by column to
+//! accelerate convergence. The final entry $R[n-1, n-1]$ has error $O(h^{2n})$
+//! for smooth integrands.
+
 use num::{Float, ToPrimitive, Unsigned};
 
-use rayon::prelude::*;
+use crate::utils::checkers::check_newton_method_args;
 
-use std::collections::HashMap;
-
-use std::hash::Hash;
-
-use std::sync::Mutex;
-
-use crate::newton_cotes::trapezoidal_rule;
-
-/// Computes elements of Romberg's matrix recursively given
-/// row's and column's index
+/// Approximates $\int_a^b f(x)\\,dx$ using Romberg's method.
 ///
-/// * n: Romberg's matrix requested element row index.
-/// * m: Romberg's matrix requested element column index.
-/// * cache: Storing computed values (shared between threads)
-fn romberg<U, F>(
-    n: U,
-    m: U,
-    trapezoids: &[F],
-    cache: &Mutex<HashMap<(U, U), F>>, // Shared mutable cache
-) -> F
-where
-    U: Unsigned + ToPrimitive + Send + Copy + Sync + std::hash::Hash + Eq,
-    F: Float + Send + Sync,
-{
-    // Base case
-    if m.is_zero() {
-        let index = n.to_usize().unwrap();
-        return trapezoids[index];
-    }
-
-    // Check the cache
-    {
-        let cache_guard = cache.lock().unwrap();
-        if let Some(&value) = cache_guard.get(&(n, m)) {
-            return value;
-        }
-    }
-
-    let one: U = num::one();
-
-    // Compute R[n, m] recursively
-    let (r_n_m_minus_1, r_n_1_m_1) = rayon::join(
-        || romberg(n, m - one, trapezoids, cache),
-        || romberg(n - one, m - one, trapezoids, cache),
-    );
-
-    let [coef0, coef1]: [F; 2] = romberg_coefficients(m);
-    let result = coef1 * r_n_m_minus_1 - coef0 * r_n_1_m_1;
-
-    // Store in cache
-    {
-        let mut cache_guard = cache.lock().unwrap();
-        cache_guard.insert((n, m), result);
-    }
-
-    result
-}
-
-/// Approximates the integral of $f(x)$ on $\left[ a, b \right]$ using $T_h(f)$.
+/// Romberg's method builds a triangular extrapolation table from trapezoidal
+/// estimates at step sizes $h, h/2, h/4, \ldots$ The bottom-right entry
+/// $R[n-1, n-1]$ gives the best estimate.
 ///
-/// If $T_h(f)$ is the result of applying the trapezoidal rule to approximating
-/// the integral of $f(x)$ on $\[a, b\]$ using subintervals of length $h$,   
-/// and if $\int_{a}^{b} f(x) dx$ is the integral of $f(x)$ on $\[a,b\]$, then
-/// ```math
-/// \int_{a}^{b} f(x) dx = \lim_{h \to 0}  T_h(f)
-/// ```
-/// where the limit is taken as h approaches 0.    
-///                          
-/// The classical Romberg method applies Richardson Extrapolation to the
-/// limit of the sequence $T_h(f), T_{\frac{h}{2}}(f), T_{\frac{h}{4}}(f), ... ,$
-/// in which the limit is approached by successively deleting error terms
-/// in the Euler-MacLaurin summation formula.  
+/// # Algorithm
+///
+/// **Phase 1 – first column.**  $R[0, 0]$ is the single-interval trapezoid.
+/// Each subsequent row reuses the previous estimate and adds only the
+/// $2^{i-1}$ new midpoints, so the total number of function evaluations is
+/// $2^{n-1} + 1$ (not $O(n \cdot 2^n)$):
+/// $$R[i, 0] = \tfrac{1}{2} R[i-1, 0] + h_i \sum_{k=0}^{2^{i-1}-1} f\!\left(a + (2k+1)h_i\right)$$
+///
+/// **Phase 2 – Richardson extrapolation.**  Fill left to right:
+/// $$R[i, j] = \frac{4^j \, R[i, j-1] - R[i-1, j-1]}{4^j - 1}$$
+///
+/// Only two rows are kept in memory at any time.
+///
+/// # Parameters
+/// * `func`        – integrand $f$, a function of a single variable.
+/// * `lower_limit` – lower bound $a$ of the integration interval.
+/// * `upper_limit` – upper bound $b$ of the integration interval.
+/// * `n_columns`   – number of extrapolation columns; the method uses $2^{n-1}+1$
+///   function evaluations and achieves $O(h^{2n})$ accuracy for smooth $f$.
+///
+/// # Panics
+/// Panics if `n_columns` is zero, either limit is non-finite, or
+/// `lower_limit > upper_limit`.
 ///
 /// # Examples
 /// ```
@@ -91,76 +55,58 @@ where
 ///
 /// let integral = romberg_method(square, a, b, num_steps);
 /// ```
-/// # Inputs
-/// * `func` - Integrand function of a single variable.
-/// * `lower_limit` - lower limit of the integration interval.
-/// * `upper_limit` - upper limit of the integration interval.
-/// * `n_columns` - number of columns to be used in the Romberg method (columns of the Romberg Matrix).
-///
-/// This corresponds to a minimum integration subintervals of of length $\dfrac{1}{2^n} * h$
-///
 ///
 /// # Resources
 /// * [Methods of numerical Integration (2nd edition), by Philip J. Davis and Philip Rabinowitz.](https://www.cambridge.org/core/journals/mathematical-gazette/article/abs/methods-of-numerical-integration-2nd-edition-by-philip-j-davis-and-philip-rabinowitz-pp-612-3650-1984-isbn-0122063600-academic-press/C331158D0392E1D5CD9B0C6ED4EE5F43)
 /// * [Romberg's method](https://en.wikipedia.org/wiki/Romberg%27s_method)
-pub fn romberg_method<
-    Func,
-    F1: Float + Sync,
-    F2: Float + Sync + Send,
-    U: Unsigned + ToPrimitive + Copy + Send + Sync + Hash + Eq,
->(
+pub fn romberg_method<Func, F1, F2, U>(
     func: Func,
     lower_limit: F1,
     upper_limit: F1,
     n_columns: U,
 ) -> f64
 where
-    Func: Fn(F1) -> F2 + Sync + Send + Copy,
+    F1: Float,
+    F2: Float,
+    U: Unsigned + ToPrimitive + Copy,
+    Func: Fn(F1) -> F2,
 {
-    // first columm of romberg table
-    // calculated using trapezoid rule
-    let mut trapezoidals: Vec<F2> = Vec::with_capacity(n_columns.to_usize().unwrap());
+    check_newton_method_args(lower_limit, upper_limit, n_columns);
 
-    // initializing first column of the romberg's matrix using trapezoid rule
-    (0..n_columns.to_usize().unwrap())
-        .into_par_iter()
-        .map(|i| {
-            let pow_2 = 2_usize.pow(i.try_into().unwrap()); // 2 ** i
-            let trapezoidal = trapezoidal_rule(func, lower_limit, upper_limit, pow_2);
-            F2::from(trapezoidal).unwrap()
-        })
-        .collect_into_vec(&mut trapezoidals);
+    let n = n_columns.to_usize().unwrap();
+    let a = lower_limit.to_f64().unwrap();
+    let b = upper_limit.to_f64().unwrap();
+    let h0 = b - a;
 
-    // Storing computed values (shared between threads)
-    let cache: Mutex<HashMap<(U, U), F2>> = Mutex::new(HashMap::new());
+    // Wrap func to work in f64.
+    let f = |x: f64| func(F1::from(x).unwrap()).to_f64().unwrap();
 
-    let integral = romberg(
-        n_columns - num::one(),
-        n_columns - num::one(),
-        trapezoidals.as_slice(),
-        &cache,
-    );
+    // Rolling two-row buffer: prev = row i-1, curr = row i.
+    let mut prev = vec![0.0_f64; n];
+    let mut curr = vec![0.0_f64; n];
 
-    integral.to_f64().unwrap()
-}
+    // R[0, 0]: single-interval trapezoidal estimate.
+    prev[0] = 0.5 * h0 * (f(a) + f(b));
 
-/// Returns coefficients to be used in the Richardson extrapolation for computing
-/// Romberg's matrix elements
-/// * `m` - order of convergence of Richardson extrapolation.
-fn romberg_coefficients<F: Float, U: Unsigned + ToPrimitive>(m: U) -> [F; 2] {
-    let m = m.to_i32().unwrap();
+    for i in 1..n {
+        let num_new = 1_usize << (i - 1); // 2^(i-1) new midpoints
+        let h = h0 / (2 * num_new) as f64; // step size at level i
 
-    let one = F::from(1.0).unwrap(); // 1
+        // R[i, 0]: reuse prev[0] and add only the new midpoints.
+        let new_sum: f64 = (0..num_new).map(|k| f(a + (2 * k + 1) as f64 * h)).sum();
+        curr[0] = 0.5 * prev[0] + h * new_sum;
 
-    let _4_m = F::from(4.0.powi(m)).unwrap(); // 4^m
-    let _4_m_minus_1 = F::from(4.0.powi(m) - 1.0).unwrap(); // 4^m - 1
+        // Richardson extrapolation: fill columns 1..=i.
+        let mut factor = 4.0_f64; // 4^j, starting at j=1
+        for j in 1..=i {
+            curr[j] = (factor * curr[j - 1] - prev[j - 1]) / (factor - 1.0);
+            factor *= 4.0;
+        }
 
-    let denominator = one.div(_4_m_minus_1); // 1 / (4^m - 1)
+        std::mem::swap(&mut prev, &mut curr);
+    }
 
-    [
-        denominator,        // 1 / (4^m - 1)
-        _4_m * denominator, // 4^m / (4^m - 1)
-    ]
+    prev[n - 1]
 }
 
 #[cfg(test)]
@@ -168,7 +114,6 @@ mod tests {
     use std::ops::Div;
 
     use super::*;
-    // use test::Bencher;
 
     const EPSILON: f64 = 10e-5;
     const NUM_STEPS: usize = 10;
@@ -191,7 +136,6 @@ mod tests {
 
     #[test]
     fn test_f32_to_f64() {
-        // f32 to f64
         fn square(x: f32) -> f64 {
             x.powi(2) as f64
         }
@@ -208,7 +152,6 @@ mod tests {
 
     #[test]
     fn test_f64_to_f32() {
-        // f64 to f32
         fn square(x: f64) -> f32 {
             x.powi(2) as f32
         }
@@ -225,7 +168,6 @@ mod tests {
 
     #[test]
     fn test_f32_to_f32() {
-        // f32 to f32
         fn square(x: f32) -> f32 {
             x.powi(2)
         }
