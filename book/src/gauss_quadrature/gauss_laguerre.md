@@ -1,5 +1,9 @@
 # Gauss-Laguerre
 
+## Motivation
+
+Gauss-Laguerre quadrature is designed for integrals of the form \\(\int_0^{+\infty} f(x)\\,e^{-x}\\,dx\\), where the exponential decay naturally arises in probability distributions, physics, and engineering problems. By using the zeros and weights of Laguerre polynomials, the method achieves high accuracy with far fewer function evaluations than general-purpose rules on a truncated domain.
+
 ## Example
 
 ```rust,editable
@@ -42,3 +46,7 @@ where \\(x_i\\), \\(i = 1,\dots,n\\), are the zeros of \\(L_n\\) and
 \\[
 A_i = \dfrac{n!^2}{ x_i L\_{n-1} (x_i)^2} \quad \text{for} \quad i = 1,\dots,n
 \\]
+
+## Limitations
+
+Gauss-Laguerre quadrature is only appropriate for integrals of the form \\(\int_0^{+\infty} f(x)\\,e^{-x}\\,dx\\). If the integrand does not have exponential decay, the method will produce inaccurate results. It is also not suitable for integrands defined on finite intervals or on the full real line.

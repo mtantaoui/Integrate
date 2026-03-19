@@ -1,3 +1,9 @@
+//! Adaptive Simpson quadrature for numerical integration.
+//!
+//! Unlike fixed-step methods, adaptive quadrature automatically refines the
+//! step size in regions where the integrand varies rapidly, achieving a
+//! user-specified tolerance with fewer function evaluations.
+
 use std::{
     fmt,
     ops::{AddAssign, MulAssign},
@@ -9,28 +15,32 @@ use crate::utils::adaptive_simpson::{simpson_rule_update, AdaptiveSimpsonError, 
 
 type Result<T> = std::result::Result<T, AdaptiveSimpsonError>;
 
-/// Simpson-Simpson adaptive method
+/// Numerically integrates $f$ over $[a, b]$ using the adaptive Simpson method.
 ///
-/// Integrate, using the Simpson-Simpson adaptive method, the user supplied function $f$ from $a$ to $b$.
+/// Starting at the left endpoint $a$, the algorithm finds the minimum power of 2, $m$,
+/// such that the difference between the single-interval Simpson estimate and the
+/// composite (two sub-subintervals) Simpson estimate on $\left[a,\\, a+\frac{b-a}{2^m}\right]$
+/// is less than the pro-rated tolerance:
 ///
-/// * `func` - Integrand function of a single variable.
-/// * `lower_limit` is the lower limit of integration.
-/// * `upper_limit`  is the upper limit of integration where `upper_limit` > `lower_limit`.
-/// * `tolerance` is the tolerance.
-/// * `min_h` is the minimum subinterval length to be used.
+/// $$2 \cdot \texttt{tolerance} \cdot \frac{\text{length of subinterval}}{b - a}$$
 ///
-/// Starting at the left-end point, `a`, find the min power of 2, $m$,
-/// so that the difference between using Simpson's rule and the composite Simpson's
-/// rule on the interval $\[a, a+\frac{b-a}{2^m}\]$ is less than
-/// $$ 2 * \verb|tolerance| * \frac{\text{length of the subinterval}}{b-a}$$
+/// The process then repeats for the remaining interval $\left[a + \frac{b-a}{2^m},\\, b\right]$,
+/// advancing until the right endpoint $b$ is reached.  The integral is the sum of the
+/// accepted subinterval estimates.
 ///
-/// Then repeat the process for integrating over the interval $\[a + \frac{b-a}{2^m}, b\]$ until the right
-/// end point, b, is finally reached.
+/// # Parameters
 ///
-/// The integral is then the sum of the integrals of each subinterval.  If at any time,
-/// the length of the subinterval for which the estimates based on Simpson's rule and
-/// the composite Simpson's rule is less than `min_h`, the process is terminated with an
-/// `AdaptiveSimpsonError` error.
+///  * `func` — Integrand $f$; a single-variable function.
+///  * `lower_limit` — Lower limit of integration $a$.
+///  * `upper_limit` — Upper limit of integration $b$; must satisfy `upper_limit > lower_limit`.
+///  * `min_h` — Minimum allowed subinterval length; must be a positive finite float.
+///  * `tolerance` — Desired absolute error bound; must be a positive finite float.
+///
+/// # Errors
+///
+/// Returns `Err(AdaptiveSimpsonError)` if a subinterval of length `min_h` is reached before the
+/// tolerance is satisfied. This typically means the integrand has a singularity or varies too
+/// rapidly — try increasing `tolerance` or decreasing `min_h`.
 ///
 /// # Examples
 /// ```

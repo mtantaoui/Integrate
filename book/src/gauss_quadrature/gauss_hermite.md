@@ -1,5 +1,9 @@
 # Gauss Hermite
 
+## Motivation
+
+Gauss-Hermite quadrature is designed for integrals of the form \\(\int_{-\infty}^{+\infty} f(x)\\,e^{-x^2}\\,dx\\), which appear naturally in quantum mechanics, probability theory (Gaussian distributions), and signal processing. By exploiting the orthogonality of Hermite polynomials, it provides exponential convergence for smooth integrands with Gaussian-type decay.
+
 ## Example
 
 ```rust,editable
@@ -15,18 +19,18 @@ println!("{}",integral);
 
 ## Understanding Gauss-Hermite rule
 
-Gauss-Hermite quadrature formulas are used to integrate functions \\(f(x) e^{x^2}\\) from \\(-\infty\\) to \\(+\infty\\).
+Gauss-Hermite quadrature formulas are used to integrate functions \\(f(x) e^{-x^2}\\) from \\(-\infty\\) to \\(+\infty\\).
 
 With respect to the inner product
 
 \\[
-\langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) * g(x) * w(x) dx
+\langle f,g \rangle = \int_{-\infty}^{+\infty} f(x) \cdot g(x) \cdot w(x) \, dx
 \\]
 
 the Hermite polynomials
 
 \\[
-H_n(x) = (-1)^n * e^{x^2}* \frac{\partial^{n} e^{-x^2}}{\partial x^n} \quad \text{for} \quad n > 0
+H_n(x) = (-1)^n \cdot e^{x^2} \cdot \frac{\partial^{n} e^{-x^2}}{\partial x^n} \quad \text{for} \quad n > 0
 \\]
 
 and \\(H_0(x) = 1\\) form an orthogonal family of polynomials with weight function \\(w(x) = e^{-x^2}\\) on the entire \\(x\\)-axis.
@@ -34,11 +38,15 @@ and \\(H_0(x) = 1\\) form an orthogonal family of polynomials with weight functi
 The \\(n\\)-point Gauss-Hermite quadrature formula, \\(GH_n ( f(x) )\\), for approximating the integral of \\(f(x) e^{-x^2}\\) over the entire \\(x\\)-axis, is given by
 
 \\[
-GH_n ( f(x) ) = A_1 f(x_1) + ··· + A_n f(x_n)
+GH_n ( f(x) ) = A_1 f(x_1) + \cdots + A_n f(x_n)
 \\]
 
-where \\(x_i\\) , for \\(i = 1,...,n\\), are the zeros of \\(H_n\\) and
+where \\(x_i\\), for \\(i = 1,\ldots,n\\), are the zeros of \\(H_n\\) and
 
 \\[
-A_i = \frac{2^{n+1} * n! * \sqrt{\pi}}{H_{n-1} (x_i)^2} \quad \text{for} \quad i = 1,...,n
+A_i = \frac{2^{n+1} \cdot n! \cdot \sqrt{\pi}}{H_{n-1} (x_i)^2} \quad \text{for} \quad i = 1,\ldots,n
 \\]
+
+## Limitations
+
+Gauss-Hermite quadrature is only appropriate for integrals of the form \\(\int_{-\infty}^{+\infty} f(x)\\,e^{-x^2}\\,dx\\). If the integrand does not have Gaussian decay, the method will produce inaccurate results. It is not suitable for integrands on finite intervals or those with non-Gaussian tail behavior.

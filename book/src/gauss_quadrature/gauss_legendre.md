@@ -84,6 +84,10 @@ The truncation error is
 
 where \\(K\\) is a constant, and \\(c\\) is some unknown number that verifies \\(a < c < b\\).
 
+## Limitations
+
+Gauss-Legendre quadrature is best suited for smooth functions on finite intervals. It is not appropriate for functions with singularities, discontinuities, or functions defined on unbounded domains. Rapidly oscillating functions may also require specialized treatment or a very large number of nodes \\(n\\).
+
 ## References:
 
 Original C++ code implemented by **Ignace Bogaert**.
@@ -92,7 +96,6 @@ The main features of this software are:
 
 - **Speed**: due to the simple formulas and the \\(O(1)\\) complexity computation of
   individual Gauss-Legendre quadrature nodes and weights.
-  This makes it compatible with parallel computing paradigms.
 - **Accuracy**: the error on the nodes and weights is within a few ulps.
 
 ### Ignace Bogaert's Paper:
