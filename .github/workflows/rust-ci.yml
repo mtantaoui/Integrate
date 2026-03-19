@@ -93,7 +93,7 @@ jobs:
       - name: Build and install integrate-py
         if: hashFiles('python/Cargo.toml') != ''
         working-directory: python
-        run: maturin develop
+        run: maturin build --release && pip install target/wheels/*.whl
 
       - name: Run correctness tests
         if: hashFiles('python/Cargo.toml') != ''
