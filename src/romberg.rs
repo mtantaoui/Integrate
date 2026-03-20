@@ -183,14 +183,14 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "Integral limits a and b can't be NaN")]
     fn test_lower_limit_nan() {
         fn f(x: f64) -> f64 { x }
         let _ = romberg_method(f, f64::NAN, 1.0, 1usize);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "Integral limits a and b can't be NaN")]
     fn test_upper_limit_nan() {
         fn f(x: f64) -> f64 { x }
         let _ = romberg_method(f, 0.0, f64::NAN, 1usize);
