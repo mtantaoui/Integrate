@@ -372,6 +372,19 @@ mod rectangle_rule_tests {
     //         rectangle_rule(f1, a, b, NUM_STEPS);
     //     })
     // }
+    #[test]
+    #[should_panic]
+    fn test_lower_limit_nan(){
+        fn f(x: f64) -> f64 { x }
+        let _ = rectangle_rule(f, f64::NAN, 1.0, 1usize);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_upper_limit_nan(){
+        fn f(x: f64) -> f64 { x }
+        let _ = rectangle_rule(f, 0.0, f64::NAN, 1usize);
+    }
 }
 
 #[cfg(test)]
@@ -462,6 +475,19 @@ mod trapezoidal_rule_tests {
     //         trapezoidal_rule(f1, a, b, NUM_STEPS);
     //     })
     // }
+    #[test]
+    #[should_panic]
+    fn test_lower_limit_nan(){
+        fn f(x: f64) -> f64 { x }
+        let _ = trapezoidal_rule(f, f64::NAN, 1.0, 1usize);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_upper_limit_nan(){
+        fn f(x: f64) -> f64 { x }
+        let _ = trapezoidal_rule(f, 0.0, f64::NAN, 1usize);
+    }
 }
 
 #[cfg(test)]
@@ -553,6 +579,20 @@ mod simpson_rule_tests {
     //         simpson_rule(f1, a, b, NUM_STEPS);
     //     })
     // }
+
+    #[test]
+    #[should_panic]
+    fn test_lower_limit_nan(){
+        fn f(x: f64) -> f64 { x }
+        let _ = simpson_rule(f, f64::NAN, 1.0, 1usize);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_upper_limit_nan(){
+        fn f(x: f64) -> f64 { x }
+        let _ = simpson_rule(f, 0.0, f64::NAN, 1usize);
+    }
 }
 
 #[cfg(test)]
@@ -644,4 +684,18 @@ mod newton_rule_tests {
     //         newton_rule(f1, a, b, NUM_STEPS);
     //     })
     // }
+
+    #[test]
+    #[should_panic]
+    fn test_lower_limit_nan(){
+        fn f(x: f64) -> f64 { x }
+        let _ = newton_rule(f, f64::NAN, 1.0, 1usize);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_upper_limit_nan(){
+        fn f(x: f64) -> f64 { x }
+        let _ = newton_rule(f, 0.0, f64::NAN, 1usize);
+    }
 }
