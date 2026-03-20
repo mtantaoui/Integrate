@@ -9,7 +9,7 @@ use num::{Float, Unsigned, Zero};
 /// # Panics
 ///
 /// - Panics if `n` is zero.
-/// - Panics if `a` or `b` is infinite.
+/// - Panics if `a` or `b` is infinite or NaN.
 /// - Panics if `a > b` (the lower limit must not exceed the upper limit).
 pub fn check_newton_method_args<F: Float, U: Unsigned>(a: F, b: F, n: U) {
     if n.is_zero() {
@@ -18,6 +18,10 @@ pub fn check_newton_method_args<F: Float, U: Unsigned>(a: F, b: F, n: U) {
 
     if a.is_infinite() | b.is_infinite() {
         panic!("Integral limits a and b can't be infinite");
+    }
+
+    if a.is_nan() || b.is_nan() {
+        panic!("Integral limits a and b can't be NaN");
     }
 
     if a > b {
