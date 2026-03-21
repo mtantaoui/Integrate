@@ -75,8 +75,14 @@ pub fn adaptive_simpson_method<Func, F: Float + MulAssign + AddAssign + fmt::Deb
 where
     Func: Fn(F) -> F + Sync + Copy,
 {
-    assert!(min_h > F::zero() && min_h.is_finite(), "min_h must be positive and finite");
-    assert!(tolerance > F::zero() && tolerance.is_finite(), "tolerance must be positive and finite");
+    assert!(
+        min_h > F::zero() && min_h.is_finite(),
+        "min_h must be positive and finite"
+    );
+    assert!(
+        tolerance > F::zero() && tolerance.is_finite(),
+        "tolerance must be positive and finite"
+    );
     let two = F::one() + F::one();
 
     let mut integral: F = F::zero();
