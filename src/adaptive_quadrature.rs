@@ -36,6 +36,11 @@ type Result<T> = std::result::Result<T, AdaptiveSimpsonError>;
 ///  * `min_h` — Minimum allowed subinterval length; must be a positive finite float.
 ///  * `tolerance` — Desired absolute error bound; must be a positive finite float.
 ///
+/// # Panics
+///
+/// - Panics if `min_h` is zero, negative, infinite, or NaN.
+/// - Panics if `tolerance` is zero, negative, infinite, or NaN.
+///
 /// # Errors
 ///
 /// Returns `Err(AdaptiveSimpsonError)` if a subinterval of length `min_h` is reached before the
@@ -75,6 +80,14 @@ pub fn adaptive_simpson_method<Func, F: Float + MulAssign + AddAssign + fmt::Deb
 where
     Func: Fn(F) -> F + Sync + Copy,
 {
+    assert!(
+        min_h > F::zero() && min_h.is_finite(),
+        "min_h must be positive and finite"
+    );
+    assert!(
+        tolerance > F::zero() && tolerance.is_finite(),
+        "tolerance must be positive and finite"
+    );
     let two = F::one() + F::one();
 
     let mut integral: F = F::zero();

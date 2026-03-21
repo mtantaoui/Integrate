@@ -120,3 +120,73 @@ fn test_f64_problems() {
         test_problem_f64(problem);
     }
 }
+
+#[test]
+#[should_panic(expected = "min_h must be positive and finite")]
+fn test_min_h_zero() {
+    let f = |x: f64| x.exp();
+    let _ = adaptive_simpson_method(f, 0.0, 1.0, 0.0, 0.1);
+}
+
+#[test]
+#[should_panic(expected = "min_h must be positive and finite")]
+fn test_min_h_negative_infinite() {
+    let f = |x: f64| x.exp();
+    let _ = adaptive_simpson_method(f, 0.0, 1.0, f64::NEG_INFINITY, 0.1);
+}
+
+#[test]
+#[should_panic(expected = "min_h must be positive and finite")]
+fn test_min_h_positive_infinite() {
+    let f = |x: f64| x.exp();
+    let _ = adaptive_simpson_method(f, 0.0, 1.0, f64::INFINITY, 0.1);
+}
+
+#[test]
+#[should_panic(expected = "min_h must be positive and finite")]
+fn test_min_h_nan() {
+    let f = |x: f64| x.exp();
+    let _ = adaptive_simpson_method(f, 0.0, 1.0, f64::NAN, 0.1);
+}
+
+#[test]
+#[should_panic(expected = "tolerance must be positive and finite")]
+fn test_tolerance_zero() {
+    let f = |x: f64| x.exp();
+    let _ = adaptive_simpson_method(f, 0.0, 1.0, 0.1, 0.0);
+}
+
+#[test]
+#[should_panic(expected = "tolerance must be positive and finite")]
+fn test_tolerance_negative_infinite() {
+    let f = |x: f64| x.exp();
+    let _ = adaptive_simpson_method(f, 0.0, 1.0, 0.1, f64::NEG_INFINITY);
+}
+
+#[test]
+#[should_panic(expected = "tolerance must be positive and finite")]
+fn test_tolerance_positive_infinite() {
+    let f = |x: f64| x.exp();
+    let _ = adaptive_simpson_method(f, 0.0, 1.0, 0.1, f64::INFINITY);
+}
+
+#[test]
+#[should_panic(expected = "tolerance must be positive and finite")]
+fn test_tolerance_nan() {
+    let f = |x: f64| x.exp();
+    let _ = adaptive_simpson_method(f, 0.0, 1.0, 0.1, f64::NAN);
+}
+
+#[test]
+#[should_panic(expected = "min_h must be positive and finite")]
+fn test_min_h_negative() {
+    let f = |x: f64| x.exp();
+    let _ = adaptive_simpson_method(f, 0.0, 1.0, -1e-3, 0.1);
+}
+
+#[test]
+#[should_panic(expected = "tolerance must be positive and finite")]
+fn test_tolerance_negative() {
+    let f = |x: f64| x.exp();
+    let _ = adaptive_simpson_method(f, 0.0, 1.0, 0.1, -1e-6);
+}
