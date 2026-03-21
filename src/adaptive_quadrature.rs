@@ -36,6 +36,11 @@ type Result<T> = std::result::Result<T, AdaptiveSimpsonError>;
 ///  * `min_h` — Minimum allowed subinterval length; must be a positive finite float.
 ///  * `tolerance` — Desired absolute error bound; must be a positive finite float.
 ///
+/// # Panics
+///
+/// - Panics if `min_h` is zero, negative, infinite, or NaN.
+/// - Panics if `tolerance` is zero, negative, infinite, or NaN.
+///
 /// # Errors
 ///
 /// Returns `Err(AdaptiveSimpsonError)` if a subinterval of length `min_h` is reached before the
