@@ -41,3 +41,32 @@ pub fn check_gauss_rule_args(n: usize) {
         panic!("number of steps can't be zero");
     }
 }
+
+/// Validates arguments for Gaussian quadrature rules that integrate over a
+/// finite interval $[a, b]$.
+///
+/// * `a` - lower limit of integration.
+/// * `b` - upper limit of integration.
+/// * `n` - number of quadrature nodes (must be at least 1).
+///
+/// # Panics
+///
+/// - Panics if `n` is zero.
+/// - Panics if `a` or `b` is infinite.
+/// - Panics if `a` or `b` is NaN.
+/// - Panics if `a > b` (lower limit must not exceed upper limit).
+pub fn check_gauss_rule_with_limits<F: Float>(a: F, b: F, n: usize) {
+    check_gauss_rule_args(n);
+
+    if a.is_infinite() || b.is_infinite() {
+        panic!("integration limits a and b can't be infinite");
+    }
+
+    if a.is_nan() || b.is_nan() {
+        panic!("integration limits a and b can't be NaN");
+    }
+
+    if a > b {
+        panic!("lower_limit must not exceed upper_limit");
+    }
+}

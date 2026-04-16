@@ -11,11 +11,29 @@ use num::{bigint::ToBigInt, Float, ToPrimitive, Unsigned};
 
 use crate::utils::{
     chebyshev::{roots_first_kind_chebyshev, roots_second_kind_chebyshev},
-    checkers::check_gauss_rule_args,
+    checkers::{check_gauss_rule_args, check_gauss_rule_with_limits},
     hermite::roots_hermite,
     laguerre::roots_laguerre,
     legendre::glpair,
 };
+
+/// Shared skeleton for fixed-domain Gauss quadrature rules.
+///
+/// Validates `n`, computes nodes/weights via `roots_fn`, then returns
+/// $\sum_i w_i f(x_i)$.
+fn gauss_rule<F, Func>(func: Func, n: usize, roots_fn: impl FnOnce(usize) -> (Vec<F>, Vec<F>)) -> F
+where
+    F: Float + Sum,
+    Func: Fn(F) -> F,
+{
+    check_gauss_rule_args(n);
+    let (zeros, weights) = roots_fn(n);
+    weights
+        .into_iter()
+        .zip(zeros)
+        .map(|(w, x)| w * func(x))
+        .sum()
+}
 
 /// Approximate $\int_a^b f(x)\\,dx$ using $n$-point Gauss-Legendre quadrature.
 ///
@@ -66,12 +84,14 @@ pub fn legendre_rule<
 where
     Func: Fn(F1) -> F2 + Sync,
 {
+    let n = n.to_usize().unwrap();
+
+    check_gauss_rule_with_limits(lower_limit, upper_limit, n);
+
     let two = F1::one() + F1::one();
 
     let c = (upper_limit - lower_limit) / two;
     let d = (upper_limit + lower_limit) / two;
-
-    let n = n.to_usize().unwrap();
 
     let integral: f64 = (1..=n)
         .map(|k| {
@@ -129,14 +149,7 @@ pub fn gauss_laguerre_rule<Func, F: Float + Debug + Sync + Send + AddAssign + Su
 where
     Func: Fn(F) -> F + Sync,
 {
-    check_gauss_rule_args(n);
-    let (zeros, weights) = roots_laguerre::<F>(n);
-
-    weights
-        .into_iter()
-        .zip(zeros)
-        .map(|(w, x)| w * func(x))
-        .sum()
+    gauss_rule(func, n, roots_laguerre::<F>)
 }
 
 /// Approximate $\int_{-\infty}^{+\infty} f(x)\\,e^{-x^2}\\,dx$ using $n$-point Gauss-Hermite quadrature.
@@ -191,15 +204,7 @@ pub fn gauss_hermite_rule<Func, F: Float + Debug + Sync + Send + AddAssign + Sum
 where
     Func: Fn(F) -> F + Sync,
 {
-    check_gauss_rule_args(n);
-
-    let (zeros, weights) = roots_hermite::<F>(n);
-
-    weights
-        .into_iter()
-        .zip(zeros)
-        .map(|(w, x)| w * func(x))
-        .sum()
+    gauss_rule(func, n, roots_hermite::<F>)
 }
 
 /// Approximate $\int_{-1}^{1} \frac{f(x)}{\sqrt{1-x^2}}\\,dx$ using $n$-point
@@ -243,15 +248,7 @@ pub fn gauss_first_kind_chebyshev_rule<Func, F: Float + Debug + Sync + Send + Ad
 where
     Func: Fn(F) -> F + Sync,
 {
-    check_gauss_rule_args(n);
-
-    let (zeros, weights) = roots_first_kind_chebyshev::<F>(n);
-
-    weights
-        .into_iter()
-        .zip(zeros)
-        .map(|(w, x)| w * func(x))
-        .sum()
+    gauss_rule(func, n, roots_first_kind_chebyshev::<F>)
 }
 
 /// Approximate $\int_{-1}^{1} f(x)\sqrt{1-x^2}\\,dx$ using $n$-point
@@ -295,11 +292,7 @@ pub fn gauss_second_kind_chebyshev_rule<Func, F: Float + Debug + Sync + Send + A
 where
     Func: Fn(F) -> F + Sync,
 {
-    check_gauss_rule_args(n);
-
-    let (zeros, weights) = roots_second_kind_chebyshev::<F>(n);
-
-    weights.into_iter().zip(zeros).map(|(w, x)| w * f(x)).sum()
+    gauss_rule(f, n, roots_second_kind_chebyshev::<F>)
 }
 
 #[cfg(test)]
