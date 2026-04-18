@@ -13,6 +13,7 @@
 //! | [`adaptive_simpson_method`] | Adaptive Simpson's method with automatic step-size refinement |
 //! | [`gauss_first_kind_chebyshev_rule`] | Gauss-Chebyshev quadrature rule of the first kind |
 //! | [`gauss_hermite_rule`] | Gauss-Hermite quadrature rule for integrals over $(-\infty, +\infty)$ |
+//! | [`gauss_kronrod_rule`] | Gauss-Kronrod rule returning integral and error estimate |
 //! | [`gauss_laguerre_rule`] | Gauss-Laguerre quadrature rule for integrals over $[0, +\infty)$ |
 //! | [`gauss_second_kind_chebyshev_rule`] | Gauss-Chebyshev quadrature rule of the second kind |
 //! | [`legendre_rule`] | Gauss-Legendre quadrature rule |
@@ -23,6 +24,7 @@
 //! | [`romberg_method`] | Romberg integration using Richardson extrapolation |
 
 pub use crate::adaptive_quadrature::adaptive_simpson_method;
+pub use crate::gauss_kronrod::gauss_kronrod_rule;
 pub use crate::gauss_quadrature::{
     gauss_first_kind_chebyshev_rule, gauss_hermite_rule, gauss_laguerre_rule,
     gauss_second_kind_chebyshev_rule, legendre_rule,

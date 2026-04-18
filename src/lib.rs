@@ -30,6 +30,12 @@
 //! | [`gauss_quadrature::gauss_first_kind_chebyshev_rule`] | Gauss-Chebyshev rule (first kind) |
 //! | [`gauss_quadrature::gauss_second_kind_chebyshev_rule`] | Gauss-Chebyshev rule (second kind) |
 //!
+//! ## Gauss-Kronrod ([`gauss_kronrod`])
+//!
+//! | Function | Description |
+//! |---|---|
+//! | [`gauss_kronrod::gauss_kronrod_rule`] | Gauss-Kronrod rule (2N+1 points, returns integral + error estimate) |
+//!
 //! ## Adaptive Quadrature ([`adaptive_quadrature`])
 //!
 //! | Function | Description |
@@ -82,6 +88,7 @@
 //!   can also be split into subintervals of half a wavelength each.
 
 pub mod adaptive_quadrature;
+pub mod gauss_kronrod;
 pub mod gauss_quadrature;
 pub mod newton_cotes;
 pub mod prelude;
