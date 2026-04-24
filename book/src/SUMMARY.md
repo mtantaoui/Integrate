@@ -23,5 +23,3 @@
   - [Adaptive Simpson](adaptive_quadrature/adaptive_simpson.md)
 
 - [Romberg's method](./romberg.md)
-
-- [Python API](./python_api.md)
