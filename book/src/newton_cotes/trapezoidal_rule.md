@@ -2,13 +2,15 @@
 
 ## Motivation
 
-The trapezoidal rule approximates a definite integral by replacing the integrand with straight-line segments between adjacent sample points. It is a practical first choice for smooth functions and is the building block for Richardson extrapolation methods such as Romberg's method.
+The trapezoidal rule approximates a definite integral by replacing the integrand with
+straight-line segments between adjacent sample points. It is a practical first choice for
+smooth functions and is the natural building block for Richardson extrapolation methods
+such as Romberg's method.
 
 ## Example
 
 ```rust,editable
 use integrate::newton_cotes::trapezoidal_rule;
-
 
 let square = |x: f64| x * x;
 
@@ -21,88 +23,109 @@ let integral = trapezoidal_rule(square, a, b, num_steps);
 println!("{}", integral);
 ```
 
-## Understanding the trapezoidal rule
+## Understanding the Trapezoidal rule
 
-The trapezoidal rule approximates the integral of a function \\(f(x)\\) on the closed and bounded interval \\(\[a, a+h\]\\)
-of length \\(h > 0\\) by the (signed) area of the trapezoid formed by the line segments joining \\((a, 0)\\) to \\((a+h, 0)\\),
-\\((a+h, 0)\\) to \\((a+h, f(a+h))\\),\\((a+h, f(a+h))\\) to \\((a, f(a))\\) and \\((a, f(a))\\) to \\((a, 0)\\).
+### Composite formula
 
-The composite trapezoidal rule is used to approximate the integral of a function \\(f(x)\\) over a closed and bounded interval
-\\(\[a, b\]\\) where \\(a < b\\), by decomposing the interval \\(\[a, b\]\\) into \\(n > 1\\) subintervals of equal length \\(h = \dfrac{b-a}{n}\\), then adding the results of applying the trapezoidal rule to each subinterval.
+The trapezoidal rule approximates the integral of \\(f(x)\\) on \\([a, a+h]\\) by the
+signed area of the trapezoid formed by the line connecting \\((a, f(a))\\) to
+\\((a+h, f(a+h))\\).
 
-By abuse of language both the composite trapezoidal rule and the trapezoidal rule sometimes are referred to simply as
-the trapezoidal rule.
-
-Let \\(\int\_{a}^{b} f(x) dx\\) be the integral of \\(f(x)\\) over the closed and bounded interval \\(\[a,b\]\\), and
-let \\(T_h(f)\\) be the result of applying the trapezoidal rule with \\(n\\) subintervals of length \\(h\\), i.e.
+The composite rule decomposes \\([a, b]\\) into \\(n\\) subintervals of equal length
+\\(h = (b-a)/n\\) and sums the result over each subinterval:
 
 \\[
-T_h(f) = h \left[ \frac{f(a)}{2} + f(a+h) + \cdots + f(b-h) + \frac{f(b)}{2} \right]
+T_h(f) = h \left[ \frac{f(a)}{2} + f(a+h) + f(a+2h) + \cdots + f(b-h) + \frac{f(b)}{2} \right]
 \\]
 
-The Euler-Maclaurin summation formula relates \\(\int\_{a}^{b} f(x) dx\\) and \\(T_h (f)\\)
+### Euler-Maclaurin expansion
+
+The Euler-Maclaurin summation formula relates \\(T\_h(f)\\) to the exact integral:
 
 \\[
 \begin{align}
-T_h(f) &= \int\_{a}^{b} f(x) dx + \frac{h^2}{12} \left[f'(b) - f'(a)\right] - \frac{h^4}{720} \left[f^{(3)}(b) - f^{(3)}(a) \right] \\\\
-&+ \cdots + K h^{2p-2} \left[f^{(2p-3)}(b) - f^{(2p-3)}(a)\right] + O(h^{2p})
+T\_h(f) &= \int\_{a}^{b} f(x)\\,dx + \frac{h^2}{12} \left[ f^\prime(b) - f^\prime(a) \right] - \frac{h^4}{720} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\\\
+&+ \cdots + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
 \end{align}
 \\]
 
-where \\(f^\prime\\), \\(f^{(3)}\\), and \\(f^{(2p-3)}\\) are the first, third and \\((p-3)^{th}\\) derivatives
-of \\(f\\) and \\(K\\) is a constant.
-
-The last term, \\(O(h^{2p})\\) is important. Given an infinitely differentiable function
-in which the first \\((2p-3)\\) derivatives vanish at both endpoints of the interval of integration,
-it is not true that \\(T_h (f) = \int\_{a}^{b} f(x) dx\\), but rather what the theorem says is that
+The \\(O(h^{2p})\\) remainder means that for an infinitely differentiable function whose
+first \\(2p-3\\) derivatives vanish at both endpoints, the theorem guarantees only that
 
 \\[
-\lim_{h \to 0} \left| \frac{T_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \right| < M
+\lim_{h \to 0} \left| \frac{T_h(f) - \int_{a}^{b} f(x)\,dx}{h^{2p}} \right| < M
 \\]
 
-where \\(M>0\\).
+for some \\(M > 0\\), not that the rule is exact.
 
-If \\(f\\) is at least twice differentiable on the interval \\(\[a,b\]\\), then applying the mean-value theorem to
+The expansion also shows that \\(n\\) should be chosen so that \\(h = (b-a)/n < 1\\).
+For example, if \\(h = 0.1\\):
 
 \\[
-\begin{align}
-T_h(f) - \int\_{a}^{b} f(x) dx &= \frac{h^2}{12} \left[f^\prime(b) - f^\prime(a) \right] - \frac{h^4}{720} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\\\
-&+ \cdots + K h^{2p-2} \left[f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
-\end{align}
+\begin{split}
+T\_{0.1}(f) &= \int\_{a}^{b} f(x)\\,dx + 0.00083 \left[ f^\prime(b) - f^\prime(a) \right] \\\\
+&- 0.00000014 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \cdots
+\end{split}
 \\]
 
-yields the standard truncation error expression
-\\[
-T\_h(f) - \int\_{a}^{b} f(x) dx = -\frac{h^2}{12} (b - a) f^{\prime\prime}(c)
-\\]
-
-for some point \\(c\\) where \\(a ≤ c ≤ b\\).
-
-A corollary of which is that if \\(f^{\prime\prime}(x) = 0\\) for all \\(x\\) in \\(\[a,b\]\\), i.e. if \\(f(x)\\) is linear,
-then the trapezoidal rule is exact.
-
-The Euler-Maclaurin summation formula also shows that usually \\(n\\) should be chosen large enough so that
+if \\(h = 0.01\\):
 
 \\[
-h = \frac{b-a}{n} < 1
+\begin{split}
+T\_{0.01}(f) &= \int\_{a}^{b} f(x)\\,dx + 0.0000083 \left[ f^\prime(b) - f^\prime(a) \right] \\\\
+&- 0.000000000014 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \cdots
+\end{split}
 \\]
 
-For example, if \\(h = 0.1\\) then
+and if \\(h = 10\\):
+
 \\[
-T\_{0.1}(f) = \int\_{a}^{b} f(x) dx - 0.00083 \left[f^\prime(b) - f^\prime(a) \right] + 0.00000014 \left[f^{(3)}(b) - f^{(3)}(a) \right] + \cdots
-\\]
-and if \\(h = 0.01\\) then
-\\[
-T\_{0.01}(f) = \int\_{a}^{b} f(x) dx - 0.0000083 \left[ f^\prime(b) - f^\prime(a) \right] + 0.000000000014 \left[f^{(3)}(b) - f^{(3)}(a)\right] + \cdots
+\begin{split}
+T\_{10}(f) &= \int\_{a}^{b} f(x)\\,dx + 8.3333 \left[ f^\prime(b) - f^\prime(a) \right] \\\\
+&- 13.89 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \cdots
+\end{split}
 \\]
 
-while if \\(h=10\\) then
+### Truncation error
+
+If \\(f \in C^2[a, b]\\), applying the mean-value theorem to the leading term of the
+Euler-Maclaurin expansion gives the standard truncation error:
+
 \\[
-T\_{10}(f) = \int\_{a}^{b} f(x) dx - 8.3333 \left[ f^\prime(b) - f^\prime(a) \right] + 13.89 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \cdots
+T\_h(f) - \int\_{a}^{b} f(x)\\,dx = \frac{h^2}{12}(b-a)\\,f^{\prime\prime}(c)
 \\]
 
-However, if the function \\(f(x)\\) is linear, then \\(n\\) may be chosen to be \\(1\\).
+for some \\(c \in [a, b]\\). The positive sign reflects that the trapezoid overestimates
+the integral when \\(f\\) is convex (\\(f^{\prime\prime} > 0\\)) and underestimates when
+\\(f\\) is concave (\\(f^{\prime\prime} < 0\\)).
+
+A corollary is that if \\(f^{\prime\prime}(x) = 0\\) on \\([a, b]\\) — i.e. if \\(f\\)
+is linear — then the rule is exact. If \\(f\\) is linear, \\(n\\) may be chosen to be 1.
+
+### Computation
+
+The \\(n+1\\) nodes are the equally spaced points
+
+\\[
+x\_i = a + i\,h, \quad i = 0, 1, \ldots, n, \quad h = \frac{b-a}{n}
+\\]
+
+The endpoint nodes carry weight \\(h/2\\) and all interior nodes carry weight \\(h\\), so
+the formula can be reorganised as
+
+\\[
+T\_h(f) = h\,\left(\frac{f(a) + f(b)}{2} + \sum\_{i=1}^{n-1} f(x\_i)\right)
+\\]
+
+The implementation accumulates the interior sum in a single forward pass over
+\\(i = 1, \ldots, n-1\\), adds the half-weighted endpoints, then multiplies by \\(h\\).
+A total of \\(n+1\\) function evaluations are required.
 
 ## Limitations
 
-The trapezoidal rule converges as \\(O(h^2)\\) for general smooth functions. While more accurate than the rectangle rule, it is outperformed by Simpson's rule for smooth integrands. It should not be used for functions with discontinuities or singularities in \\([a, b]\\) without splitting the interval first.
+The trapezoidal rule converges as \\(O(h^2)\\) for general smooth functions. While more
+accurate than the rectangle rule, it is outperformed by Simpson's rule for smooth
+integrands. It should not be used for functions with discontinuities or singularities in
+\\([a, b]\\) without splitting the interval first. For smooth periodic functions on
+\\([a, b]\\) the rule achieves spectral convergence (faster than any power of \\(h\\))
+because the endpoint correction terms in the Euler-Maclaurin expansion all vanish.

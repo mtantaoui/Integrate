@@ -2,13 +2,16 @@
 
 ## Motivation
 
-The rectangle rule (also called the midpoint rule) is the simplest Newton-Cotes formula for numerical integration. It is useful as a baseline method and is exact for constant functions. The composite form approximates a definite integral by summing rectangle areas, making it easy to implement.
+The rectangle rule (also called the midpoint rule) is the simplest Newton-Cotes formula
+for numerical integration. It approximates each subinterval's contribution by the
+function value at its midpoint, making it easy to implement and exact for constant
+functions. Despite its low order of accuracy, it is a useful baseline and requires no
+endpoint evaluations.
 
 ## Example
 
 ```rust,editable
 use integrate::newton_cotes::rectangle_rule;
-
 
 let square = |x: f64| x * x;
 
@@ -18,95 +21,104 @@ let b = 1.0;
 let num_steps: usize = 1_000_000;
 
 let integral = rectangle_rule(square, a, b, num_steps);
-
-println!("{}",integral);
+println!("{}", integral);
 ```
 
 ## Understanding the Rectangle rule
 
-The rectangle rule approximates the integral of a function \\(f(x)\\) on the
-closed and bounded interval \\([a, a+h]\\) of length \\(h > 0\\) by the (signed) area
-of the rectangle with length \\(h\\) and height the value of the function \\(f(x)\\)
-evaluated at the midpoint of the interval, \\(f(a + \frac{h}{2} )\\).
+### Composite formula
 
-The composite rectangle rule is used to approximate the integral of a function
-\\(f(x)\\) over a closed and bounded interval \\([a, b]\\) where \\(a < b\\), by decomposing
-the interval \\([a, b]\\) into \\(n > 1\\) subintervals of equal length \\(h = \frac{b-a}{n}\\)
-and adding the results of applying the rectangle rule to each subinterval.
+The rectangle rule approximates the integral of \\(f(x)\\) on \\([a, a+h]\\) by the
+signed area of the rectangle with width \\(h\\) and height \\(f\left(a + h/2\right)\\).
 
-By abuse of language both the composite rectangle rule and the rectangle rule sometimes
-are referred to simply as the rectangle rule.
-
-Let \\(\int\_{a}^{b} f(x) dx\\) be the integral of \\(f(x)\\) over the closed and bounded interval \\(\[a ,b \]\\),
-and let \\(R_h(f)\\) be the result of applying the rectangle rule with \\(n\\) subintervals of length \\(h\\), i.e.
+The composite rule decomposes \\([a, b]\\) into \\(n\\) subintervals of equal length
+\\(h = (b-a)/n\\) and sums the result over each subinterval:
 
 \\[
-R_h(f)=h \left[ f\left( a+\frac{h}{2} \right) + f\left(a+\frac{3h}{2}\right) + \cdots + f\left(b-\frac{h}{2}\right) \right]
+R\_h(f) = h \left[ f\left(a + \tfrac{h}{2}\right) + f\left(a + \tfrac{3h}{2}\right) + \cdots + f\left(b - \tfrac{h}{2}\right) \right]
 \\]
 
-An immediate consequence of the Euler-Maclaurin summation formula yields the following equation
-relating \\(\int\_{a}^{b} f(x) dx\\) and \\(R_h(f)\\):
+### Euler-Maclaurin expansion
+
+The Euler-Maclaurin summation formula relates \\(R\_h(f)\\) to the exact integral:
 
 \\[
 \begin{align}
-R_h(f) & = \int\_{a}^{b} f(x) dx - \frac{h^2}{24} \left[ f^\prime (b) - f^\prime (a) \right] + \frac{7h^4}{5760} \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \\\\
-& \cdots + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+R\_h(f) &= \int\_{a}^{b} f(x)\\,dx - \frac{h^2}{24} \left[ f^\prime(b) - f^\prime(a) \right] + \frac{7h^4}{5760} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\\\
+&+ \cdots + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
 \end{align}
 \\]
 
-where \\(f'\\), \\(f^{(3)}\\), and \\(f^{(2p-3)}\\) are the first, third and \\((2p-3)^{rd}\\) derivatives of \\(f\\) and \\(K\\) is a constant.
-
-The last term, \\(O(h^{2p})\\) is important. Given an infinitely differentiable function
-in which the first \\(2p-3\\) derivatives vanish at both endpoints of the interval of integration,
-it is not true that \\(R\_{h}(f) = \int\_{a}^{b} f(x) dx\\), but rather what the theorem says is that
+The \\(O(h^{2p})\\) remainder means that for an infinitely differentiable function whose
+first \\(2p-3\\) derivatives vanish at both endpoints, the theorem guarantees only that
 
 \\[
-\lim_{h \to 0} \left| \dfrac{R_h(f) - \int_{a}^{b} f(x)dx}{h^{2p}} \right| < M
+\lim_{h \to 0} \left| \frac{R_h(f) - \int_{a}^{b} f(x)\,dx}{h^{2p}} \right| < M
 \\]
 
-where \\(M>0\\).
+for some \\(M > 0\\), not that the rule is exact.
 
-If \\(f\\) is at least twice differentiable on the interval \\(\[a,b\]\\), then applying the mean-value
-theorem to
+The expansion also shows that \\(n\\) should be chosen so that \\(h = (b-a)/n < 1\\).
+For example, if \\(h = 0.1\\):
 
 \\[
-\begin{align}
-R_h(f) - \int\_{a}^{b} f(x) dx & = -\frac{h^2}{24} \left[ f^\prime (b) - f^\prime (a) \right] + \frac{7h^4}{5760} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\\\ & + \cdots + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
-\end{align}
+\begin{split}
+R\_{0.1}(f) &= \int\_{a}^{b} f(x)\\,dx - 0.00042 \left[ f^\prime(b) - f^\prime(a) \right] \\\\
+&+ 0.00000012 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \cdots
+\end{split}
 \\]
 
-yields the standard truncation error expression
+if \\(h = 0.01\\):
 
 \\[
-R_h(f) - \int_{a}^{b} f(x) dx = -\frac{h^2}{24} (b - a) f^{\prime\prime}(c)
+\begin{split}
+R\_{0.01}(f) &= \int\_{a}^{b} f(x)\\,dx - 0.0000042 \left[ f^\prime(b) - f^\prime(a) \right] \\\\
+&+ 0.000000000012 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \cdots
+\end{split}
 \\]
 
-for some point \\(c\\) where \\(a ≤ c ≤ b\\).
-
-A corollary of which is that if \\(f^{\prime\prime}(x) = 0\\) for all \\(x\\) in \\(\[a,b\]\\),
-i.e. if \\(f(x)\\) is linear, then the rectangle rule is exact.
-
-The Euler-Maclaurin summation formula also shows that usually \\(n\\) should be chosen large enough
-so that \\(h = \frac{b-a}{n} < 1\\). For example, if \\(h = 0.1\\) then
+and if \\(h = 10\\):
 
 \\[
-\begin{split} R\_{0.1}(f) &= \int\_{a}^{b} f(x) dx - 0.00042 \left[ f^\prime(b) - f^\prime(a) \right] \\\\ & + 0.00000012 \left[f^{(3)}(b) - f^{(3)}(a) \right] + \cdots \end{split}
+\begin{split}
+R\_{10}(f) &= \int\_{a}^{b} f(x)\\,dx - 4.1667 \left[ f^\prime(b) - f^\prime(a) \right] \\\\
+&+ 12.15 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \cdots
+\end{split}
 \\]
 
-and if \\(h = 0.01\\) then
+### Truncation error
+
+If \\(f \in C^2[a, b]\\), applying the mean-value theorem to the leading term of the
+Euler-Maclaurin expansion gives the standard truncation error:
 
 \\[
-\begin{split} R\_{0.01}(f) &= \int\_{a}^{b} f(x) dx - 0.0000042 \left[ f^\prime(b) - f^\prime(a) \right] \\\\ &+ 0.000000000012 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \cdots \end{split}
+R\_h(f) - \int\_{a}^{b} f(x)\\,dx = -\frac{h^2}{24}(b-a)\\,f^{\prime\prime}(c)
 \\]
 
-while if \\(h=10\\) then
+for some \\(c \in [a, b]\\). A corollary is that if \\(f^{\prime\prime}(x) = 0\\) on
+\\([a, b]\\) — i.e. if \\(f\\) is linear — then the rule is exact. If \\(f\\) is linear,
+\\(n\\) may be chosen to be 1.
+
+### Computation
+
+The \\(n\\) nodes are the midpoints of the \\(n\\) subintervals:
 
 \\[
-\begin{split} R\_{10}(f) &= \int\_{a}^{b} f(x) dx - 4.1667 \left[ f^\prime(b) - f^\prime(a)\right] \\\\ &+ 12.15 \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \cdots \end{split}
+x\_i = a + \left(i + \tfrac{1}{2}\right)h, \quad i = 0, 1, \ldots, n-1, \quad h = \frac{b-a}{n}
 \\]
 
-However, if the function \\(f(x)\\) is linear, then \\(n\\) may be chosen to be \\(1\\).
+Each node carries weight \\(h\\), so the sum is:
+
+\\[
+R\_h(f) = h \sum\_{i=0}^{n-1} f(x\_i)
+\\]
+
+The implementation makes a single forward pass over the \\(n\\) midpoints, accumulating
+the weighted sum, then multiplies by \\(h\\). No endpoint evaluations are needed.
 
 ## Limitations
 
-The rectangle rule converges as \\(O(h^2)\\), making it the least accurate of the Newton-Cotes rules. Prefer Simpson's rule for smooth integrands.
+The rectangle rule converges as \\(O(h^2)\\), making it the least accurate of the
+Newton-Cotes rules in this library. Prefer Simpson's rule or Romberg's method for
+smooth integrands. The rule is not suitable for functions with discontinuities or
+singularities inside \\([a, b]\\) without splitting the interval first.
