@@ -2,13 +2,17 @@
 
 ## Motivation
 
-Romberg's method combines Richardson extrapolation with the composite trapezoidal rule to eliminate successive error terms from the Euler-Maclaurin expansion, achieving high-order accuracy without evaluating higher derivatives. It is an excellent choice when high precision is required for smooth integrands on finite intervals.
+Romberg's method combines the composite trapezoidal rule with Richardson extrapolation
+to systematically cancel the leading error terms from the Euler-Maclaurin expansion.
+Each extrapolation step eliminates one error term, so with \\(n\\) columns the final
+estimate has accuracy \\(O(h^{2n})\\) — matching a Gauss rule of order \\(2n\\) but
+using only \\(2^{n-1}+1\\) function evaluations. It is an excellent choice when high
+precision is required for smooth integrands on finite intervals.
 
 ## Example
 
 ```rust,editable
 use integrate::romberg::romberg_method;
-
 
 fn square(x: f64) -> f64 {
     x.powi(2)
@@ -20,82 +24,115 @@ let b = 1.0;
 let num_steps: usize = 10;
 
 let integral = romberg_method(square, a, b, num_steps);
-println!("{}",integral);
+println!("{}", integral);
 ```
 
 ## Understanding Romberg's method
 
-Romberg's method is used to estimate the integral of a function on a closed and bounded interval.
+### Euler-Maclaurin expansion
 
-Classically, the method consists of successively applying the composite trapezoidal rule, each time
-halving the length of the subintervals, and using a linear combination of the resulting sequence of
-estimates to estimate the integral, by successively deleting the low order error terms in
-the Euler-Maclaurin summation formula.
-
-The process terminates when the change of the estimate is within a preassigned tolerance, within
-a preassigned number of successive estimates.
-
-The Euler-Maclaurin summation formula relates the integral of a function \\(f(x)\\) over
-a closed and bounded interval \\(\[a,b\]\\) , \\(\int\_{a}^{b} f(x) dx\\), and the composite trapezoidal rule,
+The Euler-Maclaurin summation formula expresses the composite trapezoidal estimate
+\\(T\_h(f)\\) with step size \\(h = (b-a)/n\\) as
 
 \\[
-T_h (f) = h \left[ \frac{f(a)}{2} + f(a+h) + \cdots + f(b-h) + \frac{f(b)}{2} \right]
-\\]
-
-by
-
-\\[
-\begin{split}
-T_h(f) &= \int\_{a}^{b} f(x) dx + \left(\frac{h^2}{12}\right) \left[f^\prime(b) - f^\prime(a)\right] - \left(\frac{h^4}{720}\right) \left[f^{(3)}(b) - f^{(3)}(a) \right] \\\\
+\begin{align}
+T\_h(f) &= \int\_{a}^{b} f(x)\\,dx + \frac{h^2}{12} \left[ f^\prime(b) - f^\prime(a) \right] - \frac{h^4}{720} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\\\
 &+ \cdots + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
-\end{split}
+\end{align}
 \\]
 
-where \\(f^\prime\\), \\(f^{(3)}\\), and \\(f^{(2p-3)}\\) are the first, third and \\((p-3)rd\\) derivatives
-of \\(f\\) and \\(K\\) is a constant.
+Two features make this expansion ideal for Richardson extrapolation:
 
-If the subinterval length is halved, then
+1. The error is a **pure even-power series** in \\(h\\): terms \\(h^2, h^4, h^6, \ldots\\)
+   with coefficients that depend on the endpoints but not on \\(h\\).
+2. When the step size is halved to \\(h/2\\), each coefficient is divided by the
+   corresponding power of 4 — which allows exact cancellation.
+
+### Richardson extrapolation
+
+Halving \\(h\\) gives a new estimate
 
 \\[
 \begin{split}
-T\_{\frac{h}{2}}(f) &= \int\_{a}^{b} f(x) dx + \frac{h^2}{4·12} \left[ f^\prime(b) - f^\prime(a) \right] - \left( \frac{h^4}{16·720} \right) \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\\\
-&+ \cdots + K \left( \frac{h}{2} \right)^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+T\_{h/2}(f) &= \int\_{a}^{b} f(x)\\,dx + \frac{h^2}{4 \cdot 12} \left[ f^\prime(b) - f^\prime(a) \right] \\\\
+&- \frac{h^4}{16 \cdot 720} \left[ f^{(3)}(b) - f^{(3)}(a) \right] + \cdots
 \end{split}
 \\]
 
-So that
+Forming the linear combination \\(\frac{4 T\_{h/2}(f) - T\_h(f)}{3}\\) cancels the
+\\(h^2\\) term exactly:
 
 \\[
 \begin{split}
-\frac{4 T\_{\frac{h}{2}}(f) - T\_{h}(f)}{3} &= \int\_{a}^{b} f(x) dx + \left( \frac{h^4}{2880} \right) \left[ f^{(3)}(b) - f^{(3)}(a) \right] - \left( \frac{h^6}{96768} \right) \left[ f^{(5)}(b) - f^{(5)}(a) \right] \\\\
-&+ \cdots + K h^{2p-2} \left[ f^{(2p-3)}(b) - f^{(2p-3)}(a) \right] + O(h^{2p})
+\frac{4 T\_{h/2}(f) - T\_h(f)}{3} &= \int\_{a}^{b} f(x)\\,dx + \frac{h^4}{2880} \left[ f^{(3)}(b) - f^{(3)}(a) \right] \\\\
+&- \frac{h^6}{96768} \left[ f^{(5)}(b) - f^{(5)}(a) \right] + \cdots
 \end{split}
 \\]
 
-The \\(h^2\\) term has vanished. This process can be continued, each halving of the subinterval
-length results in a new composite trapezoidal rule estimate of the integral, which can be
-combined with previous estimates to yield an estimate, in which the lowest order term
-involving \\(h\\) vanishes.
+This extrapolation step improves the order from \\(O(h^2)\\) to \\(O(h^4)\\). Applying it
+again to two such \\(O(h^4)\\) estimates cancels the \\(h^4\\) term and yields \\(O(h^6)\\),
+and so on.
 
-The easiest way to combine all the estimates from applications
-of the trapezoidal rule by halving the length of the subintervals is to arrange the estimates
-in a column, from the coarsest estimate to the finest estimate. To form the second,
-column take two adjacent values from the first column, subtract the finer estimate
-from the coarser estimate divide by 3 and add to the finer estimate.
+### The Romberg table
 
-The second column is automatically arranged from the coarsest estimate to the finest
-with one less element. Continue, form the third column by taking two adjacent values
-from the second column, subtract the finer estimate from the coarser estimate,
-divide by 15 and add to the finer estimate.
+The full process is organised into a triangular table \\(R[i, j]\\), where \\(i\\) is the
+**refinement level** (step size \\(h\_i = (b-a)/2^i\\)) and \\(j\\) is the
+**extrapolation column**:
 
-The third column is automatically arranged from the coarsest to the finest estimate with one fewer element than in the
-second column.
+\\[
+R[i, j] = \frac{4^j \, R[i, j-1] - R[i-1, j-1]}{4^j - 1}, \qquad 1 \leq j \leq i
+\\]
 
-This process is continued until there is only one element in the last column, this
-is the estimate of the integral.
+The first column \\(R[i, 0]\\) is the composite trapezoidal estimate at step size
+\\(h\_i\\). Column \\(j\\) contains estimates that are \\(O(h^{2(j+1)})\\) accurate. The
+divisors \\(4^j - 1\\) take the values \\(3, 15, 63, 255, \ldots\\) as \\(j\\) increases.
 
-The numbers which are used the divide the difference of two adjacent elements in the \\(i^{th}\\) column is \\(4^i - 1\\).
+For \\(n\\) columns the table has \\(n(n+1)/2\\) entries and the bottom-right entry
+\\(R[n-1, n-1]\\) is the final estimate, with error \\(O(h^{2n})\\). For example, with
+\\(n = 10\\) columns the error behaves as \\(O(h^{20})\\), which for smooth integrands
+gives double-precision accuracy with far fewer evaluations than any fixed Newton-Cotes
+rule of that order.
+
+### Computation
+
+**Midpoint reuse.** Each first-column entry \\(R[i, 0]\\) is obtained from the previous
+one by adding only the \\(2^{i-1}\\) new midpoints — the \\(2^{i-1}+1\\) points already
+evaluated at level \\(i-1\\) lie exactly on the level-\\(i\\) grid:
+
+\\[
+\begin{split}
+R[i, 0] &= \frac{1}{2}\, R[i-1, 0] \\\\
+&+ h\_i \sum\_{k=0}^{2^{i-1}-1} f\left(a + (2k+1)\,h\_i\right)
+\end{split}
+\\]
+
+This means the total number of function evaluations across all \\(n\\) levels is
+\\(2^{n-1}+1\\), not \\(O(n \cdot 2^{n-1})\\) as would be required if each level
+recomputed all its points independently.
+
+**Rolling buffer.** The Richardson extrapolation depends only on the previous row and
+the current row of the table. The implementation therefore keeps only two rows of length
+\\(n\\) in memory at any time, rather than the full \\(n \times n\\) table, keeping the
+memory footprint at \\(O(n)\\).
+
+**Summary of cost** for \\(n\\) columns:
+
+| Quantity | Cost |
+|---|---|
+| Function evaluations | \\(2^{n-1}+1\\) |
+| Memory | \\(O(n)\\) |
+| Accuracy (smooth \\(f\\)) | \\(O(h^{2n})\\), \\(h = (b-a)/2^{n-1}\\) |
 
 ## Limitations
 
-Romberg's method requires the integrand to be infinitely differentiable on \\([a, b]\\) for the Euler-Maclaurin expansion to hold. It is not appropriate for functions with singularities, discontinuities, or even kinks (non-differentiable points) in the integration interval. For such functions, consider the adaptive Simpson method or splitting the interval.
+Romberg's method requires the integrand to be infinitely differentiable on \\([a, b]\\)
+for the Euler-Maclaurin expansion to hold and the cancellation to be effective. It is not
+appropriate for functions with singularities, discontinuities, or even kinks
+(non-differentiable points) in the integration interval — at such points the error
+expansion breaks down and the extrapolation accelerates to the wrong limit.
+
+The number of columns \\(n\\) controls both the accuracy and the number of evaluations.
+For double-precision arithmetic, \\(n \approx 10\\) is typically sufficient for smooth
+integrands; using larger \\(n\\) beyond the point where \\(R[n-1, n-1]\\) has converged
+to machine precision adds evaluations without improving the result. For functions with
+near-singularities or rapid oscillation, prefer the adaptive Simpson method.
