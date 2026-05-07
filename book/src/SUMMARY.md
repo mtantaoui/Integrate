@@ -17,6 +17,7 @@
   - [Gauss Chebyshev](gauss_quadrature/gauss_chebyshev.md)
   - [Gauss Laguerre](gauss_quadrature/gauss_laguerre.md)
   - [Gauss Hermite](gauss_quadrature/gauss_hermite.md)
+  - [Gauss Kronrod](gauss_quadrature/gauss_kronrod.md)
 
 - [Adaptive quadrature](./adaptive_quadrature.md)
 
