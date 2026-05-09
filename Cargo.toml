@@ -18,7 +18,20 @@ itertools = "0.13.0"
 num = "0.4.1"
 num-traits = "0.2.18"
 
+[dev-dependencies]
+codspeed-criterion-compat = { version = "2", features = ["html_reports"] }
 
+[[bench]]
+name = "newton_cotes"
+harness = false
+
+[[bench]]
+name = "gauss_quadrature"
+harness = false
+
+[[bench]]
+name = "adaptive"
+harness = false
 
 [package.metadata.docs.rs]
 rustdoc-args = [ "--html-in-header", "./docs/docs-header.html" ]
