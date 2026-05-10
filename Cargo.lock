@@ -326,7 +326,7 @@ dependencies = [
 
 [[package]]
 name = "integrate"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "codspeed-criterion-compat",
  "itertools 0.13.0",
