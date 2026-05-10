@@ -131,7 +131,7 @@ fn test_f32_problems() {
     let problems: Vec<Problem<f32>> = newton_cotes_problems();
     let methods = Methods::iter();
 
-    for (problem, method) in problems.into_iter().cartesian_product(methods.into_iter()) {
+    for (problem, method) in problems.into_iter().cartesian_product(methods) {
         test_problem_f32(problem, method);
     }
 }
@@ -141,7 +141,7 @@ fn test_f64_problems() {
     let problems: Vec<Problem<f64>> = newton_cotes_problems();
     let methods = Methods::iter();
 
-    for (problem, method) in problems.into_iter().cartesian_product(methods.into_iter()) {
+    for (problem, method) in problems.into_iter().cartesian_product(methods) {
         test_problem_f64(problem, method);
     }
 }
