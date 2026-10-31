@@ -19,9 +19,8 @@ tag-message = "Release v{{version}}"
 # Push the commit and tag to origin/main after tagging.
 push = true
 
-# Do not publish directly from cargo-release — let the CI release.yml
-# handle publishing when it detects the v* tag. This keeps the local
-# release step clean and lets CI act as the gatekeeper.
+# Publishing to crates.io is done by hand (`cargo publish`); there is no CI
+# publish job.
 publish = false
 
 # Update the version field in Cargo.toml.
