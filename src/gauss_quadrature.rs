@@ -13,6 +13,7 @@ use crate::utils::{
     chebyshev::{roots_first_kind_chebyshev, roots_second_kind_chebyshev},
     checkers::{check_gauss_rule_args, check_gauss_rule_with_limits},
     hermite::roots_hermite,
+    integrand::{Integrand, Scalar},
     laguerre::roots_laguerre,
     legendre::glpair,
 };
@@ -21,18 +22,25 @@ use crate::utils::{
 ///
 /// Validates `n`, computes nodes/weights via `roots_fn`, then returns
 /// $\sum_i w_i f(x_i)$.
-fn gauss_rule<F, Func>(func: Func, n: usize, roots_fn: impl FnOnce(usize) -> (Vec<F>, Vec<F>)) -> F
-where
-    F: Float + Sum,
-    Func: Fn(F) -> F,
-{
+/// Weighted Gauss rule $\sum_i w_i f(x_i)$ over the nodes and weights from
+/// `roots_fn`, accumulated in `f64`. Shared by the scalar and batch rules.
+pub(crate) fn gauss_rule<F: Float>(
+    f: &mut impl Integrand<F>,
+    n: usize,
+    roots_fn: impl FnOnce(usize) -> (Vec<F>, Vec<F>),
+) -> F {
     check_gauss_rule_args(n);
     let (zeros, weights) = roots_fn(n);
-    weights
-        .into_iter()
-        .zip(zeros)
-        .map(|(w, x)| w * func(x))
-        .sum()
+    let [sum] = f.weighted_sums(
+        zeros.len(),
+        |i| zeros[i],
+        |i| {
+            [weights[i]
+                .to_f64()
+                .expect("failed to convert weight to f64")]
+        },
+    );
+    F::from(sum).expect("failed to convert integral to float")
 }
 
 /// Approximate $\int_a^b f(x)\\,dx$ using $n$-point Gauss-Legendre quadrature.
@@ -84,28 +92,46 @@ pub fn legendre_rule<
 where
     Func: Fn(F1) -> F2 + Sync,
 {
+    legendre(&mut Scalar(func), lower_limit, upper_limit, n)
+}
+
+/// Largest `n` for which Gauss-Legendre nodes come from the lookup table.
+const TABULATED_MAX: usize = 100;
+
+/// $n$-point Gauss-Legendre rule on $[a, b]$, shared by [`legendre_rule`] and
+/// its batch variant.
+pub(crate) fn legendre<F, U>(f: &mut impl Integrand<F>, a: F, b: F, n: U) -> f64
+where
+    F: Float,
+    U: Unsigned + ToPrimitive + Copy,
+{
     let n = n.to_usize().unwrap();
 
-    check_gauss_rule_with_limits(lower_limit, upper_limit, n);
+    check_gauss_rule_with_limits(a, b, n);
 
-    let two = F1::one() + F1::one();
+    let two = F::one() + F::one();
+    let c = (b - a) / two;
+    let d = (b + a) / two;
 
-    let c = (upper_limit - lower_limit) / two;
-    let d = (upper_limit + lower_limit) / two;
+    // Compute each (node, weight) pair once: on the stack for the tabulated
+    // rules (n <= 100), on the heap for the asymptotic ones.
+    let pair = |k: usize| {
+        let (_, weight, x) = glpair(n, k + 1);
+        (c * F::from(x).unwrap() + d, weight)
+    };
+    let [sum] = if n <= TABULATED_MAX {
+        let mut nodes = [F::zero(); TABULATED_MAX];
+        let mut weights = [0.0_f64; TABULATED_MAX];
+        for k in 0..n {
+            (nodes[k], weights[k]) = pair(k);
+        }
+        f.weighted_sums(n, |i| nodes[i], |i| [weights[i]])
+    } else {
+        let (nodes, weights): (Vec<F>, Vec<f64>) = (0..n).map(pair).unzip();
+        f.weighted_sums(n, |i| nodes[i], |i| [weights[i]])
+    };
 
-    let integral: f64 = (1..=n)
-        .map(|k| {
-            // getting gauss-legendre weights and nodes
-            let (_, weight, x) = glpair(n, k);
-
-            // converting node to F1
-            let x = F1::from(x).unwrap();
-
-            // interval change formula
-            weight * func(c * x + d).to_f64().unwrap() * c.to_f64().unwrap()
-        })
-        .sum();
-    integral
+    sum * c.to_f64().unwrap()
 }
 
 /// Approximate $\int_0^\infty f(x)\\,e^{-x}\\,dx$ using $n$-point Gauss-Laguerre quadrature.
@@ -149,7 +175,7 @@ pub fn gauss_laguerre_rule<Func, F: Float + Debug + Sync + Send + AddAssign + Su
 where
     Func: Fn(F) -> F + Sync,
 {
-    gauss_rule(func, n, roots_laguerre::<F>)
+    gauss_rule(&mut Scalar(func), n, roots_laguerre::<F>)
 }
 
 /// Approximate $\int_{-\infty}^{+\infty} f(x)\\,e^{-x^2}\\,dx$ using $n$-point Gauss-Hermite quadrature.
@@ -204,7 +230,7 @@ pub fn gauss_hermite_rule<Func, F: Float + Debug + Sync + Send + AddAssign + Sum
 where
     Func: Fn(F) -> F + Sync,
 {
-    gauss_rule(func, n, roots_hermite::<F>)
+    gauss_rule(&mut Scalar(func), n, roots_hermite::<F>)
 }
 
 /// Approximate $\int_{-1}^{1} \frac{f(x)}{\sqrt{1-x^2}}\\,dx$ using $n$-point
@@ -248,7 +274,7 @@ pub fn gauss_first_kind_chebyshev_rule<Func, F: Float + Debug + Sync + Send + Ad
 where
     Func: Fn(F) -> F + Sync,
 {
-    gauss_rule(func, n, roots_first_kind_chebyshev::<F>)
+    gauss_rule(&mut Scalar(func), n, roots_first_kind_chebyshev::<F>)
 }
 
 /// Approximate $\int_{-1}^{1} f(x)\sqrt{1-x^2}\\,dx$ using $n$-point
@@ -292,7 +318,7 @@ pub fn gauss_second_kind_chebyshev_rule<Func, F: Float + Debug + Sync + Send + A
 where
     Func: Fn(F) -> F + Sync,
 {
-    gauss_rule(f, n, roots_second_kind_chebyshev::<F>)
+    gauss_rule(&mut Scalar(f), n, roots_second_kind_chebyshev::<F>)
 }
 
 #[cfg(test)]

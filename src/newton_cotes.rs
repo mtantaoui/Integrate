@@ -5,7 +5,28 @@
 
 use num::{Float, ToPrimitive, Unsigned};
 
-use crate::utils::checkers::check_newton_method_args;
+use crate::utils::{
+    checkers::check_newton_method_args,
+    integrand::{node_count, Integrand, Scalar},
+};
+
+/// Converts a node index to `F`.
+///
+/// Goes through `i64`: on x86-64 a signed conversion is a single instruction,
+/// while `usize -> f64` needs a multi-instruction sequence, which is noticeable
+/// in the per-node loop. Node counts never approach `i64::MAX`.
+#[inline]
+fn index<F: Float>(i: usize) -> F {
+    F::from(i as i64).unwrap()
+}
+
+/// Adds `weight * (f(a) + f(b))` to `sum`, evaluating both endpoints exactly.
+///
+/// The Newton-Cotes rules sum their interior nodes in one branch-free pass,
+/// then the two endpoints.
+fn endpoints<F: Float>(f: &mut impl Integrand<F>, a: F, b: F, weight: f64, sum: &mut [f64; 1]) {
+    f.accumulate(0..2, |i| if i == 0 { a } else { b }, |_| [weight], sum);
+}
 
 /// Approximates $\int_a^b f(x)\\,dx$ using the composite midpoint rectangle rule.
 ///
@@ -54,20 +75,24 @@ pub fn rectangle_rule<Func, F1: Float, F2: Float, U: Unsigned + ToPrimitive + Co
 where
     Func: Fn(F1) -> F2,
 {
-    check_newton_method_args(lower_limit, upper_limit, n_intervals);
+    rectangle(&mut Scalar(func), lower_limit, upper_limit, n_intervals)
+}
+
+/// Composite midpoint rule, shared by [`rectangle_rule`] and its batch variant.
+pub(crate) fn rectangle<F, U>(f: &mut impl Integrand<F>, a: F, b: F, n_intervals: U) -> f64
+where
+    F: Float,
+    U: Unsigned + ToPrimitive + Copy,
+{
+    check_newton_method_args(a, b, n_intervals);
 
     let n = n_intervals.to_usize().unwrap();
-    let h: F1 = (upper_limit - lower_limit) / F1::from(n).expect("failed to convert n to float");
-    let half = F1::from(0.5).unwrap();
+    let h: F = (b - a) / F::from(n).expect("failed to convert n to float");
+    let half = F::from(0.5).unwrap();
 
-    let integral: f64 = (0..n)
-        .map(|i| {
-            let x = lower_limit + (F1::from(i).unwrap() + half) * h;
-            func(x).to_f64().expect("failed to convert f(x) to f64")
-        })
-        .sum();
+    let [sum] = f.weighted_sums(n, |i| a + (index::<F>(i) + half) * h, |_| [1.0]);
 
-    integral * h.to_f64().unwrap()
+    sum * h.to_f64().unwrap()
 }
 
 /// Approximates $\int_a^b f(x)\\,dx$ using the composite trapezoidal rule.
@@ -116,23 +141,31 @@ pub fn trapezoidal_rule<Func, F1: Float, F2: Float, U: Unsigned + ToPrimitive + 
 where
     Func: Fn(F1) -> F2,
 {
-    check_newton_method_args(lower_limit, upper_limit, n_intervals);
+    trapezoidal(&mut Scalar(func), lower_limit, upper_limit, n_intervals)
+}
+
+/// Composite trapezoidal rule, shared by [`trapezoidal_rule`] and its batch variant.
+///
+/// Nodes $x_i = a + ih$, $i = 0, \dots, n$ (with $x_n = b$ exactly); weights
+/// $\tfrac12, 1, \dots, 1, \tfrac12$.
+/// Interior nodes are summed first, then the two endpoints.
+pub(crate) fn trapezoidal<F, U>(f: &mut impl Integrand<F>, a: F, b: F, n_intervals: U) -> f64
+where
+    F: Float,
+    U: Unsigned + ToPrimitive + Copy,
+{
+    check_newton_method_args(a, b, n_intervals);
 
     let n = n_intervals.to_usize().unwrap();
-    let h: F1 = (upper_limit - lower_limit) / F1::from(n).expect("failed to convert n to float");
+    let h: F = (b - a) / F::from(n).expect("failed to convert n to float");
 
-    let interior: f64 = (1..n)
-        .map(|i| {
-            func(lower_limit + F1::from(i).unwrap() * h)
-                .to_f64()
-                .unwrap()
-        })
-        .sum();
+    node_count(n, 1); // overflow check for the n + 1 nodes
 
-    let endpoints =
-        0.5 * (func(lower_limit).to_f64().unwrap() + func(upper_limit).to_f64().unwrap());
+    let mut sum = [0.0];
+    f.accumulate(1..n, |i| a + index::<F>(i) * h, |_| [1.0], &mut sum);
+    endpoints(f, a, b, 0.5, &mut sum);
 
-    (endpoints + interior) * h.to_f64().unwrap()
+    sum[0] * h.to_f64().unwrap()
 }
 
 /// Approximates $\int_a^b f(x)\\,dx$ using the composite Simpson's rule.
@@ -184,26 +217,36 @@ pub fn simpson_rule<Func, F1: Float, F2: Float, U: Unsigned + ToPrimitive + Copy
 where
     Func: Fn(F1) -> F2,
 {
+    simpson(&mut Scalar(f), a, b, n)
+}
+
+/// Composite Simpson's 1/3 rule, shared by [`simpson_rule`] and its batch variant.
+///
+/// Nodes $a + jh/2$, $j = 0, \dots, 2n$ (with the last one $= b$ exactly);
+/// weights $1, 4, 2, 4, \dots, 2, 4, 1$, scaled by $h/6$.
+/// Interior nodes are summed first, then the two endpoints.
+pub(crate) fn simpson<F, U>(f: &mut impl Integrand<F>, a: F, b: F, n: U) -> f64
+where
+    F: Float,
+    U: Unsigned + ToPrimitive + Copy,
+{
     check_newton_method_args(a, b, n);
 
-    let n_usize = n.to_usize().unwrap();
-    let h: F1 = (b - a) / F1::from(n_usize).unwrap();
-    let h2 = h / F1::from(2).unwrap();
+    let n = n.to_usize().unwrap();
+    let h: F = (b - a) / F::from(n).expect("failed to convert n to float");
+    let h2 = h / F::from(2).unwrap();
+    let last = node_count(n, 2) - 1;
 
-    // f(a) + 4f(a + h/2)
-    let first = f(a).to_f64().unwrap() + 4.0 * f(a + h2).to_f64().unwrap();
+    let mut sum = [0.0];
+    f.accumulate(
+        1..last,
+        |j| a + index::<F>(j) * h2,
+        |j| if j % 2 == 1 { [4.0] } else { [2.0] },
+        &mut sum,
+    );
+    endpoints(f, a, b, 1.0, &mut sum);
 
-    // Σ 2f(a+ih) + 4f(a+ih+h/2)  for i = 1..n-1, then 2f(a+(n-1)h) + 4f(a+(n-1)h+h/2)
-    let middle: f64 = (1..n_usize)
-        .map(|i| {
-            let xi = a + F1::from(i).unwrap() * h;
-            2.0 * f(xi).to_f64().unwrap() + 4.0 * f(xi + h2).to_f64().unwrap()
-        })
-        .sum();
-
-    let last = f(b).to_f64().unwrap();
-
-    (first + middle + last) * h.to_f64().unwrap() / 6.0
+    sum[0] * h.to_f64().unwrap() / 6.0
 }
 
 /// Approximates $\int_a^b f(x)\\,dx$ using the composite Newton's 3/8 rule.
@@ -255,34 +298,42 @@ pub fn newton_rule<Func, F1: Float, F2: Float, U: Unsigned + ToPrimitive + Copy>
 where
     Func: Fn(F1) -> F2,
 {
-    check_newton_method_args(lower_limit, upper_limit, n_intervals);
+    newton(&mut Scalar(func), lower_limit, upper_limit, n_intervals)
+}
+
+/// Composite Newton's 3/8 rule, shared by [`newton_rule`] and its batch variant.
+///
+/// Nodes $a + jh/3$, $j = 0, \dots, 3n$ (with the last one $= b$ exactly);
+/// weights $1, 3, 3, 2, 3, 3, 2, \dots, 3, 3, 1$, scaled by $h/8$.
+/// Interior nodes are summed first, then the two endpoints.
+pub(crate) fn newton<F, U>(f: &mut impl Integrand<F>, a: F, b: F, n_intervals: U) -> f64
+where
+    F: Float,
+    U: Unsigned + ToPrimitive + Copy,
+{
+    check_newton_method_args(a, b, n_intervals);
 
     let n = n_intervals.to_usize().unwrap();
-    let h: F1 = (upper_limit - lower_limit) / F1::from(n).unwrap();
-    let h3 = h / F1::from(3).unwrap();
+    let h: F = (b - a) / F::from(n).expect("failed to convert n to float");
+    let h3 = h / F::from(3).unwrap();
+    node_count(n, 3); // overflow check for the 3n + 1 nodes
 
-    // f(a) + 3f(a+h/3) + 3f(a+2h/3)
-    let first = func(lower_limit).to_f64().unwrap()
-        + 3.0
-            * (func(lower_limit + h3).to_f64().unwrap()
-                + func(lower_limit + F1::from(2).unwrap() * h3)
-                    .to_f64()
-                    .unwrap());
+    // Constant-weight passes (a per-node `j % 3` weight costs ~20%):
+    // panel breakpoints a + ih (weight 2), then the two inner nodes of each
+    // panel, a + (3i+1)h/3 and a + (3i+2)h/3 (weight 3).
+    let mut sum = [0.0];
+    f.accumulate(1..n, |i| a + index::<F>(3 * i) * h3, |_| [2.0], &mut sum);
+    for offset in [1, 2] {
+        f.accumulate(
+            0..n,
+            |i| a + index::<F>(3 * i + offset) * h3,
+            |_| [3.0],
+            &mut sum,
+        );
+    }
+    endpoints(f, a, b, 1.0, &mut sum);
 
-    // For i = 1..n-1: 2f(a+ih) + 3f(a+ih+h/3) + 3f(a+ih+2h/3)
-    let middle: f64 = (1..n)
-        .map(|i| {
-            let xi = lower_limit + F1::from(i).unwrap() * h;
-            2.0 * func(xi).to_f64().unwrap()
-                + 3.0
-                    * (func(xi + h3).to_f64().unwrap()
-                        + func(xi + F1::from(2).unwrap() * h3).to_f64().unwrap())
-        })
-        .sum();
-
-    let last = func(upper_limit).to_f64().unwrap();
-
-    (first + middle + last) * h.to_f64().unwrap() / 8.0
+    sum[0] * h.to_f64().unwrap() / 8.0
 }
 
 #[cfg(test)]

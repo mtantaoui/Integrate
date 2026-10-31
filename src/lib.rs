@@ -48,6 +48,25 @@
 //! |---|---|
 //! | [`romberg::romberg_method`] | Romberg integration |
 //!
+//! ## Batch integrands ([`batch`])
+//!
+//! Every fixed-node rule has a `_batch` variant whose integrand evaluates a
+//! whole slice of nodes in place (e.g. with SIMD math libraries):
+//!
+//! | Function | Scalar counterpart |
+//! |---|---|
+//! | [`batch::rectangle_rule_batch`] | [`newton_cotes::rectangle_rule`] |
+//! | [`batch::trapezoidal_rule_batch`] | [`newton_cotes::trapezoidal_rule`] |
+//! | [`batch::simpson_rule_batch`] | [`newton_cotes::simpson_rule`] |
+//! | [`batch::newton_rule_batch`] | [`newton_cotes::newton_rule`] |
+//! | [`batch::legendre_rule_batch`] | [`gauss_quadrature::legendre_rule`] |
+//! | [`batch::gauss_laguerre_rule_batch`] | [`gauss_quadrature::gauss_laguerre_rule`] |
+//! | [`batch::gauss_hermite_rule_batch`] | [`gauss_quadrature::gauss_hermite_rule`] |
+//! | [`batch::gauss_first_kind_chebyshev_rule_batch`] | [`gauss_quadrature::gauss_first_kind_chebyshev_rule`] |
+//! | [`batch::gauss_second_kind_chebyshev_rule_batch`] | [`gauss_quadrature::gauss_second_kind_chebyshev_rule`] |
+//! | [`batch::gauss_kronrod_rule_batch`] | [`gauss_kronrod::gauss_kronrod_rule`] |
+//! | [`batch::romberg_method_batch`] | [`romberg::romberg_method`] |
+//!
 //! # Quick Start
 //!
 //! ```rust
@@ -88,6 +107,7 @@
 //!   can also be split into subintervals of half a wavelength each.
 
 pub mod adaptive_quadrature;
+pub mod batch;
 pub mod gauss_kronrod;
 pub mod gauss_quadrature;
 pub mod newton_cotes;
