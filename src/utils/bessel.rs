@@ -123,19 +123,12 @@ pub fn bessel_j1_squared<U: Unsigned + ToPrimitive>(k: U) -> f64 {
         9.765_897_139_791_051E-3,
     ];
 
-    let x: f64;
-    let x2: f64;
-    let z: f64;
-
     if J_1.len() < k.to_usize().unwrap() {
-        x = 1.0 / (k.to_f64().unwrap() - 0.25);
-        x2 = x * x;
-
-        z = hankel_expansion(x, x2);
+        let x = 1.0 / (k.to_f64().unwrap() - 0.25);
+        hankel_expansion(x, x * x)
     } else {
-        z = J_1[k.to_usize().unwrap() - 1];
+        J_1[k.to_usize().unwrap() - 1]
     }
-    z
 }
 
 #[cfg(test)]
