@@ -332,6 +332,7 @@ dependencies = [
  "itertools 0.13.0",
  "num",
  "num-traits",
+ "simdly",
 ]
 
 [[package]]
@@ -676,6 +677,12 @@ dependencies = [
  "serde_core",
  "zmij",
 ]
+
+[[package]]
+name = "simdly"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9b43df8c7a50d891e22a408c7a6ceef031339ca5752284f8681174d98e9f43f"
 
 [[package]]
 name = "slab"

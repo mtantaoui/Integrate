@@ -16,7 +16,10 @@ use std::fmt;
 
 use num::{Float, ToPrimitive};
 
-use crate::utils::checkers::check_gauss_rule_with_limits;
+use crate::utils::{
+    checkers::check_gauss_rule_with_limits,
+    integrand::{node_count, Integrand, Scalar},
+};
 
 /// Error returned when the Gauss-Kronrod abscissa Newton iteration fails to
 /// converge within 50 steps.
@@ -398,36 +401,49 @@ where
     F2: Float + ToPrimitive,
     Func: Fn(F1) -> F2,
 {
+    gauss_kronrod(&mut Scalar(func), lower_limit, upper_limit, n)
+}
+
+/// $(2n+1)$-point Gauss-Kronrod rule on $[a, b]$, shared by
+/// [`gauss_kronrod_rule`] and its batch variant.
+pub(crate) fn gauss_kronrod<F: Float>(
+    f: &mut impl Integrand<F>,
+    lower_limit: F,
+    upper_limit: F,
+    n: usize,
+) -> Result<(f64, f64), GaussKronrodError> {
     check_gauss_rule_with_limits(lower_limit, upper_limit, n);
 
     let a = lower_limit.to_f64().unwrap();
     let b = upper_limit.to_f64().unwrap();
 
-    // Compute nodes and weights on [-1, +1].
+    // Positive abscissas x[0..n] on [-1, 1] (descending), x[n] == 0, plus
+    // Kronrod and embedded Gauss weights for each.
     let (x, w_gk, w_g) = kronrod_nodes(n, f64::EPSILON)?;
 
     // Change of variables: ∫_a^b f(x)dx = half_len * ∫_{-1}^{1} f(mid + half_len*t) dt
     let mid = (a + b) / 2.0;
     let half_len = (b - a) / 2.0;
 
-    let f = |t: f64| -> f64 {
-        func(F1::from(t).unwrap())
-            .to_f64()
-            .expect("failed to convert f(x) to f64")
-    };
-
-    // x[n] == 0 always; contributes only once (no symmetric counterpart).
-    let mut gk_sum = w_gk[n] * f(mid);
-    let mut g_sum = w_g[n] * f(mid);
-
-    // All other stored abscissas x[i] > 0 have a symmetric counterpart at -x[i].
-    for i in 0..n {
-        let xi = x[i]; // positive abscissa in (0, 1]
-        let fp = f(mid + half_len * xi);
-        let fm = f(mid - half_len * xi);
-        gk_sum += w_gk[i] * (fp + fm);
-        g_sum += w_g[i] * (fp + fm);
-    }
+    // Nodes left to right: j < n → mid − half_len·x[j]; j == n → mid;
+    // j > n → mid + half_len·x[2n − j]. Node j uses abscissa/weight index
+    // min(j, 2n − j).
+    let last = 2 * n;
+    let [gk_sum, g_sum] = f.weighted_sums(
+        node_count(n, 2),
+        |j| {
+            let t = if j < n {
+                mid - half_len * x[j]
+            } else {
+                mid + half_len * x[last - j]
+            };
+            F::from(t).unwrap()
+        },
+        |j| {
+            let i = j.min(last - j);
+            [w_gk[i], w_g[i]]
+        },
+    );
 
     let integral = half_len * gk_sum;
     let error = (half_len * (gk_sum - g_sum)).abs();

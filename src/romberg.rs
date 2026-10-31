@@ -7,7 +7,17 @@
 
 use num::{Float, ToPrimitive, Unsigned};
 
-use crate::utils::checkers::check_newton_method_args;
+use crate::utils::{
+    checkers::check_newton_method_args,
+    integrand::{Integrand, Scalar},
+};
+
+/// Largest accepted number of Romberg columns.
+///
+/// Column $n$ evaluates $2^{n-2}$ new midpoints (about $2^{n-1}$ evaluations
+/// in total), so 32 columns already means ~2 billion evaluations; larger values
+/// would also overflow the midpoint count on 32-bit targets.
+pub const MAX_ROMBERG_COLUMNS: usize = 32;
 
 /// Approximates $\int_a^b f(x)\\,dx$ using Romberg's method.
 ///
@@ -36,8 +46,8 @@ use crate::utils::checkers::check_newton_method_args;
 ///   function evaluations and achieves $O(h^{2n})$ accuracy for smooth $f$.
 ///
 /// # Panics
-/// Panics if `n_columns` is zero, either limit is non-finite, or
-/// `lower_limit > upper_limit`.
+/// Panics if `n_columns` is zero or exceeds [`MAX_ROMBERG_COLUMNS`], either
+/// limit is non-finite, or `lower_limit > upper_limit`.
 ///
 /// # Examples
 /// ```
@@ -71,29 +81,57 @@ where
     U: Unsigned + ToPrimitive + Copy,
     Func: Fn(F1) -> F2,
 {
+    romberg(&mut Scalar(func), lower_limit, upper_limit, n_columns)
+}
+
+/// Romberg integration, shared by [`romberg_method`] and its batch variant.
+///
+/// Each refinement level evaluates its $2^{i-1}$ new midpoints in one
+/// [`Integrand::weighted_sums`] call.
+pub(crate) fn romberg<F, U>(
+    f: &mut impl Integrand<F>,
+    lower_limit: F,
+    upper_limit: F,
+    n_columns: U,
+) -> f64
+where
+    F: Float,
+    U: Unsigned + ToPrimitive + Copy,
+{
     check_newton_method_args(lower_limit, upper_limit, n_columns);
 
     let n = n_columns.to_usize().unwrap();
+    assert!(
+        n <= MAX_ROMBERG_COLUMNS,
+        "number of columns must be at most {MAX_ROMBERG_COLUMNS}, got {n}"
+    );
+
     let a = lower_limit.to_f64().unwrap();
     let b = upper_limit.to_f64().unwrap();
     let h0 = b - a;
-
-    // Wrap func to work in f64.
-    let f = |x: f64| func(F1::from(x).unwrap()).to_f64().unwrap();
 
     // Rolling two-row buffer: prev = row i-1, curr = row i.
     let mut prev = vec![0.0_f64; n];
     let mut curr = vec![0.0_f64; n];
 
     // R[0, 0]: single-interval trapezoidal estimate.
-    prev[0] = 0.5 * h0 * (f(a) + f(b));
+    let [ends] = f.weighted_sums(
+        2,
+        |i| if i == 0 { lower_limit } else { upper_limit },
+        |_| [1.0],
+    );
+    prev[0] = 0.5 * h0 * ends;
 
     for i in 1..n {
         let num_new = 1_usize << (i - 1); // 2^(i-1) new midpoints
         let h = h0 / (2 * num_new) as f64; // step size at level i
 
         // R[i, 0]: reuse prev[0] and add only the new midpoints.
-        let new_sum: f64 = (0..num_new).map(|k| f(a + (2 * k + 1) as f64 * h)).sum();
+        let [new_sum] = f.weighted_sums(
+            num_new,
+            |k| F::from(a + (2 * k + 1) as f64 * h).unwrap(),
+            |_| [1.0],
+        );
         curr[0] = 0.5 * prev[0] + h * new_sum;
 
         // Richardson extrapolation: fill columns 1..=i.

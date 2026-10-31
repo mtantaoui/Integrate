@@ -22,8 +22,15 @@
 //! | [`simpson_rule`] | Simpson's 1/3 rule |
 //! | [`trapezoidal_rule`] | Trapezoidal rule |
 //! | [`romberg_method`] | Romberg integration using Richardson extrapolation |
+//! | `*_batch` (e.g. [`simpson_rule_batch`]) | Batch-integrand variant of every rule above except [`adaptive_simpson_method`]; see [`crate::batch`] |
 
 pub use crate::adaptive_quadrature::adaptive_simpson_method;
+pub use crate::batch::{
+    gauss_first_kind_chebyshev_rule_batch, gauss_hermite_rule_batch, gauss_kronrod_rule_batch,
+    gauss_laguerre_rule_batch, gauss_second_kind_chebyshev_rule_batch, legendre_rule_batch,
+    newton_rule_batch, rectangle_rule_batch, romberg_method_batch, simpson_rule_batch,
+    trapezoidal_rule_batch,
+};
 pub use crate::gauss_kronrod::gauss_kronrod_rule;
 pub use crate::gauss_quadrature::{
     gauss_first_kind_chebyshev_rule, gauss_hermite_rule, gauss_laguerre_rule,

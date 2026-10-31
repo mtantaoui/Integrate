@@ -8,6 +8,7 @@ pub mod bessel;
 pub mod chebyshev;
 pub mod checkers;
 pub mod hermite;
+pub mod integrand;
 pub mod laguerre;
 pub mod legendre;
 pub mod matrix;
